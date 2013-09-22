@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+    <paragraph>
+        <partial>
+            <text>Добро пожаловать </text>
+        </partial>
+        <partial>
+            <text>в [[</text>
+        </partial>
+        <partial>
+            <text>ci</text>
+        </partial>
+        <partial>
+            <text>ty</text>
+        </partial>
+        <partial>
+            <text>]</text>
+        </partial>
+        <partial>
+            <text>],</text>
+        </partial>
+        <partial>
+            <text> наслаждайтесь нашими [[event]]</text>
+        </partial>
+    </paragraph>
+</root>
+

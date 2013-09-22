@@ -1,0 +1,16 @@
+{
+    "name": "shooz/docx",
+    "description": "Openxml template toolkit.",
+    "require": {
+        "doctrine/lexer": "dev-master"
+    },
+    "authors": [
+        {
+            "name": "Oleg shadz3rg Gorokhov",
+            "email": "ukhardc0r3@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-0": { "OfficeML": "src/" }
+    }
+}
