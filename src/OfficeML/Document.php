@@ -4,7 +4,7 @@ namespace OfficeML;
 class Document {
 
     public $documentName;
-    private $documentPath;
+    public $documentPath;
 
     function __construct($filePath) {
         if (!is_file($filePath)) {

@@ -22,8 +22,4 @@ class Helper
             $domElement->appendChild($domDocument->createTextNode($mixed));
         }
     }
-
-    public static function strip($token, array $brackets) {
-        return trim($token, implode($brackets));
-    }
 }

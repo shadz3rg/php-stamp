@@ -63,7 +63,7 @@ class Processor
             throw new Exception\TokenException('Tokens not found.');
         }
 
-        $lexer = new Lexer($this->brackets);
+        $lexer = new CustomLexer($this->brackets);
 
         // Paragraph node
         for ($i = 0; $i < $nodes->length; $i++) {
@@ -73,16 +73,14 @@ class Processor
 
             $lengthCache = 0;
 
-            while ($token = $lexer->peek()) {
+            while ($token = $lexer->next()) {
 
-                // TODO Move to lexer
-                $token[self::LEFT_BRACKET] = $token['position'] - $lengthCache;
-                $token[self::RIGHT_BRACKET] = $token[self::LEFT_BRACKET] + mb_strlen($token['value']);
-                $token['variable'] = Helper::strip($token['value'], $this->brackets);
+                // TODO Сделать покрасивше
+                $token['position'][self::LEFT_BRACKET] -= $lengthCache;
+                $token['position'][self::RIGHT_BRACKET] -= $lengthCache;
 
                 // Начинается нода
                 $positionOffset = 0;
-
                 $partNodes = $xpath->query('w:r', $paragraphNode);
 
                 for ($c = 0; $c < $partNodes->length; $c++) {
@@ -95,8 +93,14 @@ class Processor
                     );
 
                     // Контент тэга со скобками
-                    $isLeftInBound = ($token[self::LEFT_BRACKET] <= $position[self::LEFT_BRACKET] && $position[self::LEFT_BRACKET] <= $token[self::RIGHT_BRACKET]);
-                    $isRightInBound = ($token[self::LEFT_BRACKET] <= $position[self::RIGHT_BRACKET] && $position[self::RIGHT_BRACKET] <= $token[self::RIGHT_BRACKET]);
+                    $isLeftInBound = (
+                        $token['position'][self::LEFT_BRACKET] <= $position[self::LEFT_BRACKET] &&
+                        $position[self::LEFT_BRACKET] <= $token['position'][self::RIGHT_BRACKET]
+                    );
+                    $isRightInBound = (
+                        $token['position'][self::LEFT_BRACKET] <= $position[self::RIGHT_BRACKET] &&
+                        $position[self::RIGHT_BRACKET] <= $token['position'][self::RIGHT_BRACKET]
+                    );
 
                     if ($isLeftInBound === true || $isRightInBound === true) {
                         $textNodes = $xpath->query('w:t', $partNode);
@@ -107,37 +111,36 @@ class Processor
                         }
                         $textNode = $textNodes->item(0);
 
-                        $start = $token[self::RIGHT_BRACKET] - $position[self::LEFT_BRACKET];
-                        if ($position[self::RIGHT_BRACKET] <= $token[self::RIGHT_BRACKET]) {
+                        $start = $token['position'][self::RIGHT_BRACKET] - $position[self::LEFT_BRACKET];
+                        if ($position[self::RIGHT_BRACKET] <= $token['position'][self::RIGHT_BRACKET]) {
                             $start = 0;
                         }
 
                         $length = 0;
-                        if ($position[self::LEFT_BRACKET] <= $token[self::LEFT_BRACKET]) {
-                            $length = $token[self::LEFT_BRACKET] - $positionOffset;
+                        if ($position[self::LEFT_BRACKET] <= $token['position'][self::LEFT_BRACKET]) {
+                            $length = $token['position'][self::LEFT_BRACKET] - $positionOffset;
 
                             $placeholder = $template->createElementNS(self::XSL_NS, 'xsl:value-of');
                             $placeholder->setAttribute('select', '//tokens/city');
                             $textNode->appendChild($placeholder);
 
-                        } elseif ($position[self::RIGHT_BRACKET] >= $token[self::RIGHT_BRACKET]) {
-                            $length = $position[self::RIGHT_BRACKET] - $token[self::RIGHT_BRACKET];
+                        } elseif ($position[self::RIGHT_BRACKET] >= $token['position'][self::RIGHT_BRACKET]) {
+                            $length = $position[self::RIGHT_BRACKET] - $token['position'][self::RIGHT_BRACKET];
                         }
 
                         $textNode->nodeValue = mb_substr($backupValue = $textNode->nodeValue, $start, $length);
 
-                        if ($position[self::LEFT_BRACKET] <= $token[self::LEFT_BRACKET]) {
+                        if ($position[self::LEFT_BRACKET] <= $token['position'][self::LEFT_BRACKET]) {
                             $placeholder = $template->createElementNS(self::XSL_NS, 'xsl:value-of');
-                            $placeholder->setAttribute('select', '//tokens/' . $token['variable']);
+                            $placeholder->setAttribute('select', '//tokens/' . $token['value']);
                             $textNode->appendChild($placeholder);
                         }
                     }
                     $positionOffset += $partLength;
                 }
-                $lengthCache += mb_strlen($token['value']);
+                $lengthCache += mb_strlen($token['token']);
             }
         }
-
         return $template;
     }
 }

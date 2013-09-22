@@ -28,10 +28,8 @@ class Templator {
         );
     }
 
-    public function cache()
+    public function cache($templateFile)
     {
-        $templateFile = $this->document->extract($this->cachePath, self::DOC_CONTENT);
-
         $template = new \DOMDocument('1.0', 'UTF-8');
 
         if ($this->debug === true) {
@@ -42,27 +40,50 @@ class Templator {
         $template->load($templateFile);
 
         $template = $this->processor->cache($template);
-        return $template->saveXML();
+        //$template->save($templateFile);
+        return $template;
     }
 
-
     public function assign(array $tokens) {
-       /*
-        if ($this->doc->isCompiled() === false || $this->debug === true) {
-            $this->processor->compile(
-                $this->doc->getCompiledFilePath(),
-                $this->doc->getContent()
-            );
+        $tokensNode = $this->values->createElement('tokens');
+        $this->values->appendChild($tokensNode);
+
+        Helper::xmlEncode($tokens, $tokensNode, $this->values);
+    }
+
+    public function output()
+    {
+        // TODO Cache time!
+        $templateFile = $this->document->extract($this->cachePath, self::DOC_CONTENT);
+        $template = $this->cache($templateFile);
+
+        $xslt = new \XSLTProcessor();
+        $xslt->importStylesheet($template);
+
+        return $xslt->transformToDoc($this->values);
+    }
+
+    public function download()
+    {
+        $document = $this->output();
+
+        //$tempArchive = tempnam(sys_get_temp_dir(), 'doc');
+$result = $this->cachePath . 'z.zip';
+
+        if (copy($this->document->documentPath, $result)) {
+
+            $zip = new \ZipArchive();
+            $zip->open($result);
+            $zip->addFromString(self::DOC_CONTENT, $document->saveXML());
+            $zip->close();
+
+            header("Content-Type: application/zip");
+            header("Content-Transfer-Encoding: Binary");
+            header("Content-Length: " . filesize($result));
+            header("Content-Disposition: attachment; filename=" . $this->document->documentName);
+
+            ob_clean();
+            readfile($result);
         }
-
-        Helper::xmlEncode(array('tokens' => $tokens), $this->values, $this->values);
-
-        // Processing values
-        $xslt = new \XsltProcessor();
-        $xslt->importStylesheet($this->doc->getTemplate());
-
-        $result = $xslt->transformToDoc($this->values);
-        $result->formatOutput = true;
-        return $result->saveXML();*/
     }
 }

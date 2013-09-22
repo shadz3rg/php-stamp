@@ -2,65 +2,53 @@
 namespace OfficeML;
 
 class CustomLexer {
-    private $brackets;
-
     private $tokens;
-    private $peek;
-    private $position = 0;
-
-    public $token;
+    private $position;
+    private $pattern;
+    private $validTokenName = '([^\s]*?)';
 
     public function __construct(array $brackets) {
-        $this->brackets = $brackets;
+        $brackets = array_map(function($bracket){
+                return '(?:' . preg_quote($bracket) . ')';
+            }, $brackets);
+        $this->pattern = implode($this->validTokenName, $brackets);
     }
 
     public function setInput($input)
     {
         $this->tokens = array();
-        $this->reset();
-        $this->scan($input);
-    }
-
-    public function reset()
-    {
-        //$this->lookahead = null;
-        $this->token = null;
-        $this->peek = 0;
         $this->position = 0;
+        $this->scan($input);
     }
 
     protected function scan($input)
     {
         static $regex;
 
-        if ( ! isset($regex)) {
-            $regex = '/(' . implode(')|(', $this->getCatchablePatterns()) . ')|'
-                . implode('|', $this->getNonCatchablePatterns()) . '/ui';
-
-            $regex = '/\[\[[^\s]*?\]\]/ui';
+        if (!isset($regex)) {
+            $regex = '/' . $this->pattern . '/ui';
         }
 
-        $flags = PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_OFFSET_CAPTURE;
-        $matches = preg_split($regex, $input, -1, $flags);
+        preg_match_all($regex, $input, $matches, PREG_OFFSET_CAPTURE | PREG_SET_ORDER);
 
         foreach ($matches as $match) {
-            // Must remain before 'value' assignment since it can change content
-            $type = $this->getType($match[0]);
-
             $this->tokens[] = array(
-                'value' => $match[0],
-                'type'  => $type,
-                'position' => $match[1],
+                'token' => $match[0][0],
+                'value' => str_replace('.', '/', $match[1][0]),
+                'position' => array(
+                    $match[0][1],
+                    $match[0][1] + mb_strlen($match[0][0])
+                )
             );
         }
     }
 
-    public function peek()
+    public function next()
     {
-        if (isset($this->tokens[$this->position + $this->peek])) {
-            return $this->tokens[$this->position + $this->peek++];
-        } else {
-            return null;
+        $token = false;
+        if (isset($this->tokens[$this->position])) {
+            $token = $this->tokens[$this->position++];
         }
+        return $token;
     }
 }
