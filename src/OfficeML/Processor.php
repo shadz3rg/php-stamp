@@ -1,53 +1,61 @@
 <?php
 namespace OfficeML;
 
+/* TODO Комментарии, адекватные названия
+ *
+ * */
 class Processor
 {
-    const NS = 'http://www.w3.org/1999/XSL/Transform';
-    const LEFT = 0;
-    const RIGHT = 1;
+    const XSL_NS = 'http://www.w3.org/1999/XSL/Transform';
+    const LEFT_BRACKET = 0;
+    const RIGHT_BRACKET = 1;
 
     private $brackets;
 
-    function __construct(array $brackets = array('[[', ']]')) {
-        // TODO Improve
+    public function __construct(array $brackets = array('[[', ']]')) {
         if (count($brackets) !== 2 || array_values($brackets) !== $brackets) {
             throw new Exception\ArgumentsException('Brackets in wrong format.');
         }
         $this->brackets = $brackets;
     }
 
-    public function compile($compileInto, \DOMDocument $doc)
+    private function iWantXsl(\DOMDocument $document)
     {
-        // Template declaration IE cached document
-        $stylesheet = $doc->createElementNS(self::NS, 'xsl:stylesheet');
+        $stylesheet = $document->createElementNS(self::XSL_NS, 'xsl:stylesheet');
+        $stylesheet->setAttribute('version', '1.0');
 
-        $output = $doc->createElementNS(self::NS, 'xsl:output');
+        $output = $document->createElementNS(self::XSL_NS, 'xsl:output');
         $output->setAttribute('method', 'xml');
         $output->setAttribute('encoding', 'UTF-8');
-        //$output->setAttribute('omit-xml-declaration', 'yes'); TODO Optional output?
+        //TODO Optional output?
+        //$output->setAttribute('omit-xml-declaration', 'yes');
         $stylesheet->appendChild($output);
 
-        $template = $doc->createElementNS(self::NS, 'xsl:template');
+        $template = $document->createElementNS(self::XSL_NS, 'xsl:template');
         $template->setAttribute('match', '//tokens');
-        $template->appendChild($doc->documentElement);
-
+        $template->appendChild($document->documentElement);
         $stylesheet->appendChild($template);
 
-        /*
+        /* TODO Optional template?
         $call = $doc->createElementNS(self::NS, 'xsl:call-template');
         $call->setAttribute('name', 'main');
         $stylesheet->appendChild($call);
         */
 
-        $stylesheet->setAttribute('version', '1.0');
-        $doc->appendChild($stylesheet);
+        $document->appendChild($stylesheet);
 
-        // Operation TODO Код дублируется из геттокенс, убогий подход
-        $xpath = new \DOMXPath($doc);
-        $query = sprintf('//root/*[contains(., "%s")][contains(., "%s")]',
-            $this->brackets[self::LEFT],
-            $this->brackets[self::RIGHT]
+        return $document;
+    }
+
+    public function cache(\DOMDocument $document)
+    {
+        $template = $this->iWantXsl($document);
+
+        // Tokens conversion
+        $xpath = new \DOMXPath($template);
+        $query = sprintf('//w:body/*[contains(., "%s")][contains(., "%s")]',
+            $this->brackets[self::LEFT_BRACKET],
+            $this->brackets[self::RIGHT_BRACKET]
         );
 
         $nodes = $xpath->query($query);
@@ -57,122 +65,79 @@ class Processor
 
         $lexer = new Lexer($this->brackets);
 
+        // Paragraph node
         for ($i = 0; $i < $nodes->length; $i++) {
 
-            // Paragraph Node
-            $node = $nodes->item($i);
-            $lexer->setInput(utf8_decode($node->textContent));
+            $paragraphNode = $nodes->item($i); // w:p
+            $lexer->setInput(utf8_decode($paragraphNode->textContent));
 
             $lengthCache = 0;
-            $recycled = array();
 
             while ($token = $lexer->peek()) {
-                $token[self::LEFT] = $token['position'] - $lengthCache;
-                $token[self::RIGHT] = $token[self::LEFT] + mb_strlen($token['value']);
 
+                // TODO Move to lexer
+                $token[self::LEFT_BRACKET] = $token['position'] - $lengthCache;
+                $token[self::RIGHT_BRACKET] = $token[self::LEFT_BRACKET] + mb_strlen($token['value']);
                 $token['variable'] = Helper::strip($token['value'], $this->brackets);
 
                 // Начинается нода
                 $positionOffset = 0;
 
-                for ($c = 0; $c < $node->childNodes->length; $c++) {
-                    $partNode = $node->childNodes->item($c);
+                $partNodes = $xpath->query('w:r', $paragraphNode);
+
+                for ($c = 0; $c < $partNodes->length; $c++) {
+                    $partNode = $partNodes->item($c); //w:r
                     $partLength = mb_strlen($partNode->nodeValue);
 
-                    $position = array();
-                    $position[self::LEFT] = $positionOffset;
-                    $position[self::RIGHT] = $position[self::LEFT] + $partLength;
+                    $position = array(
+                        self::LEFT_BRACKET => $positionOffset,
+                        self::RIGHT_BRACKET => $positionOffset + $partLength
+                    );
 
                     // Контент тэга со скобками
-                    $isLeftInBound = ($token[self::LEFT] <= $position[self::LEFT] && $position[self::LEFT] <= $token[self::RIGHT]);
-                    $isRightInBound = ($token[self::LEFT] <= $position[self::RIGHT] && $position[self::RIGHT] <= $token[self::RIGHT]);;
+                    $isLeftInBound = ($token[self::LEFT_BRACKET] <= $position[self::LEFT_BRACKET] && $position[self::LEFT_BRACKET] <= $token[self::RIGHT_BRACKET]);
+                    $isRightInBound = ($token[self::LEFT_BRACKET] <= $position[self::RIGHT_BRACKET] && $position[self::RIGHT_BRACKET] <= $token[self::RIGHT_BRACKET]);
 
                     if ($isLeftInBound === true || $isRightInBound === true) {
-                        $textNodes = $xpath->query('text', $partNode);
+                        $textNodes = $xpath->query('w:t', $partNode);
+
+                        // TODO Test
+                        if ($textNodes->length !== 1) {
+                            throw new Exception\TokenException('Multiple w:t');
+                        }
                         $textNode = $textNodes->item(0);
 
-                        $start = $token[self::RIGHT] - $position[self::LEFT];
-                        if ($position[self::RIGHT] <= $token[self::RIGHT]) {
+                        $start = $token[self::RIGHT_BRACKET] - $position[self::LEFT_BRACKET];
+                        if ($position[self::RIGHT_BRACKET] <= $token[self::RIGHT_BRACKET]) {
                             $start = 0;
                         }
 
                         $length = 0;
-                        if ($position[self::LEFT] <= $token[self::LEFT]) {
-                            $length = $token[self::LEFT] - $positionOffset;
+                        if ($position[self::LEFT_BRACKET] <= $token[self::LEFT_BRACKET]) {
+                            $length = $token[self::LEFT_BRACKET] - $positionOffset;
 
-                            $placeholder = $doc->createElementNS(self::NS, 'xsl:value-of');
+                            $placeholder = $template->createElementNS(self::XSL_NS, 'xsl:value-of');
                             $placeholder->setAttribute('select', '//tokens/city');
                             $textNode->appendChild($placeholder);
 
-                        } elseif ($position[self::RIGHT] >= $token[self::RIGHT]) {
-                            $length = $position[self::RIGHT] - $token[self::RIGHT];
+                        } elseif ($position[self::RIGHT_BRACKET] >= $token[self::RIGHT_BRACKET]) {
+                            $length = $position[self::RIGHT_BRACKET] - $token[self::RIGHT_BRACKET];
                         }
 
                         $textNode->nodeValue = mb_substr($backupValue = $textNode->nodeValue, $start, $length);
 
-                        // TODO Надо ли удалять протухшие ноды?
-                        if ($backupValue !== $textNode->nodeValue && $textNode->nodeValue !== '' && false) {
-                            $recycled[] = $partNode;
-                        }
-
-                        if ($position[self::LEFT] <= $token[self::LEFT]) {
-                            $placeholder = $doc->createElementNS(self::NS, 'xsl:value-of');
+                        if ($position[self::LEFT_BRACKET] <= $token[self::LEFT_BRACKET]) {
+                            $placeholder = $template->createElementNS(self::XSL_NS, 'xsl:value-of');
                             $placeholder->setAttribute('select', '//tokens/' . $token['variable']);
                             $textNode->appendChild($placeholder);
                         }
                     }
-
                     $positionOffset += $partLength;
                 }
-
                 $lengthCache += mb_strlen($token['value']);
             }
-
-            foreach ($recycled as $recycledNode) {
-                $node->removeChild($recycledNode);
-            }
         }
 
-        // На этом месте шаблон готов и его можно сохранять
-        if ($this->saveCompiled($compileInto, $doc) === false) {
-            throw new OpenXMLException('Compiled stylesheet not saved.');
-        }
-    }
-
-    public function getTokens(\DOMDocument $doc) {
-        $xpath = new \DOMXPath($doc);
-        $query = sprintf('//root/*[contains(., "%s")][contains(., "%s")]',
-            $this->brackets[self::LEFT],
-            $this->brackets[self::RIGHT]
-        );
-
-        $nodes = $xpath->query($query);
-        if ($nodes->length === 0) {
-            throw new Exception\TokenException('Tokens not found.');
-        }
-
-        $lexer = new Lexer($this->brackets);
-
-        $tokens = array();
-        for ($i = 0; $i < $nodes->length; $i++) {
-
-            // Paragraph
-            $node = $nodes->item($i);
-            $lexer->setInput($node->nodeValue);
-
-            while ($token = $lexer->peek()) {
-
-                //TODO Неправильный путь, для этого прийдется пересчитывать позицию
-                //$token['value'] = Helper::strip($token['value'], $this->brackets);
-                $tokens[] = $token;
-            }
-        }
-
-        return $tokens;
-    }
-
-    private function saveCompiled($compileInto, \DOMDocument $template)
-    {
-        return $template->save($compileInto);
+        return $template;
     }
 }

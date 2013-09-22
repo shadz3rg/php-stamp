@@ -2,21 +2,52 @@
 namespace OfficeML;
 
 class Templator {
+    const DOC_CONTENT = 'word/document.xml';
+
     public $debug = false;
+    private $cachePath;
 
-    private $doc;
+    private $document;
     private $processor;
+    private $values;
 
-    function __construct(Document $doc, Processor $processor){
-        $this->doc = $doc;
+    public function __construct(Document $document, Processor $processor, $cachePath){
+        $this->document = $document;
         $this->processor = $processor;
+        $this->cachePath = $cachePath;
+
+        $this->values = new \DOMDocument();
     }
 
-    public function getTokens() {
-        return $this->processor->getTokens( $this->doc->getContent() );
+    public static function create($documentPath, $cachePath, $brackets = array('[[', ']]'))
+    {
+        return new self(
+            new Document($documentPath),
+            new Processor($brackets),
+            $cachePath
+        );
     }
+
+    public function cache()
+    {
+        $templateFile = $this->document->extract($this->cachePath, self::DOC_CONTENT);
+
+        $template = new \DOMDocument('1.0', 'UTF-8');
+
+        if ($this->debug === true) {
+            $template->preserveWhiteSpace = true;
+            $template->formatOutput = true;
+        }
+
+        $template->load($templateFile);
+
+        $template = $this->processor->cache($template);
+        return $template->saveXML();
+    }
+
 
     public function assign(array $tokens) {
+       /*
         if ($this->doc->isCompiled() === false || $this->debug === true) {
             $this->processor->compile(
                 $this->doc->getCompiledFilePath(),
@@ -24,19 +55,14 @@ class Templator {
             );
         }
 
-        $xml = new \DOMDocument();
-        Helper::xmlEncode(array('tokens' => $tokens), $xml, $xml);
+        Helper::xmlEncode(array('tokens' => $tokens), $this->values, $this->values);
 
         // Processing values
         $xslt = new \XsltProcessor();
         $xslt->importStylesheet($this->doc->getTemplate());
 
-        $result = $xslt->transformToDoc($xml);
+        $result = $xslt->transformToDoc($this->values);
         $result->formatOutput = true;
-        return $result->saveXML();
-    }
-
-    public function output() {
-
+        return $result->saveXML();*/
     }
 }

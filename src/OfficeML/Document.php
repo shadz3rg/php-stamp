@@ -3,43 +3,30 @@ namespace OfficeML;
 
 class Document {
 
-    const DOC_CONTENT = 'word/document.xml';
-    const COMPILED_DIR = '/compiled';
-
-    private $filePath;
-    private $compiledFilePath;
+    public $documentName;
+    private $documentPath;
 
     function __construct($filePath) {
         if (!is_file($filePath)) {
-            throw new OpenXMLException('File not found');
+            throw new Exception\ArgumentsException('File not found');
         }
 
-        $this->filePath = $filePath;
-
-        $file = pathinfo($this->filePath);
-        $this->compiledFilePath = $file['dirname'] . self::COMPILED_DIR . '/' . $file['filename'] . '.' . $file['extension'];
+        $this->documentPath = $filePath;
+        $this->documentName = pathinfo($this->documentPath, PATHINFO_FILENAME);
     }
 
-    public function isCompiled() {
-        return (file_exists($this->compiledFilePath) && (filemtime($this->compiledFilePath) > (time() - 60 * 5 )));
-    }
+    public function extract($to, $contentPath) {
+        $zip = new \ZipArchive();
 
-    public function getContent() {
-        // Здесь обращаемя к файлу в архиве
-        //return file_get_contents($this->filePath);
-        $doc = new \DOMDocument();
-        $doc->preserveWhiteSpace = false;
-        $doc->load($this->filePath);
-        return $doc;
-    }
+        // Wow
+        if ($zip->open($this->documentPath) !== true) {
+            throw new Exception\ArgumentsException('Document not zip');
+        }
 
-    public function getTemplate() {
-        $template = new \DOMDocument();
-        $template->load($this->compiledFilePath);
-        return $template;
-    }
+        if ($zip->extractTo($to . $this->documentName, $contentPath) === false) {
+            throw new Exception\ArgumentsException('Destination not reachable');
+        }
 
-    public function getCompiledFilePath() {
-        return $this->compiledFilePath;
+        return $to . $this->documentName . '/' . $contentPath;
     }
 }
