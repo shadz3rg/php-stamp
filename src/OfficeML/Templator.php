@@ -41,6 +41,7 @@ class Templator {
 
         $template = $this->processor->cache($template);
         //$template->save($templateFile);
+        //echo htmlentities($template->saveXML());
         return $template;
     }
 
@@ -66,24 +67,22 @@ class Templator {
     public function download()
     {
         $document = $this->output();
+        $tempArchive = tempnam(sys_get_temp_dir(), 'doc');
 
-        //$tempArchive = tempnam(sys_get_temp_dir(), 'doc');
-$result = $this->cachePath . 'z.zip';
-
-        if (copy($this->document->documentPath, $result)) {
-
+        if (copy($this->document->documentPath, $tempArchive)) {
             $zip = new \ZipArchive();
-            $zip->open($result);
+            $zip->open($tempArchive);
             $zip->addFromString(self::DOC_CONTENT, $document->saveXML());
             $zip->close();
 
-            header("Content-Type: application/zip");
-            header("Content-Transfer-Encoding: Binary");
-            header("Content-Length: " . filesize($result));
-            header("Content-Disposition: attachment; filename=" . $this->document->documentName);
+            header('Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+            header('Content-Disposition: attachment;filename="' . $this->document->documentName . '.docx"');
 
+            // Экспереминтально доказано - необходимы ob_clean() и exit;
             ob_clean();
-            readfile($result);
+            readfile($tempArchive);
+            unlink($tempArchive);
+            exit;
         }
     }
 }
