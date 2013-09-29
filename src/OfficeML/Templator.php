@@ -28,25 +28,6 @@ class Templator {
         );
     }
 
-    private function cache($templateFile)
-    {
-        $template = new \DOMDocument('1.0', 'UTF-8');
-
-        if ($this->debug === true) {
-            $template->preserveWhiteSpace = true;
-            $template->formatOutput = true;
-        }
-
-        $template->load($templateFile);
-        $this->processor->cache($template);
-        $template->save($templateFile);
-
-        // FIXME Workaround for disappeared xml: attributes
-        $template->load($templateFile);
-
-        return $template;
-    }
-
     public function assign(array $tokens) {
         $tokensNode = $this->values->createElement('tokens');
         $this->values->appendChild($tokensNode);
@@ -56,9 +37,24 @@ class Templator {
 
     public function output()
     {
-        // TODO Cache time!
-        $templateFile = $this->document->extract($this->cachePath, self::DOC_CONTENT);
-        $template = $this->cache($templateFile);
+        $template = new \DOMDocument('1.0', 'UTF-8');
+
+        if ($this->debug === true) {
+            $template->preserveWhiteSpace = true;
+            $template->formatOutput = true;
+        }
+
+        // Cache
+        $templateFile = $this->document->extract($this->cachePath, self::DOC_CONTENT, $this->debug);
+        $template->load($templateFile);
+
+        if ($template->documentElement->nodeName !== 'xsl:stylesheet') {
+            $this->processor->cache($template);
+            $template->save($templateFile);
+
+            // FIXME Workaround for disappeared xml: attributes
+            $template->load($templateFile);
+        }
 
         $xslt = new \XSLTProcessor();
         $xslt->importStylesheet($template);
