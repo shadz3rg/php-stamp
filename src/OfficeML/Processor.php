@@ -63,7 +63,7 @@ class Processor
             throw new Exception\TokenException('Tokens not found.');
         }
 
-        $lexer = new CustomLexer($this->brackets);
+        $lexer = new Lexer($this->brackets);
 
         // Paragraph node
         for ($i = 0; $i < $nodes->length; $i++) {

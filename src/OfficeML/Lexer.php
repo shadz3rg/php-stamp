@@ -1,48 +1,54 @@
 <?php
 namespace OfficeML;
 
-class Lexer extends \Doctrine\Common\Lexer\AbstractLexer {
-    const T_NONE = 0;
-    const T_OPEN_TAG = 1;
-    const T_CLOSE_TAG = 2;
+class Lexer {
+    private $tokens;
+    private $position;
+    private $pattern;
+    private $validTokenName = '([^\s]*?)';
 
-    private $validTokenName = '[^\s]*?';
-
-    /**
-     * Creates a new query scanner object.
-     */
     public function __construct(array $brackets) {
-        foreach ($brackets as $bracket) {
-            $this->patterns[] = addslashes($bracket);
+        $brackets = array_map(function($bracket){
+                return '(?:' . preg_quote($bracket) . ')';
+            }, $brackets);
+        $this->pattern = implode($this->validTokenName, $brackets);
+    }
+
+    public function setInput($input)
+    {
+        $this->tokens = array();
+        $this->position = 0;
+        $this->scan($input);
+    }
+
+    protected function scan($input)
+    {
+        static $regex;
+
+        if (!isset($regex)) {
+            $regex = '/' . $this->pattern . '/ui';
+        }
+
+        preg_match_all($regex, $input, $matches, PREG_OFFSET_CAPTURE | PREG_SET_ORDER);
+
+        foreach ($matches as $match) {
+            $this->tokens[] = array(
+                'token' => $match[0][0],
+                'value' => str_replace('.', '/', $match[1][0]),
+                'position' => array(
+                    $match[0][1],
+                    $match[0][1] + mb_strlen($match[0][0])
+                )
+            );
         }
     }
 
-    /**
-     * @inheritdoc
-     */
-    protected function getCatchablePatterns() {
-        return array('\[\[[^\s]*?\]\]');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function getNonCatchablePatterns() {
-        return array('.');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function getType(&$value) {
-        $type = self::T_NONE;
-
-        if ($value === '[[') {
-            $type = self::T_OPEN_TAG;
-        } elseif ($value === ']]') {
-            $type = self::T_CLOSE_TAG;
+    public function next()
+    {
+        $token = false;
+        if (isset($this->tokens[$this->position])) {
+            $token = $this->tokens[$this->position++];
         }
-
-        return $type;
+        return $token;
     }
 }
