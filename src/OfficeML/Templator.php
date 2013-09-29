@@ -28,7 +28,7 @@ class Templator {
         );
     }
 
-    public function cache($templateFile)
+    private function cache($templateFile)
     {
         $template = new \DOMDocument('1.0', 'UTF-8');
 
@@ -38,10 +38,12 @@ class Templator {
         }
 
         $template->load($templateFile);
+        $this->processor->cache($template);
+        $template->save($templateFile);
 
-        $template = $this->processor->cache($template);
-        //$template->save($templateFile);
-        //echo htmlentities($template->saveXML());
+        // FIXME Workaround for disappeared xml: attributes
+        $template->load($templateFile);
+
         return $template;
     }
 

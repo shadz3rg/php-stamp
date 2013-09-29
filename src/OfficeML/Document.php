@@ -6,7 +6,7 @@ class Document {
     public $documentName;
     public $documentPath;
 
-    function __construct($filePath) {
+    public function __construct($filePath) {
         if (!is_file($filePath)) {
             throw new Exception\ArgumentsException('File not found');
         }

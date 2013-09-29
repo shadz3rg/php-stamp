@@ -130,7 +130,7 @@ class Processor
 
                         $textNode->nodeValue = mb_substr($backupValue = $textNode->nodeValue, $start, $length);
 
-                        if ($position[self::LEFT_BRACKET] <= $token['position'][self::LEFT_BRACKET]) {
+                        if ($position[self::LEFT_BRACKET] < $token['position'][self::LEFT_BRACKET]) {
                             $placeholder = $template->createElementNS(self::XSL_NS, 'xsl:value-of');
                             $placeholder->setAttribute('select', '//tokens/' . $token['value']);
                             $textNode->appendChild($placeholder);
