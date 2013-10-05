@@ -1,12 +1,30 @@
 <?php
 namespace OfficeML;
 
-class Lexer {
+class Lexer
+{
+    /**
+     * @var array
+     */
     private $tokens;
+    /**
+     * @var int
+     */
     private $position;
+    /**
+     * @var string
+     */
     private $pattern;
+    /**
+     * Regexp for non-whitespace token name.
+     * @var string
+     */
     private $validTokenName = '([^\s]*?)';
 
+    /**
+     * Produces regexp pattern for given brackets.
+     * @param array $brackets
+     */
     public function __construct(array $brackets) {
         $brackets = array_map(function($bracket){
                 return '(?:' . preg_quote($bracket) . ')';
@@ -14,6 +32,10 @@ class Lexer {
         $this->pattern = implode($this->validTokenName, $brackets);
     }
 
+    /**
+     * Resets current state and scans input string.
+     * @param string $input
+     */
     public function setInput($input)
     {
         $this->tokens = array();
@@ -21,6 +43,10 @@ class Lexer {
         $this->scan($input);
     }
 
+    /**
+     * Scans string for tokens using generated pattern.
+     * @param string $input
+     */
     protected function scan($input)
     {
         static $regex;
@@ -40,9 +66,15 @@ class Lexer {
                     $match[0][1] + mb_strlen($match[0][0])
                 )
             );
+            var_dump($match);
         }
+
     }
 
+    /**
+     * Move through found tokens.
+     * @return mixed
+     */
     public function next()
     {
         $token = false;

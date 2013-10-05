@@ -4,21 +4,52 @@ namespace OfficeML;
 class Templator {
     const DOC_CONTENT = 'word/document.xml';
 
+    /**
+     * @var bool
+     */
     public $debug = false;
+    /**
+     * @var string
+     */
     private $cachePath;
 
+    /**
+     * @var Document
+     */
     private $document;
+    /**
+     * @var Processor
+     */
     private $processor;
+    /**
+     * @var \DOMDocument
+     */
     private $values;
 
+    /**
+     * @param Document $document
+     * @param Processor $processor
+     * @param $cachePath
+     * @throws Exception\ArgumentsException
+     */
     public function __construct(Document $document, Processor $processor, $cachePath){
         $this->document = $document;
         $this->processor = $processor;
+
+        if (!is_dir($cachePath)) {
+            throw new Exception\ArgumentsException('Cache path unreachable');
+        }
         $this->cachePath = $cachePath;
 
         $this->values = new \DOMDocument();
     }
 
+    /**
+     * @param $documentPath
+     * @param $cachePath
+     * @param array $brackets
+     * @return Templator
+     */
     public static function create($documentPath, $cachePath, $brackets = array('[[', ']]'))
     {
         return new self(
@@ -28,6 +59,10 @@ class Templator {
         );
     }
 
+    /**
+     * Assign values with multidimensional associative array.
+     * @param array $tokens
+     */
     public function assign(array $tokens) {
         $tokensNode = $this->values->createElement('tokens');
         $this->values->appendChild($tokensNode);
@@ -35,6 +70,10 @@ class Templator {
         Helper::xmlEncode($tokens, $tokensNode, $this->values);
     }
 
+    /**
+     * Cache document into template and assign given values.
+     * @return \DOMDocument
+     */
     public function output()
     {
         $template = new \DOMDocument('1.0', 'UTF-8');
@@ -44,7 +83,7 @@ class Templator {
             $template->formatOutput = true;
         }
 
-        // Cache
+        // Cache document into template
         $templateFile = $this->document->extract($this->cachePath, self::DOC_CONTENT, $this->debug);
         $template->load($templateFile);
 
@@ -62,6 +101,10 @@ class Templator {
         return $xslt->transformToDoc($this->values);
     }
 
+    /**
+     * Prepare document for downloading.
+     * @return void
+     */
     public function download()
     {
         $document = $this->output();
