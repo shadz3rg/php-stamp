@@ -3,7 +3,6 @@ namespace OfficeML;
 
 class Templator {
     const DOC_CONTENT = 'word/document.xml';
-
     /**
      * @var bool
      */

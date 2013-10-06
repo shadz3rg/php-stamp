@@ -50,6 +50,7 @@ class Lexer
     protected function scan($input)
     {
         static $regex;
+        static $func_regexp = '/([\w\_\d\-]+)\(([\w\W]*)\)/';
 
         if (!isset($regex)) {
             $regex = '/' . $this->pattern . '/ui';
@@ -58,7 +59,7 @@ class Lexer
         preg_match_all($regex, $input, $matches, PREG_OFFSET_CAPTURE | PREG_SET_ORDER);
 
         foreach ($matches as $match) {
-            $this->tokens[] = array(
+            $token = array(
                 'token' => $match[0][0],
                 'value' => str_replace('.', '/', $match[1][0]),
                 'position' => array(
@@ -66,9 +67,21 @@ class Lexer
                     $match[0][1] + mb_strlen($match[0][0])
                 )
             );
-            var_dump($match);
-        }
 
+            // Filters
+            $filter = explode('|', $match[1][0]);
+            if (count($filter) === 2) {
+                preg_match($func_regexp, $filter[1], $func);
+                $token['func'] = array(
+                    'name' => $func[1],
+                    'arg' => $func[2]
+                );
+                $token['value'] = str_replace('.', '/', $filter[0]);
+                //todo multiple arguments
+            }
+
+            $this->tokens[] = $token;
+        }
     }
 
     /**

@@ -10,6 +10,10 @@ class Processor
     /**
      * @var array
      */
+    public static $filters = array();
+    /**
+     * @var array
+     */
     private $brackets;
 
     /**
@@ -74,7 +78,7 @@ class Processor
         // Loop trough 'paragraph' nodes
         for ($i = 0; $i < $nodes->length; $i++) {
 
-            $paragraphNode = $nodes->item($i); // w:p
+            $paragraphNode = $nodes->item($i); // w:p / w:tbl
             $lexer->setInput(utf8_decode($paragraphNode->textContent));
 
             // Length of stripped tags
@@ -135,6 +139,18 @@ class Processor
                         }
 
                         $textNode->nodeValue = mb_substr($textNode->nodeValue, $start, $length);
+
+                        if (isset($token['func'])) {
+                            $func = self::$filters[$token['func']['name']];
+
+                            $token = call_user_func(
+                                $func,
+                                $token['func']['arg'],
+                                $token,
+                                $textNode,
+                                $template
+                            );
+                        }
 
                         // Insert 'value-of' in beginning of token
                         if ($position[self::LEFT_BRACKET] < $token['position'][self::LEFT_BRACKET]) {
