@@ -91,7 +91,7 @@ class Processor
                 $token['position'][self::LEFT_BRACKET] -= $lengthCache;
                 $token['position'][self::RIGHT_BRACKET] -= $lengthCache;
 
-                $partNodes = $xpath->query('w:r', $paragraphNode);
+                $partNodes = $xpath->query('.//w:r', $paragraphNode);
 
                 // Left position of 'partial' node inside 'paragraph' node
                 $positionOffset = 0;
@@ -153,6 +153,7 @@ class Processor
                         }
 
                         // Insert 'value-of' in beginning of token
+                        echo $token['value'] . '-' . $position[self::LEFT_BRACKET] . '-' . $token['position'][self::LEFT_BRACKET] . PHP_EOL;
                         if ($position[self::LEFT_BRACKET] < $token['position'][self::LEFT_BRACKET]) {
                             $placeholder = $template->createElementNS(self::XSL_NS, 'xsl:value-of');
                             $placeholder->setAttribute('select', '//tokens/' . $token['value']);
