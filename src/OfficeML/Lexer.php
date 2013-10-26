@@ -66,9 +66,7 @@ class Lexer
                     $match[0][1] + mb_strlen($match[0][0])
                 )
             );
-            var_dump($match);
         }
-
     }
 
     /**
