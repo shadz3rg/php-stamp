@@ -63,7 +63,7 @@ class Processor
 
         // Search for tokens
         $xpath = new \DOMXPath($template);
-        $query = sprintf('//w:body/*[contains(., "%s")][contains(., "%s")]',
+        $query = sprintf('//w:p[contains(., "%s")][contains(., "%s")]',
             $this->brackets[self::LEFT_BRACKET],
             $this->brackets[self::RIGHT_BRACKET]
         );
@@ -141,20 +141,24 @@ class Processor
                         $textNode->nodeValue = mb_substr($textNode->nodeValue, $start, $length);
 
                         if (isset($token['func'])) {
-                            $func = self::$filters[$token['func']['name']];
+                            if (!isset(Filters::$filters[$token['func']['name']])) {
+                                throw new Exception\TokenException('Unknown filter "' . $token['func']['name'] . '"');
+                            }
+
+                            $func = Filters::$filters[$token['func']['name']];
 
                             $token = call_user_func(
                                 $func,
-                                $token['func']['arg'],
                                 $token,
+                                $token['func']['arg'],
                                 $textNode,
-                                $template
+                                $template,
+                                $xpath
                             );
                         }
 
                         // Insert 'value-of' in beginning of token
-                        echo $token['value'] . '-' . $position[self::LEFT_BRACKET] . '-' . $token['position'][self::LEFT_BRACKET] . PHP_EOL;
-                        if ($position[self::LEFT_BRACKET] < $token['position'][self::LEFT_BRACKET]) {
+                        if ($position[self::LEFT_BRACKET] <= $token['position'][self::LEFT_BRACKET]) {
                             $placeholder = $template->createElementNS(self::XSL_NS, 'xsl:value-of');
                             $placeholder->setAttribute('select', '//tokens/' . $token['value']);
                             $textNode->appendChild($placeholder);
