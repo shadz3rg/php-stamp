@@ -68,14 +68,15 @@ class Lexer
             );
 
             // Filters
+            // [[students>id:cell]]
             $filter = explode(':', $match[1][0]);
             if (count($filter) === 2) {
                 $token['func'] = array(
                     'name' => $filter[1],
-                    'arg' => null
+                    'arg' => null // TODO Filter arguments
                 );
                 $token['value'] = str_replace('.', '/', $filter[0]);
-                $token['value'] = str_replace('>', '_', $token['value']);
+                //$token['value'] = str_replace('>', '_', $token['value']);
                 //todo multiple arguments
             }
             $this->tokens[] = $token;

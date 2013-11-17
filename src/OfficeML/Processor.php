@@ -88,6 +88,7 @@ class Processor
             while ($token = $lexer->next()) {
 
                 // TODO Сделать покрасивше
+                $elementInserted = false;
                 $token['position'][self::LEFT_BRACKET] -= $lengthCache;
                 $token['position'][self::RIGHT_BRACKET] -= $lengthCache;
 
@@ -140,28 +141,29 @@ class Processor
 
                         $textNode->nodeValue = mb_substr($textNode->nodeValue, $start, $length);
 
-                        if (isset($token['func'])) {
-                            if (!isset(Filters::$filters[$token['func']['name']])) {
-                                throw new Exception\TokenException('Unknown filter "' . $token['func']['name'] . '"');
+                        // Insert 'value-of' in beginning of token
+                        if ($elementInserted === false && $position[self::LEFT_BRACKET] <= $token['position'][self::LEFT_BRACKET]) {
+                            if (isset($token['func'])) {
+                                if (!isset(Filters::$filters[$token['func']['name']])) {
+                                    throw new Exception\TokenException('Unknown filter "' . $token['func']['name'] . '"');
+                                }
+
+                                $func = Filters::$filters[$token['func']['name']];
+
+                                $token = call_user_func(
+                                    $func,
+                                    $token,
+                                    $textNode,
+                                    $template,
+                                    $xpath
+                                );
+                            } else {
+                                $placeholder = $template->createElementNS(self::XSL_NS, 'xsl:value-of');
+                                $placeholder->setAttribute('select', '//tokens/' . $token['value']);
+                                $textNode->appendChild($placeholder);
                             }
 
-                            $func = Filters::$filters[$token['func']['name']];
-
-                            $token = call_user_func(
-                                $func,
-                                $token,
-                                $token['func']['arg'],
-                                $textNode,
-                                $template,
-                                $xpath
-                            );
-                        }
-
-                        // Insert 'value-of' in beginning of token
-                        if ($position[self::LEFT_BRACKET] <= $token['position'][self::LEFT_BRACKET]) {
-                            $placeholder = $template->createElementNS(self::XSL_NS, 'xsl:value-of');
-                            $placeholder->setAttribute('select', '//tokens/' . $token['value']);
-                            $textNode->appendChild($placeholder);
+                            $elementInserted = true;
                         }
                     }
                     $positionOffset += $partLength;

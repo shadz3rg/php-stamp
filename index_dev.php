@@ -21,12 +21,12 @@ $templator->assign(array(
         array('id' => 3, 'name' => 'Сидоров', 'mark' => 4)
     )
 ));
-
+/*
 echo '<pre>';
 $res = $templator->output();
 $res->preserveWhiteSpace = true;
 $res->formatOutput = true;
 echo htmlentities($res->saveXML());
-echo '</pre>';
-//$templator->download();
+echo '</pre>';*/
+$templator->download();
 
