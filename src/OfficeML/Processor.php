@@ -86,10 +86,8 @@ class Processor
 
         $lexer = new Lexer($this->brackets);
 
-        // Loop trough 'paragraph' nodes
-        for ($i = 0; $i < $nodes->length; $i++) {
-
-            $paragraphNode = $nodes->item($i); // w:p / w:tbl / ...
+        // Loop trough 'paragraph' nodes w:p / w:tbl / ...
+        foreach ($nodes as $paragraphNode) {
             $lexer->setInput(utf8_decode($paragraphNode->textContent));
 
             // Length of stripped characters
@@ -108,9 +106,8 @@ class Processor
                 // Left position of 'partial' node inside 'paragraph' node
                 $positionOffset = 0;
 
-                // Loop through 'run' nodes
-                for ($c = 0; $c < $partNodes->length; $c++) {
-                    $partNode = $partNodes->item($c); //w:r
+                // Loop through 'run' nodes w:r
+                foreach ($partNodes as $partNode) {
                     $partLength = mb_strlen($partNode->nodeValue);
 
                     $nodePosition = array(
