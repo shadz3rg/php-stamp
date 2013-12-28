@@ -48,6 +48,7 @@ class Templator
     }
 
     /**
+     * Self factory init.
      * @param $documentPath
      * @param $cachePath
      * @param array $brackets

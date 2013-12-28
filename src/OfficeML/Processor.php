@@ -3,10 +3,18 @@ namespace OfficeML;
 
 class Processor
 {
+    /**
+     * @var string
+     */
     const XSL_NS = 'http://www.w3.org/1999/XSL/Transform';
+    /**
+     * @var string
+     */
     const LEFT_BRACKET = 0;
+    /**
+     * @var string
+     */
     const RIGHT_BRACKET = 1;
-
     /**
      * @var array
      */
