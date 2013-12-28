@@ -1,10 +1,14 @@
 <?php
 namespace OfficeML;
 
-class Templator {
+class Templator
+{
+    /**
+     * @var string
+     */
     const DOC_CONTENT = 'word/document.xml';
     /**
-     * @var bool
+     * @var boolean
      */
     public $debug = false;
     /**
@@ -31,7 +35,8 @@ class Templator {
      * @param $cachePath
      * @throws Exception\ArgumentsException
      */
-    public function __construct(Document $document, Processor $processor, $cachePath){
+    public function __construct(Document $document, Processor $processor, $cachePath)
+    {
         $this->document = $document;
         $this->processor = $processor;
 
@@ -62,7 +67,8 @@ class Templator {
      * Assign values with multidimensional associative array.
      * @param array $tokens
      */
-    public function assign(array $tokens) {
+    public function assign(array $tokens)
+    {
         $tokensNode = $this->values->createElement('tokens');
         $this->values->appendChild($tokensNode);
 
@@ -90,7 +96,7 @@ class Templator {
             $this->processor->cache($template);
             $template->save($templateFile);
 
-            // FIXME Workaround for disappeared xml: attributes
+            // FIXME Workaround for disappeared xml: attributes, reload as temporary fix
             $template->load($templateFile);
         }
 
@@ -109,7 +115,7 @@ class Templator {
         $document = $this->output();
         $tempArchive = tempnam(sys_get_temp_dir(), 'doc');
 
-        if (copy($this->document->documentPath, $tempArchive)) {
+        if (copy($this->document->documentPath, $tempArchive) === true) {
             $zip = new \ZipArchive();
             $zip->open($tempArchive);
             $zip->addFromString(self::DOC_CONTENT, $document->saveXML());
@@ -118,7 +124,7 @@ class Templator {
             header('Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document');
             header('Content-Disposition: attachment;filename="' . $this->document->documentName . '.docx"');
 
-            // Экспереминтально доказано - необходимы ob_clean() и exit;
+            // Send file - required ob_clean() & exit;
             ob_clean();
             readfile($tempArchive);
             unlink($tempArchive);

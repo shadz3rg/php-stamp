@@ -76,7 +76,6 @@ class Lexer
                     'arg' => null // TODO Filter arguments
                 );
                 $token['value'] = str_replace('.', '/', $filter[0]);
-                //$token['value'] = str_replace('>', '_', $token['value']);
                 //todo multiple arguments
             }
             $this->tokens[] = $token;

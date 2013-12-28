@@ -14,13 +14,14 @@ class Processor
     /**
      * @var array
      */
-    private $brackets;
+    private $brackets = array();
 
     /**
      * @param array $brackets
      * @throws Exception\ArgumentsException
      */
-    public function __construct(array $brackets = array('[[', ']]')) {
+    public function __construct(array $brackets = array('[[', ']]'))
+    {
         if (count($brackets) !== 2 || array_values($brackets) !== $brackets) {
             throw new Exception\ArgumentsException('Brackets in wrong format.');
         }
@@ -28,7 +29,7 @@ class Processor
     }
 
     /**
-     * Wrap document content into xsl template/
+     * Wrap document content into xsl template.
      * @param \DOMDocument $document
      * @return \DOMDocument
      */
@@ -48,6 +49,7 @@ class Processor
         $stylesheet->appendChild($template);
 
         $document->appendChild($stylesheet);
+
         return $document;
     }
 
@@ -63,7 +65,8 @@ class Processor
 
         // Search for tokens
         $xpath = new \DOMXPath($template);
-        $query = sprintf('//w:p[contains(., "%s")][contains(., "%s")]',
+        $query = sprintf(
+            '//w:p[contains(., "%s")][contains(., "%s")]',
             $this->brackets[self::LEFT_BRACKET],
             $this->brackets[self::RIGHT_BRACKET]
         );
@@ -78,10 +81,10 @@ class Processor
         // Loop trough 'paragraph' nodes
         for ($i = 0; $i < $nodes->length; $i++) {
 
-            $paragraphNode = $nodes->item($i); // w:p / w:tbl
+            $paragraphNode = $nodes->item($i); // w:p / w:tbl / ...
             $lexer->setInput(utf8_decode($paragraphNode->textContent));
 
-            // Length of stripped tags
+            // Length of stripped characters
             $lengthCache = 0;
 
             // Loop through found tokens
@@ -102,47 +105,44 @@ class Processor
                     $partNode = $partNodes->item($c); //w:r
                     $partLength = mb_strlen($partNode->nodeValue);
 
-                    $position = array(
+                    $nodePosition = array(
                         self::LEFT_BRACKET => $positionOffset,
                         self::RIGHT_BRACKET => $positionOffset + $partLength
                     );
 
                     // Check if this 'partial' node contents left / right bracket
                     $isLeftInBound = (
-                        $token['position'][self::LEFT_BRACKET] <= $position[self::LEFT_BRACKET] &&
-                        $position[self::LEFT_BRACKET] <= $token['position'][self::RIGHT_BRACKET]
+                        $token['position'][self::LEFT_BRACKET] <= $nodePosition[self::LEFT_BRACKET] &&
+                        $nodePosition[self::LEFT_BRACKET] <= $token['position'][self::RIGHT_BRACKET]
                     );
                     $isRightInBound = (
-                        $token['position'][self::LEFT_BRACKET] <= $position[self::RIGHT_BRACKET] &&
-                        $position[self::RIGHT_BRACKET] <= $token['position'][self::RIGHT_BRACKET]
+                        $token['position'][self::LEFT_BRACKET] <= $nodePosition[self::RIGHT_BRACKET] &&
+                        $nodePosition[self::RIGHT_BRACKET] <= $token['position'][self::RIGHT_BRACKET]
                     );
-
                     if ($isLeftInBound === true || $isRightInBound === true) {
                         $textNodes = $xpath->query('w:t', $partNode);
-
-                        // For testing purpose
                         if ($textNodes->length !== 1) {
-                            throw new Exception\TokenException('Multiple w:t');
+                            throw new Exception\TokenException('Unexpected multiple w:t elements.');
                         }
                         $textNode = $textNodes->item(0);
 
-                        // Strip token text
-                        $start = $token['position'][self::RIGHT_BRACKET] - $position[self::LEFT_BRACKET];
-                        if ($position[self::RIGHT_BRACKET] <= $token['position'][self::RIGHT_BRACKET]) {
+                        // Strip token text part from current node
+                        $start = $token['position'][self::RIGHT_BRACKET] - $nodePosition[self::LEFT_BRACKET];
+                        if ($nodePosition[self::RIGHT_BRACKET] <= $token['position'][self::RIGHT_BRACKET]) {
                             $start = 0;
                         }
 
                         $length = 0;
-                        if ($position[self::LEFT_BRACKET] <= $token['position'][self::LEFT_BRACKET]) {
+                        if ($nodePosition[self::LEFT_BRACKET] <= $token['position'][self::LEFT_BRACKET]) {
                             $length = $token['position'][self::LEFT_BRACKET] - $positionOffset;
-                        } elseif ($position[self::RIGHT_BRACKET] >= $token['position'][self::RIGHT_BRACKET]) {
-                            $length = $position[self::RIGHT_BRACKET] - $token['position'][self::RIGHT_BRACKET];
+                        } elseif ($nodePosition[self::RIGHT_BRACKET] >= $token['position'][self::RIGHT_BRACKET]) {
+                            $length = $nodePosition[self::RIGHT_BRACKET] - $token['position'][self::RIGHT_BRACKET];
                         }
 
                         $textNode->nodeValue = mb_substr($textNode->nodeValue, $start, $length);
 
-                        // Insert 'value-of' in beginning of token
-                        if ($elementInserted === false && $position[self::LEFT_BRACKET] <= $token['position'][self::LEFT_BRACKET]) {
+                        // Add xsl logic at left bracket
+                        if ($elementInserted === false && $nodePosition[self::LEFT_BRACKET] <= $token['position'][self::LEFT_BRACKET]) {
                             if (isset($token['func'])) {
                                 if (!isset(Filters::$filters[$token['func']['name']])) {
                                     throw new Exception\TokenException('Unknown filter "' . $token['func']['name'] . '"');
@@ -162,7 +162,6 @@ class Processor
                                 $placeholder->setAttribute('select', '//tokens/' . $token['value']);
                                 $textNode->appendChild($placeholder);
                             }
-
                             $elementInserted = true;
                         }
                     }
@@ -171,6 +170,7 @@ class Processor
                 $lengthCache += mb_strlen($token['token']);
             }
         }
+
         return $template;
     }
 }

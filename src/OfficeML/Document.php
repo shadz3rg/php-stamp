@@ -39,15 +39,16 @@ class Document
         if (!file_exists($filePath) || $overwrite === true) {
             $zip = new \ZipArchive();
 
-            // Wow
-            if ($zip->open($this->documentPath) !== true) {
-                throw new Exception\ArgumentsException('Document not zip');
+            $code = $zip->open($this->documentPath);
+            if ($code !== true) {
+                throw new Exception\ArgumentsException('Can`t open archive "' . $this->documentPath . '", code "' . $code . '" returned.');
             }
 
             if ($zip->extractTo($to . $this->documentName, $contentPath) === false) {
-                throw new Exception\ArgumentsException('Destination not reachable');
+                throw new Exception\ArgumentsException('Destination not reachable.');
             }
         }
+
         return $filePath;
     }
 }
