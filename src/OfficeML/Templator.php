@@ -15,7 +15,6 @@ class Templator
      * @var string
      */
     private $cachePath;
-
     /**
      * @var Document
      */
@@ -83,11 +82,6 @@ class Templator
     {
         $template = new \DOMDocument('1.0', 'UTF-8');
 
-        if ($this->debug === true) {
-            $template->preserveWhiteSpace = true;
-            $template->formatOutput = true;
-        }
-
         // Cache document into template
         $templateFile = $this->document->extract($this->cachePath, self::DOC_CONTENT, $this->debug);
         $template->load($templateFile);
@@ -102,8 +96,14 @@ class Templator
 
         $xslt = new \XSLTProcessor();
         $xslt->importStylesheet($template);
+        $output = $xslt->transformToDoc($this->values);
 
-        return $xslt->transformToDoc($this->values);
+        if ($this->debug === true) {
+            $output->preserveWhiteSpace = true;
+            $output->formatOutput = true;
+        }
+
+        return $output;
     }
 
     /**
