@@ -88,7 +88,9 @@ class Templator
         $template->load($templateFile);
 
         if ($template->documentElement->nodeName !== 'xsl:stylesheet') {
-            $this->processor->cache($template);
+            $this->processor->cache(
+                $this->processor->templateWrapper($template)
+            );
             $template->save($templateFile);
 
             // FIXME Workaround for disappeared xml: attributes, reload as temporary fix

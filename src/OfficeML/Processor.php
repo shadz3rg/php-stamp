@@ -41,7 +41,7 @@ class Processor
      * @param \DOMDocument $document
      * @return \DOMDocument
      */
-    private function templateWrapper(\DOMDocument $document)
+    public function templateWrapper(\DOMDocument $document)
     {
         $stylesheet = $document->createElementNS(self::XSL_NS, 'xsl:stylesheet');
         $stylesheet->setAttribute('version', '1.0');
@@ -63,15 +63,15 @@ class Processor
 
     /**
      * Replace text tokens with xsl elements.
-     * @param \DOMDocument $document
+     * @param \DOMDocument $template
      * @return \DOMDocument
      * @throws Exception\TokenException
      */
-    public function cache(\DOMDocument $document)
+    public function cache(\DOMDocument $template)
     {
-        $template = $this->templateWrapper($document);
-
         $xpath = new \DOMXPath($template);
+
+        // TODO Format dependant
         $provider = new Cache\DocxNodeCollection($xpath, $this->brackets);
 
         // Search for tokens
