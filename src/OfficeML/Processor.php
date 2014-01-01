@@ -71,22 +71,14 @@ class Processor
     {
         $template = $this->templateWrapper($document);
 
-        // Search for tokens
         $xpath = new \DOMXPath($template);
-        $query = sprintf(
-            '//w:p[contains(., "%s")][contains(., "%s")]',
-            $this->brackets[self::LEFT_BRACKET],
-            $this->brackets[self::RIGHT_BRACKET]
-        );
+        $provider = new Cache\DocxNodeCollection($xpath, $this->brackets);
 
-        $nodes = $xpath->query($query);
-        if ($nodes->length === 0) {
-            throw new Exception\TokenException('Tokens not found.');
-        }
-
+        // Search for tokens
         $lexer = new Lexer($this->brackets);
 
         // Loop trough 'paragraph' nodes w:p / w:tbl / ...
+        $nodes = $provider->getParagraphNodes();
         foreach ($nodes as $paragraphNode) {
             $lexer->setInput(utf8_decode($paragraphNode->textContent));
 
@@ -101,12 +93,11 @@ class Processor
                 $token['position'][self::LEFT_BRACKET] -= $lengthCache;
                 $token['position'][self::RIGHT_BRACKET] -= $lengthCache;
 
-                $partNodes = $xpath->query('.//w:r', $paragraphNode);
-
                 // Left position of 'partial' node inside 'paragraph' node
                 $positionOffset = 0;
 
                 // Loop through 'run' nodes w:r
+                $partNodes = $provider->getPartialNodes($paragraphNode);
                 foreach ($partNodes as $partNode) {
                     $partLength = mb_strlen($partNode->nodeValue);
 
@@ -125,11 +116,7 @@ class Processor
                         $nodePosition[self::RIGHT_BRACKET] <= $token['position'][self::RIGHT_BRACKET]
                     );
                     if ($isLeftInBound === true || $isRightInBound === true) {
-                        $textNodes = $xpath->query('w:t', $partNode);
-                        if ($textNodes->length !== 1) {
-                            throw new Exception\TokenException('Unexpected multiple w:t elements.');
-                        }
-                        $textNode = $textNodes->item(0);
+                        $textNode = $provider->getTextNode($partNode);
 
                         // Strip token text part from current node
                         $start = $token['position'][self::RIGHT_BRACKET] - $nodePosition[self::LEFT_BRACKET];
