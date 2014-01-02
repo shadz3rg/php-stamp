@@ -8,21 +8,21 @@ class Processor
      */
     const XSL_NS = 'http://www.w3.org/1999/XSL/Transform';
     /**
-     * @var string
+     * @var int
      */
-    const LEFT_BRACKET = 0;
+    const LEFT = 0;
     /**
-     * @var string
+     * @var int
      */
-    const RIGHT_BRACKET = 1;
-    /**
-     * @var array
-     */
-    public static $filters = array();
+    const RIGHT = 1;
     /**
      * @var array
      */
-    private $brackets = array();
+    private $brackets;
+    /**
+     * @var Lexer
+     */
+    private $lexer;
 
     /**
      * @param array $brackets
@@ -34,6 +34,7 @@ class Processor
             throw new Exception\ArgumentsException('Brackets in wrong format.');
         }
         $this->brackets = $brackets;
+        $this->lexer = new Lexer($this->brackets);
     }
 
     /**
@@ -71,77 +72,66 @@ class Processor
     {
         $xpath = new \DOMXPath($template);
 
-        // TODO Format dependant
+        // TODO Format dependent
         $provider = new Cache\DocxNodeCollection($xpath, $this->brackets);
 
-        // Search for tokens
-        $lexer = new Lexer($this->brackets);
+        // Loop trough 'paragraph' nodes (w:p / w:tbl / ...)
+        foreach ($provider->getParagraphNodes() as $paragraphNode) {
 
-        // Loop trough 'paragraph' nodes w:p / w:tbl / ...
-        $nodes = $provider->getParagraphNodes();
-        foreach ($nodes as $paragraphNode) {
-            $lexer->setInput(utf8_decode($paragraphNode->textContent));
+            $this->lexer->setInput(utf8_decode($paragraphNode->textContent));
 
             // Length of stripped characters
             $lengthCache = 0;
 
-            // Loop through found tokens
-            while ($token = $lexer->next()) {
+            while ($token = $this->lexer->next()) {
 
-                // TODO Сделать покрасивше
-                $elementInserted = false;
-                $token['position'][self::LEFT_BRACKET] -= $lengthCache;
-                $token['position'][self::RIGHT_BRACKET] -= $lengthCache;
+                $token->setOffset($lengthCache);
 
                 // Left position of 'partial' node inside 'paragraph' node
                 $positionOffset = 0;
 
-                // Loop through 'run' nodes w:r
-                $partNodes = $provider->getPartialNodes($paragraphNode);
-                foreach ($partNodes as $partNode) {
-                    $partLength = mb_strlen($partNode->nodeValue);
-
-                    $nodePosition = array(
-                        self::LEFT_BRACKET => $positionOffset,
-                        self::RIGHT_BRACKET => $positionOffset + $partLength
+                // Loop through 'run' nodes (w:r)
+                foreach ($provider->getPartialNodes($paragraphNode) as $partNode) {
+                    $partNodeLength = mb_strlen($partNode->nodeValue);
+                    $partNodePosition = array(
+                        self::LEFT => $positionOffset,
+                        self::RIGHT => $positionOffset + $partNodeLength
                     );
 
-                    // Check if this 'partial' node contents left / right bracket
-                    $isLeftInBound = (
-                        $token['position'][self::LEFT_BRACKET] <= $nodePosition[self::LEFT_BRACKET] &&
-                        $nodePosition[self::LEFT_BRACKET] <= $token['position'][self::RIGHT_BRACKET]
-                    );
-                    $isRightInBound = (
-                        $token['position'][self::LEFT_BRACKET] <= $nodePosition[self::RIGHT_BRACKET] &&
-                        $nodePosition[self::RIGHT_BRACKET] <= $token['position'][self::RIGHT_BRACKET]
-                    );
+                    // Check if this token intersects with 'partial' node (left / right bracket)
+                    $isLeftInBound = $token->isInclude($partNodePosition[self::LEFT]);
+                    $isRightInBound = $token->isInclude($partNodePosition[self::RIGHT]);
+
+                    $textNode = $provider->getTextNode($partNode);
+
+                    // Strip token text part from current node
                     if ($isLeftInBound === true || $isRightInBound === true) {
-                        $textNode = $provider->getTextNode($partNode);
+                        $tokenPosition = $token->getPosition();
 
-                        // Strip token text part from current node
-                        $start = $token['position'][self::RIGHT_BRACKET] - $nodePosition[self::LEFT_BRACKET];
-                        if ($nodePosition[self::RIGHT_BRACKET] <= $token['position'][self::RIGHT_BRACKET]) {
+                        $start = $tokenPosition[self::RIGHT] - $partNodePosition[self::LEFT];
+                        if ($partNodePosition[self::RIGHT] <= $tokenPosition[self::RIGHT]) {
                             $start = 0;
                         }
 
                         $length = 0;
-                        if ($nodePosition[self::LEFT_BRACKET] <= $token['position'][self::LEFT_BRACKET]) {
-                            $length = $token['position'][self::LEFT_BRACKET] - $positionOffset;
-                        } elseif ($nodePosition[self::RIGHT_BRACKET] >= $token['position'][self::RIGHT_BRACKET]) {
-                            $length = $nodePosition[self::RIGHT_BRACKET] - $token['position'][self::RIGHT_BRACKET];
+                        if ($partNodePosition[self::LEFT] <= $tokenPosition[self::LEFT]) {
+                            $length = $tokenPosition[self::LEFT] - $positionOffset;
+                        } elseif ($partNodePosition[self::RIGHT] >= $tokenPosition[self::RIGHT]) {
+                            $length = $partNodePosition[self::RIGHT] - $tokenPosition[self::RIGHT];
                         }
 
                         $textNode->nodeValue = mb_substr($textNode->nodeValue, $start, $length);
 
                         // Add xsl logic at left bracket
-                        if ($elementInserted === false && $nodePosition[self::LEFT_BRACKET] <= $token['position'][self::LEFT_BRACKET]) {
-                            if (isset($token['func'])) {
-                                if (!isset(Filters::$filters[$token['func']['name']])) {
-                                    throw new Exception\TokenException('Unknown filter "' . $token['func']['name'] . '"');
+                        if ($tokenPosition[self::LEFT] >= $partNodePosition[self::LEFT] && $token->isSolved() === false) {
+                            $tokenFunc = $token->getFunc();
+
+                            if ($tokenFunc !== null) {
+                                if (!isset(Filters::$filters[$tokenFunc['name']])) {
+                                    throw new Exception\TokenException('Unknown filter "' . $tokenFunc['name'] . '"');
                                 }
 
-                                $func = Filters::$filters[$token['func']['name']];
-
+                                $func = Filters::$filters[$tokenFunc['name']];
                                 $token = call_user_func(
                                     $func,
                                     $token,
@@ -151,15 +141,16 @@ class Processor
                                 );
                             } else {
                                 $placeholder = $template->createElementNS(self::XSL_NS, 'xsl:value-of');
-                                $placeholder->setAttribute('select', '//tokens/' . $token['value']);
+                                $placeholder->setAttribute('select', '//tokens/' . $token->getValue());
                                 $textNode->appendChild($placeholder);
                             }
-                            $elementInserted = true;
+
+                            $token->resolve();
                         }
                     }
-                    $positionOffset += $partLength;
+                    $positionOffset += $partNodeLength;
                 }
-                $lengthCache += mb_strlen($token['token']);
+                $lengthCache += $token->getLength();
             }
         }
 

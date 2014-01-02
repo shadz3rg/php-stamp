@@ -58,33 +58,15 @@ class Lexer
         preg_match_all($regex, $input, $matches, PREG_OFFSET_CAPTURE | PREG_SET_ORDER);
 
         foreach ($matches as $match) {
-            $token = array(
-                'token' => $match[0][0],
-                'value' => str_replace('.', '/', $match[1][0]),
-                'position' => array(
-                    $match[0][1],
-                    $match[0][1] + mb_strlen($match[0][0])
-                )
-            );
-
-            // Filters
-            // [[students>id:cell]]
-            $filter = explode(':', $match[1][0]);
-            if (count($filter) === 2) {
-                $token['func'] = array(
-                    'name' => $filter[1],
-                    'arg' => null // TODO Filter arguments
-                );
-                $token['value'] = str_replace('.', '/', $filter[0]);
-                //todo multiple arguments
-            }
+            // TODO Verbalize
+            $token = new Token($match[0][0], $match[1][0], $match[0][1]);
             $this->tokens[] = $token;
         }
     }
 
     /**
      * Move through found tokens.
-     * @return mixed
+     * @return false|Token
      */
     public function next()
     {

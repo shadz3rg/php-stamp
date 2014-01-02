@@ -8,11 +8,11 @@ class DocxNodeCollection implements NodeCollectionInterface
     /**
      * @var int
      */
-    const LEFT_BRACKET = 0;
+    const LEFT = 0;
     /**
      * @var int
      */
-    const RIGHT_BRACKET = 1;
+    const RIGHT = 1;
     /**
      * @var \DOMXPath
      */
@@ -22,17 +22,26 @@ class DocxNodeCollection implements NodeCollectionInterface
      */
     public $brackets;
 
+    /**
+     * @param \DOMXPath $xpath
+     * @param array $brackets
+     */
     public function __construct(\DOMXPath $xpath, array $brackets)
     {
         $this->xpath = $xpath;
         $this->brackets = $brackets;
     }
+
+    /**
+     * @return \DOMNodeList
+     * @throws \OfficeML\Exception\TokenException
+     */
     public function getParagraphNodes()
     {
         $query = sprintf(
             '//w:p[contains(., "%s")][contains(., "%s")]',
-            $this->brackets[self::LEFT_BRACKET],
-            $this->brackets[self::RIGHT_BRACKET]
+            $this->brackets[self::LEFT],
+            $this->brackets[self::RIGHT]
         );
 
         $nodes = $this->xpath->query($query);
@@ -42,6 +51,12 @@ class DocxNodeCollection implements NodeCollectionInterface
 
         return $nodes;
     }
+
+    /**
+     * @param \DOMNode $parentNode
+     * @return \DOMNodeList
+     * @throws \OfficeML\Exception\TokenException
+     */
     public function getPartialNodes(\DOMNode $parentNode)
     {
         $nodes = $this->xpath->query('.//w:r', $parentNode);
@@ -51,6 +66,12 @@ class DocxNodeCollection implements NodeCollectionInterface
 
         return $nodes;
     }
+
+    /**
+     * @param \DOMNode $partialNode
+     * @return \DOMNode
+     * @throws \OfficeML\Exception\TokenException
+     */
     public function getTextNode(\DOMNode $partialNode)
     {
         $nodes = $this->xpath->query('w:t', $partialNode);

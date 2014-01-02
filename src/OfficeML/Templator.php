@@ -66,6 +66,7 @@ class Templator
     /**
      * Assign values with multidimensional associative array.
      * @param array $tokens
+     * @return void
      */
     public function assign(array $tokens)
     {
@@ -81,12 +82,12 @@ class Templator
      */
     public function output()
     {
+        // Loading
         $template = new \DOMDocument('1.0', 'UTF-8');
-
-        // Cache document into template
         $templateFile = $this->document->extract($this->cachePath, self::DOC_CONTENT, $this->debug);
         $template->load($templateFile);
 
+        // Cache document into template
         if ($template->documentElement->nodeName !== 'xsl:stylesheet') {
             $this->processor->cache(
                 $this->processor->templateWrapper($template)
@@ -97,6 +98,7 @@ class Templator
             $template->load($templateFile);
         }
 
+        // Collide w/ values
         $xslt = new \XSLTProcessor();
         $xslt->importStylesheet($template);
         $output = $xslt->transformToDoc($this->values);

@@ -6,30 +6,8 @@ class Filters
     public static $filters;
 }
 
-Filters::$filters['cell'] = function(array $token, \DOMNode $textNode, \DOMDocument $template, \DOMXPath $xpath) {
-    /* Token
-        array(4) {
-          ["token"]=>
-          string(20) "[[students>id:cell]]"
-          ["value"]=>
-          string(11) "students>id"
-          ["position"]=>
-          array(2) {
-            [0]=>
-            int(0)
-            [1]=>
-            int(20)
-          }
-          ["func"]=>
-          array(2) {
-            ["name"]=>
-            string(4) "cell"
-            ["arg"]=>
-            NULL
-          }
-        }
-    */
-    list($row, $field) = explode('>', $token['value']);
+Filters::$filters['cell'] = function(Token $token, \DOMNode $textNode, \DOMDocument $template, \DOMXPath $xpath) {
+    list($row, $field) = explode('>', $token->getValue());
 
     // Find existing or initiate new table row template
     $rowTemplateQuery = $xpath->query('/xsl:stylesheet/xsl:template[@name="' . $row . '"]');
