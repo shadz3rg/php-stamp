@@ -1,5 +1,5 @@
 <?php
-namespace OfficeML\Cache;
+namespace OfficeML\Processor\NodeCollection;
 
 use OfficeML\Exception\TokenException;
 

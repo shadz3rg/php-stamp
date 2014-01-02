@@ -1,5 +1,5 @@
 <?php
-namespace OfficeML;
+namespace OfficeML\Processor;
 
 class Token
 {

@@ -1,5 +1,8 @@
 <?php
-namespace OfficeML;
+namespace OfficeML\Processor;
+
+use OfficeML\Processor;
+use OfficeML\Exception\TokenException;
 
 class Filters
 {
@@ -20,7 +23,7 @@ Filters::$filters['cell'] = function(Token $token, \DOMNode $textNode, \DOMDocum
         while ($parent->nodeName !== 'w:tr') {
             $parent = $parent->parentNode;
             if ($parent === null) {
-                throw new Exception\TokenException('Row not found.');
+                throw new TokenException('Row not found.');
             }
         }
 

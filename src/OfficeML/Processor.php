@@ -1,6 +1,10 @@
 <?php
 namespace OfficeML;
 
+use OfficeML\Processor\Lexer;
+use OfficeML\Processor\Filters;
+use OfficeML\Processor\NodeCollection\DocxNodeCollection;
+
 class Processor
 {
     const XSL_NS = 'http://www.w3.org/1999/XSL/Transform';
@@ -59,7 +63,7 @@ class Processor
         $xpath = new \DOMXPath($template);
 
         // TODO Format dependent
-        $provider = new Cache\DocxNodeCollection($xpath, $this->brackets);
+        $provider = new DocxNodeCollection($xpath, $this->brackets);
 
         // Loop trough 'paragraph' nodes (w:p / w:tbl / ...)
         foreach ($provider->getParagraphNodes() as $paragraphNode) {
