@@ -24,7 +24,7 @@ class Templator
         $this->processor = $processor;
 
         if (!is_dir($cachePath)) {
-            throw new Exception\ArgumentsException('Cache path unreachable');
+            throw new Exception\ArgumentsException('NodeCollection path unreachable');
         }
         $this->cachePath = $cachePath;
 
@@ -61,7 +61,7 @@ class Templator
     }
 
     /**
-     * Cache document into template and assign given values.
+     * NodeCollection document into template and assign given values.
      * @return \DOMDocument
      */
     public function output()
@@ -71,7 +71,7 @@ class Templator
         $templateFile = $this->document->extract($this->cachePath, self::DOC_CONTENT, $this->debug);
         $template->load($templateFile);
 
-        // Cache document into template
+        // NodeCollection document into template
         if ($template->documentElement->nodeName !== 'xsl:stylesheet') {
             $this->processor->cache(
                 $this->processor->templateWrapper($template)
