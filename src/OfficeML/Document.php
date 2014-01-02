@@ -3,13 +3,7 @@ namespace OfficeML;
 
 class Document
 {
-    /**
-     * @var string
-     */
     public $documentName;
-    /**
-     * @var string
-     */
     public $documentPath;
 
     /**
@@ -22,7 +16,7 @@ class Document
         }
 
         $this->documentPath = $filePath;
-        $this->documentName = pathinfo($this->documentPath, PATHINFO_FILENAME);
+        $this->documentName = pathinfo($this->documentPath, PATHINFO_BASENAME);
     }
 
     /**
@@ -41,7 +35,9 @@ class Document
 
             $code = $zip->open($this->documentPath);
             if ($code !== true) {
-                throw new Exception\ArgumentsException('Can`t open archive "' . $this->documentPath . '", code "' . $code . '" returned.');
+                throw new Exception\ArgumentsException(
+                    'Can`t open archive "' . $this->documentPath . '", code "' . $code . '" returned.'
+                );
             }
 
             if ($zip->extractTo($to . $this->documentName, $contentPath) === false) {

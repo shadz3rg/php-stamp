@@ -7,9 +7,9 @@ class Templator
 
     public $debug = false;
 
-    private $cachePath;
     private $document;
     private $processor;
+    private $cachePath;
     private $values;
 
     /**
