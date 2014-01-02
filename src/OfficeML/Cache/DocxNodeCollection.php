@@ -5,22 +5,11 @@ use OfficeML\Exception\TokenException;
 
 class DocxNodeCollection implements NodeCollectionInterface
 {
-    /**
-     * @var int
-     */
     const LEFT = 0;
-    /**
-     * @var int
-     */
     const RIGHT = 1;
-    /**
-     * @var \DOMXPath
-     */
-    public $xpath;
-    /**
-     * @var array
-     */
-    public $brackets;
+
+    private $xpath;
+    private $brackets;
 
     /**
      * @param \DOMXPath $xpath

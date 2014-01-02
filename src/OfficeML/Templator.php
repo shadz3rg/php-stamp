@@ -3,29 +3,13 @@ namespace OfficeML;
 
 class Templator
 {
-    /**
-     * @var string
-     */
     const DOC_CONTENT = 'word/document.xml';
-    /**
-     * @var boolean
-     */
+
     public $debug = false;
-    /**
-     * @var string
-     */
+
     private $cachePath;
-    /**
-     * @var Document
-     */
     private $document;
-    /**
-     * @var Processor
-     */
     private $processor;
-    /**
-     * @var \DOMDocument
-     */
     private $values;
 
     /**

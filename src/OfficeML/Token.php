@@ -3,33 +3,13 @@ namespace OfficeML;
 
 class Token
 {
-    /**
-     * @var int
-     */
     const LEFT = 0;
-    /**
-     * @var int
-     */
     const RIGHT = 1;
-    /**
-     * @var string
-     */
+
     private $token;
-    /**
-     * @var string
-     */
     private $value;
-    /**
-     * @var array
-     */
     private $func;
-    /**
-     * @var int
-     */
     private $position;
-    /**
-     * @var bool
-     */
     private $solved = false;
 
     /**
