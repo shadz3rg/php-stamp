@@ -1,4 +1,5 @@
 <?php
+
 namespace OfficeML\Processor\NodeCollection;
 
 use OfficeML\Exception\TokenException;

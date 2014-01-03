@@ -1,10 +1,9 @@
 <?php
+
 namespace OfficeML;
 
 class Templator
 {
-    const DOC_CONTENT = 'word/document.xml';
-
     public $debug = false;
 
     private $document;
@@ -13,9 +12,11 @@ class Templator
     private $values;
 
     /**
+     * Constructor.
+     *
      * @param Document $document
      * @param Processor $processor
-     * @param $cachePath
+     * @param string $cachePath
      * @throws Exception\ArgumentsException
      */
     public function __construct(Document $document, Processor $processor, $cachePath)
@@ -24,7 +25,7 @@ class Templator
         $this->processor = $processor;
 
         if (!is_dir($cachePath)) {
-            throw new Exception\ArgumentsException('NodeCollection path unreachable');
+            throw new Exception\ArgumentsException('Cache path unreachable');
         }
         $this->cachePath = $cachePath;
 
@@ -33,8 +34,9 @@ class Templator
 
     /**
      * Self factory init.
+     *
      * @param $documentPath
-     * @param $cachePath
+     * @param string $cachePath
      * @param array $brackets
      * @return Templator
      */
@@ -49,6 +51,7 @@ class Templator
 
     /**
      * Assign values with multidimensional associative array.
+     *
      * @param array $tokens
      * @return void
      */
@@ -61,14 +64,15 @@ class Templator
     }
 
     /**
-     * NodeCollection document into template and assign given values.
+     * Convert document into template and assign given values.
+     *
      * @return \DOMDocument
      */
     public function output()
     {
         // Loading
         $template = new \DOMDocument('1.0', 'UTF-8');
-        $templateFile = $this->document->extract($this->cachePath, self::DOC_CONTENT, $this->debug);
+        $templateFile = $this->document->extract($this->cachePath, $this->debug);
         $template->load($templateFile);
 
         // NodeCollection document into template
@@ -97,6 +101,7 @@ class Templator
 
     /**
      * Prepare document for downloading.
+     *
      * @return void
      */
     public function download()
