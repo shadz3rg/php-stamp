@@ -2,6 +2,8 @@
 
 namespace OfficeML;
 
+use OfficeML\Exception\TokenException;
+
 class Document
 {
     const DOC_CONTENT = 'word/document.xml';
@@ -9,30 +11,40 @@ class Document
     public $documentName;
     public $documentPath;
 
+    public $content;
+    public $contentPath;
+
+    private $xpath;
+
     /**
      * Constructor.
      *
      * @param string $filePath
      * @throws Exception\ArgumentsException
      */
-    public function __construct($filePath) {
+    public function __construct($filePath)
+    {
         if (!file_exists($filePath)) {
             throw new Exception\ArgumentsException('File not found.');
         }
+
+        $this->content = new \DOMDocument('1.0', 'UTF-8');
+        $this->xpath = new \DOMXPath($this->content);
 
         $this->documentPath = $filePath;
         $this->documentName = pathinfo($this->documentPath, PATHINFO_BASENAME);
     }
 
     /**
-     * Extract main content file from document.
+     * Extract content file from document.
      *
      * @param string $to
      * @param bool $overwrite
      * @return string
      * @throws Exception\ArgumentsException
      */
-    public function extract($to, $overwrite = false) {
+    public function extract($to, $overwrite)
+    {
         $filePath = $to . $this->documentName . '/' . self::DOC_CONTENT;
 
         if (!file_exists($filePath) || $overwrite === true) {
@@ -50,6 +62,61 @@ class Document
             }
         }
 
+        $this->content->load($filePath);
+
         return $filePath;
+    }
+
+    /**
+     * @param string $leftBracket
+     * @param string $rightBracket
+     * @return \DOMNodeList
+     * @throws TokenException
+     */
+    public function getParagraphNodes($leftBracket, $rightBracket)
+    {
+        $query = sprintf(
+            '//w:p[contains(., "%s")][contains(., "%s")]',
+            $leftBracket,
+            $rightBracket
+        );
+
+        $nodes = $this->xpath->query($query);
+        if ($nodes->length === 0) {
+            throw new TokenException('Tokens not found.');
+        }
+
+        return $nodes;
+    }
+
+    /**
+     * @param \DOMNode $parentNode
+     * @return \DOMNodeList
+     * @throws TokenException
+     */
+    public function getPartialNodes(\DOMNode $parentNode)
+    {
+        $nodes = $this->xpath->query('.//w:r', $parentNode);
+        if ($nodes->length === 0) {
+            throw new TokenException('Tokens not found.');
+        }
+
+        return $nodes;
+    }
+
+    /**
+     * @param \DOMNode $partialNode
+     * @return \DOMNode
+     * @throws TokenException
+     */
+    public function getTextNode(\DOMNode $partialNode)
+    {
+        $nodes = $this->xpath->query('w:t', $partialNode);
+        if ($nodes->length !== 1) {
+            throw new TokenException('Unexpected multiple w:t elements.');
+        }
+        $node = $nodes->item(0);
+
+        return $node;
     }
 }

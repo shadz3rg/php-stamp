@@ -21,15 +21,17 @@ class Templator
      */
     public function __construct(Document $document, Processor $processor, $cachePath)
     {
+        $this->values = new \DOMDocument('1.0', 'UTF-8');
+
         $this->document = $document;
+        $this->document->extract($cachePath, $this->debug);
+
         $this->processor = $processor;
 
         if (!is_dir($cachePath)) {
-            throw new Exception\ArgumentsException('Cache path unreachable');
+            throw new Exception\ArgumentsException('Cache path unreachable.');
         }
         $this->cachePath = $cachePath;
-
-        $this->values = new \DOMDocument();
     }
 
     /**
@@ -71,11 +73,10 @@ class Templator
     public function output()
     {
         // Loading
-        $template = new \DOMDocument('1.0', 'UTF-8');
-        $templateFile = $this->document->extract($this->cachePath, $this->debug);
-        $template->load($templateFile);
+        $template = $this->document->content;
+        $templateFile = $this->document->contentPath;
 
-        // NodeCollection document into template
+        // Process document into template
         if ($template->documentElement->nodeName !== 'xsl:stylesheet') {
             $this->processor->cache(
                 $this->processor->templateWrapper($template)
