@@ -5,125 +5,65 @@ namespace OfficeML;
 class Templator
 {
     public $debug = false;
-
-    private $document;
-    private $processor;
     private $cachePath;
-    private $values;
+    private $processor;
 
-    /**
-     * Constructor.
-     *
-     * @param Document $document
-     * @param Processor $processor
-     * @param string $cachePath
-     * @throws Exception\ArgumentsException
-     */
-    public function __construct(Document $document, Processor $processor, $cachePath)
+    public function __construct($cachePath, $brackets = array('[[', ']]'))
     {
-        $this->values = new \DOMDocument('1.0', 'UTF-8');
-
-        $this->document = $document;
-        $this->document->extract($cachePath, $this->debug);
-
-        $this->processor = $processor;
-
         if (!is_dir($cachePath)) {
-            throw new Exception\ArgumentsException('Cache path unreachable.');
+            throw new Exception\ArgumentsException('Cache path "' . $cachePath . '" unreachable.');
         }
+        if (!is_writable($cachePath)) {
+            throw new Exception\ArgumentsException('Cache path "' . $cachePath . '" not writable.');
+        }
+
         $this->cachePath = $cachePath;
+        $this->processor = new Processor($brackets);
     }
 
-    /**
-     * Self factory init.
-     *
-     * @param $documentPath
-     * @param string $cachePath
-     * @param array $brackets
-     * @return Templator
-     */
-    public static function create($documentPath, $cachePath, $brackets = array('[[', ']]'))
+    public function render(Document $document, $values)
     {
-        return new self(
-            new Document($documentPath),
-            new Processor($brackets),
-            $cachePath
-        );
-    }
+        $contentFile = $document->extract($this->cachePath, $this->debug);
 
-    /**
-     * Assign values with multidimensional associative array.
-     *
-     * @param array $tokens
-     * @return void
-     */
-    public function assign(array $tokens)
-    {
-        $tokensNode = $this->values->createElement('tokens');
-        $this->values->appendChild($tokensNode);
-
-        Helper::xmlEncode($tokens, $tokensNode, $this->values);
-    }
-
-    /**
-     * Convert document into template and assign given values.
-     *
-     * @return \DOMDocument
-     */
-    public function output()
-    {
-        // Loading
-        $template = $this->document->content;
-        $templateFile = $this->document->contentPath;
+        $template = new \DOMDocument('1.0', 'UTF-8');
+        $template->load($contentFile);
 
         // Process document into template
         if ($template->documentElement->nodeName !== 'xsl:stylesheet') {
             $this->processor->cache(
                 $this->processor->templateWrapper($template)
             );
-            $template->save($templateFile);
+            $template->save($contentFile);
 
             // FIXME Workaround for disappeared xml: attributes, reload as temporary fix
-            $template->load($templateFile);
+            $template->load($contentFile);
         }
 
         // Collide w/ values
         $xslt = new \XSLTProcessor();
         $xslt->importStylesheet($template);
-        $output = $xslt->transformToDoc($this->values);
+
+        $output = $xslt->transformToDoc(
+            $this->assign($values)
+        );
 
         if ($this->debug === true) {
             $output->preserveWhiteSpace = true;
             $output->formatOutput = true;
         }
 
-        return $output;
+        return new Result($output, $document);
     }
 
-    /**
-     * Prepare document for downloading.
-     *
-     * @return void
-     */
-    public function download()
+    private function assign(array $tokens)
     {
-        $document = $this->output();
-        $tempArchive = tempnam(sys_get_temp_dir(), 'doc');
+        $document = new \DOMDocument('1.0', 'UTF-8');
 
-        if (copy($this->document->documentPath, $tempArchive) === true) {
-            $zip = new \ZipArchive();
-            $zip->open($tempArchive);
-            $zip->addFromString(self::DOC_CONTENT, $document->saveXML());
-            $zip->close();
+        $tokensNode = $document->createElement('tokens');
+        $document->appendChild($tokensNode);
 
-            header('Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-            header('Content-Disposition: attachment;filename="' . $this->document->documentName . '.docx"');
+        Helper::xmlEncode($tokens, $tokensNode, $document);
 
-            // Send file - required ob_clean() & exit;
-            ob_clean();
-            readfile($tempArchive);
-            unlink($tempArchive);
-            exit;
-        }
+        return $document;
     }
 }

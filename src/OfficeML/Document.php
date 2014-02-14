@@ -28,9 +28,6 @@ class Document
             throw new Exception\ArgumentsException('File not found.');
         }
 
-        $this->content = new \DOMDocument('1.0', 'UTF-8');
-        $this->xpath = new \DOMXPath($this->content);
-
         $this->documentPath = $filePath;
         $this->documentName = pathinfo($this->documentPath, PATHINFO_BASENAME);
     }
@@ -62,10 +59,9 @@ class Document
             }
         }
 
-        $this->content->load($filePath);
-
         return $filePath;
     }
+
 
     /**
      * @param string $leftBracket
@@ -118,5 +114,10 @@ class Document
         $node = $nodes->item(0);
 
         return $node;
+    }
+
+    public function getContentPath()
+    {
+        return 'word/document.xml';
     }
 }
