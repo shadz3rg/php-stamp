@@ -5,6 +5,7 @@ namespace OfficeML;
 class Templator
 {
     public $debug = false;
+
     private $cachePath;
     private $processor;
 
