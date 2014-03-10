@@ -47,14 +47,18 @@ class Lexer
 
         foreach ($matches as $match) {
             // TODO Verbalize
-            $token = new Token($match[0][0], $match[1][0], $match[0][1]);
+            $token = array(
+                'token' => $match[0][0],
+                'value' => $match[1][0],
+                'position' => $match[0][1]
+            );
             $this->tokens[] = $token;
         }
     }
 
     /**
      * Move through found tokens.
-     * @return false|Token
+     * @return false|array
      */
     public function next()
     {

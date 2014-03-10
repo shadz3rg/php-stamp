@@ -1,10 +1,10 @@
 <?php
 
-namespace OfficeML\Processor\NodeCollection;
+namespace OfficeML\NodeCollection;
 
 use OfficeML\Exception\TokenException;
 
-class DocxNodeCollection implements NodeCollectionInterface
+class WordNodeCollection implements NodeCollectionInterface
 {
     const LEFT = 0;
     const RIGHT = 1;

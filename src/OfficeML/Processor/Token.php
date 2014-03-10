@@ -1,4 +1,5 @@
 <?php
+
 namespace OfficeML\Processor;
 
 class Token
@@ -12,12 +13,15 @@ class Token
     private $position;
     private $solved = false;
 
+    private $containerNode;
+
     /**
      * @param $token string Token w/ brackets.
      * @param $value string Value of token inside brackets.
      * @param $position int Position where token started.
+     * @param $containerNode
      */
-    public function __construct($token, $value, $position)
+    public function __construct($token, $value, $position, \DOMNode $containerNode)
     {
         $this->token = $token;
         $this->position = $position;
@@ -36,6 +40,8 @@ class Token
         if ($this->value === null) {
             $this->value = str_replace('.', '/', $value);
         }
+
+        $this->containerNode = $containerNode;
     }
 
     /**
@@ -72,6 +78,11 @@ class Token
     public function getFunc()
     {
         return $this->func;
+    }
+
+    public function getContainerNode()
+    {
+        return $this->containerNode;
     }
 
     /**
@@ -122,5 +133,16 @@ class Token
         $tokenPosition = $this->getPosition();
 
         return ($tokenPosition[self::LEFT] <= $position && $position <= $tokenPosition[self::RIGHT]);
+    }
+
+    public function intersection($nodePositionLeft, $nodePositionRight)
+    {
+        $tokenPosition = $this->getPosition();
+
+        if ($tokenPosition[self::LEFT] <= $nodePositionLeft) {
+            return $tokenPosition[self::RIGHT] > $nodePositionLeft;
+        }
+
+        return $tokenPosition[self::LEFT] < $nodePositionRight;
     }
 } 

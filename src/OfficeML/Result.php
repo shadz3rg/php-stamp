@@ -2,6 +2,8 @@
 
 namespace OfficeML;
 
+use OfficeML\Document\Document;
+
 class Result
 {
     private $output;
@@ -18,8 +20,12 @@ class Result
         return $this->output;
     }
 
-    public function download()
+    public function download($fileName = null)
     {
+        if ($fileName === null) {
+            $fileName = $this->document->documentName;
+        }
+
         $tempArchive = tempnam(sys_get_temp_dir(), 'doc');
 
         if (copy($this->document->documentPath, $tempArchive) === true) {
@@ -29,7 +35,7 @@ class Result
             $zip->close();
 
             header('Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-            header('Content-Disposition: attachment;filename="' . $this->document->documentName . '.docx"');
+            header('Content-Disposition: attachment;filename="' . $fileName . '"');
 
             // Send file - required ob_clean() & exit;
             ob_clean();

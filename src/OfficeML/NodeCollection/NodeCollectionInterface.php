@@ -1,5 +1,5 @@
 <?php
-namespace OfficeML\Processor\NodeCollection;
+namespace OfficeML\NodeCollection;
 
 interface NodeCollectionInterface
 {
