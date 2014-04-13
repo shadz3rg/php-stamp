@@ -34,10 +34,6 @@ class DocumentTest extends \PHPUnit_Framework_TestCase
         $compare = $template->saveXML();
         $against = '<document><paragraph><run><text>Привет </text></run><run><text></text></run><run><text>!</text></run></paragraph><paragraph><run><text>Мы протестируем  </text></run><run><text>с помощью </text></run><run><text></text></run></paragraph><paragraph><run><text>Wish me</text></run><run><text></text></run><run><text>!</text></run></paragraph><paragraph><run><text>Данный </text></run><run><text></text></run><run><text>- полный бред</text></run></paragraph><paragraph><run><text></text></run><run><text></text></run><run><text></text></run></paragraph></document>';
         //$this->assertEquals($against, $compare);
-
-echo $compare;
-
-
     }
 }
  
