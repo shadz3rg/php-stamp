@@ -18,10 +18,10 @@ class TokenMapper
         $this->xpath = new \DOMXPath($this->content);
     }
 
-    public function getTokens($containerQuery)
+    public function parseForTokens($paragraphQuery)
     {
         $query = sprintf(
-            $containerQuery . '[contains(., "%s")][contains(., "%s")]',
+            $paragraphQuery . '[contains(., "%s")][contains(., "%s")]',
             $this->brackets[0],
             $this->brackets[1]
         );
@@ -33,8 +33,10 @@ class TokenMapper
             $containerOffset = 0;
             $this->lexer->setInput(utf8_decode($containerNode->textContent));
 
-            while ($token = $this->lexer->next()) {
-                $entries->add($this->mapObject($token, $containerNode, $containerOffset));
+            while ($token = $this->lexer->moveNext()) {
+                $entries->add(
+                    $this->mapObject($token, $containerNode, $containerOffset)
+                );
                 $containerOffset += mb_strlen($token['token']); // TODO Сделать оффсет покрасивше
             }
         }

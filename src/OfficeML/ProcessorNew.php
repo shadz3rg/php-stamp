@@ -7,7 +7,7 @@ use OfficeML\NodeCollection\WordNodeCollection;
 use OfficeML\Processor\TokenCollection;
 use OfficeML\Processor\Token;
 
-class Processor
+class ProcessorNew
 {
     const XSL_NS = 'http://www.w3.org/1999/XSL/Transform';
     const LEFT = 0;
@@ -39,11 +39,11 @@ class Processor
 
         $output = $document->createElementNS(self::XSL_NS, 'xsl:output');
         $output->setAttribute('method', 'xml');
-        $output->setAttribute('encoding', 'UTF-8');
+        $output->setAttribute('encoding', 'UTF-8'); // TODO variable encoding?
         $stylesheet->appendChild($output);
 
         $template = $document->createElementNS(self::XSL_NS, 'xsl:template');
-        $template->setAttribute('match', '//tokens');
+        $template->setAttribute('match', '/tokens');
         $template->appendChild($document->documentElement);
         $stylesheet->appendChild($template);
 
@@ -51,6 +51,104 @@ class Processor
 
         return $document;
     }
+
+    public function insertTemplateLogic(\DOMDocument $template, TokenCollection $tokenCollection, $stripOnly = false)
+    {
+        $xpath = new \DOMXPath($template);
+
+        /** @var $token Processor\Token */
+        foreach ($tokenCollection as $token) {
+
+            // Позиция текущей ноды относительно контейнера
+            $positionOffset = 0;
+
+            $partialNodes = $xpath->query('.//run', $token->getContainerNode());
+
+            foreach ($partialNodes as $node) {
+
+                $nodeLength = mb_strlen($node->nodeValue);
+                $nodePosition = array(
+                    self::LEFT => $positionOffset,
+                    self::RIGHT => $positionOffset + $nodeLength
+                );
+
+                // Если отрезок токена имеет общие точки с нодой то вырезаем присутствующую часть токена
+                if ($token->intersection($nodePosition[self::LEFT], $nodePosition[self::RIGHT]) === true) {
+
+                    $tokenPosition = $token->getPosition();
+
+                    // Нода
+                    $textNode = $xpath->query('text', $node)->item(0);
+                    $nodeValue = $textNode->nodeValue;
+                    $textNode->nodeValue = '';
+
+                    // Отступы от фрагмента токена, между ними вырезаем
+                    $tokenPadding = $this->findTokenPadding(
+                        $tokenPosition[self::LEFT],
+                        $tokenPosition[self::RIGHT],
+                        $nodePosition[self::LEFT],
+                        $nodePosition[self::RIGHT]
+                    );
+
+                    // Текст до фрагмента токена
+                    if ($tokenPadding[self::LEFT] > 0) {
+                        $before = $template->createTextNode(mb_substr($nodeValue, 0, $tokenPadding[self::LEFT]));
+                        $textNode->appendChild($before);
+                    }
+
+                    // Добавляем логику если мы в нужной ноде с левым краем токена
+                    $between = $nodePosition[self::LEFT] <= $tokenPosition[self::LEFT] && $tokenPosition[self::LEFT] <= $nodePosition[self::RIGHT];
+
+                    if ($token->isSolved() === false && $stripOnly === false && $between === true) {
+                        $tokenFunc = $token->getFunc();
+
+                        if ($tokenFunc !== null) {
+                            if (!isset(Filters::$filters[$tokenFunc['name']])) {
+                                throw new Exception\TokenException('Unknown filter "' . $tokenFunc['name'] . '"');
+                            }
+
+                            $func = Filters::$filters[$tokenFunc['name']];
+                            $token = call_user_func(
+                                $func,
+                                $token,
+                                $textNode,
+                                $template,
+                                $xpath
+                            );
+                        } else {
+                            $placeholder = $template->createElementNS(self::XSL_NS, 'xsl:value-of');
+                            $placeholder->setAttribute('select', '//tokens/' . $token->getValue());
+                            $textNode->appendChild($placeholder);
+                        }
+
+                        $token->resolve();
+                    }
+
+                    // Текст после фрагмента токена
+                    if ($tokenPadding[self::RIGHT] > 0) {
+                        $after = $template->createTextNode(mb_substr($nodeValue, -$tokenPadding[self::RIGHT]));
+                        $textNode->appendChild($after);
+                    }
+                }
+
+                // Сдвигаем оффсет на изначальную длину ноды
+                $positionOffset += $nodeLength;
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     private function findTokenPadding($tokenLeft, $tokenRight, $nodeLeft, $nodeRight)
     {
@@ -168,7 +266,7 @@ class Processor
 
     }
 
-    public function insertTemplateLogic(\DOMDocument $template, TokenCollection $tokenCollection, $stripOnly = false)
+    public function insertTemplateLogic_(\DOMDocument $template, TokenCollection $tokenCollection, $stripOnly = false)
     {
         $xpath = new \DOMXPath($template);
 

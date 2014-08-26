@@ -2,11 +2,15 @@
 
 namespace OfficeML\Document;
 
-use OfficeML\Exception\ArgumentsException;
-use OfficeML\Processor\TokenMapper;
+use OfficeML\Exception\InvalidArgumentException;
 
-class Document
+abstract class Document implements DocumentInterface
 {
+    const XPATH_PARAGRAPH  = 0;
+    const XPATH_RUN  = 1;
+    const XPATH_PROPERTY  = 2;
+    const XPATH_TEXT  = 3;
+
     public $documentName;
     public $documentPath;
     public $contentPath;
@@ -14,16 +18,16 @@ class Document
     /**
      * Constructor.
      *
-     * @param string $filePath
-     * @throws ArgumentsException
+     * @param string $documentPath
+     * @throws InvalidArgumentException
      */
-    public function __construct($filePath)
+    public function __construct($documentPath)
     {
-        if (!file_exists($filePath)) {
-            throw new ArgumentsException('File not found.');
+        if (file_exists($documentPath) === false) {
+            throw new InvalidArgumentException('File not found.');
         }
 
-        $this->documentPath = $filePath;
+        $this->documentPath = $documentPath;
         $this->documentName = pathinfo($this->documentPath, PATHINFO_BASENAME);
     }
 
@@ -33,7 +37,7 @@ class Document
      * @param string $to
      * @param bool $overwrite
      * @return string
-     * @throws ArgumentsException
+     * @throws InvalidArgumentException
      */
     public function extract($to, $overwrite)
     {
@@ -44,28 +48,20 @@ class Document
 
             $code = $zip->open($this->documentPath);
             if ($code !== true) {
-                throw new ArgumentsException(
+                throw new InvalidArgumentException(
                     'Can`t open archive "' . $this->documentPath . '", code "' . $code . '" returned.'
                 );
             }
 
             if ($zip->extractTo($to . $this->documentName, $this->getContentPath()) === false) {
-                throw new ArgumentsException('Destination not reachable.');
+                throw new InvalidArgumentException('Destination not reachable.');
             }
         }
 
         return $filePath;
     }
 
-    public function getContentPath()
-    {
-        return 'word/document.xml';
-    }
-
-    public function getTokenCollection(\DOMDocument $content)
-    {
-        // TODO Brackets
-        $mapper = new TokenMapper($content, array('[[', ']]'));
-        return $mapper->getTokens('//w:p');
-    }
+    abstract public function getContentPath();
+    abstract public function getTokenCollection(\DOMDocument $content, array $brackets);
+    abstract public function getNodeStructure();
 }

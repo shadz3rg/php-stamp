@@ -3,46 +3,64 @@
 namespace OfficeML;
 
 use OfficeML\Document\Document;
+use OfficeML\Document\DocumentInterface;
+use OfficeML\Processor\TokenMapper;
 
 class Templator
 {
     public $debug = false;
 
     private $cachePath;
-    private $processor;
     private $brackets;
 
     public function __construct($cachePath, $brackets = array('[[', ']]'))
     {
         if (!is_dir($cachePath)) {
-            throw new Exception\ArgumentsException('Cache path "' . $cachePath . '" unreachable.');
+            throw new Exception\InvalidArgumentException('Cache path "' . $cachePath . '" unreachable.');
         }
         if (!is_writable($cachePath)) {
-            throw new Exception\ArgumentsException('Cache path "' . $cachePath . '" not writable.');
+            throw new Exception\InvalidArgumentException('Cache path "' . $cachePath . '" not writable.');
         }
         if (count($brackets) !== 2 || array_values($brackets) !== $brackets) {
-            throw new Exception\ArgumentsException('Brackets in wrong format.');
+            throw new Exception\InvalidArgumentException('Brackets are in wrong format.');
         }
 
         $this->cachePath = $cachePath;
         $this->brackets = $brackets;
-
-        $this->processor = new Processor($this->brackets);
     }
 
-    public function render(Document $document, $values)
+    public function render(Document $document, array $values)
     {
         $contentFile = $document->extract($this->cachePath, $this->debug);
 
         $template = new \DOMDocument('1.0', 'UTF-8');
         $template->load($contentFile);
 
-        // Process document into template
+        // process document into template
         if ($template->documentElement->nodeName !== 'xsl:stylesheet') {
 
-            $this->processor->wrapIntoTemplate($template);
+            $nodeStructure = $document->getNodeStructure();
 
-            $this->processor->insertTemplateLogic($template, $document->getTokenCollection($template));
+            // fix node breaks
+            $cleaner = new Cleanup(
+                $template,
+                $nodeStructure[Document::XPATH_PARAGRAPH],
+                $nodeStructure[Document::XPATH_RUN],
+                $nodeStructure[Document::XPATH_PROPERTY],
+                $nodeStructure[Document::XPATH_TEXT]
+            );
+            $template = $cleaner->cleanup();
+
+            // process fixed document
+            $processor = new ProcessorNew($this->brackets);
+            $template = $processor->wrapIntoTemplate($template);
+
+            // find tokens
+            $mapper = new TokenMapper($template, $this->brackets);
+            $nodeCollection = $mapper->parseForTokens($nodeStructure[Document::XPATH_PARAGRAPH]);
+
+            // insert xsl logic
+            $processor->insertTemplateLogic($template, $nodeCollection);
 
             $template->save($contentFile);
 
@@ -51,12 +69,13 @@ class Templator
         }
 
         // Collide w/ values
-        $xslt = new \XSLTProcessor();
-        $xslt->importStylesheet($template);
+        //$xslt = new \XSLTProcessor();
+        //$xslt->importStylesheet($template);
 
-        $output = $xslt->transformToDoc(
-            $this->assign($values)
-        );
+        //$output = $xslt->transformToDoc(
+            //$this->assign($values)
+        //);
+        $output = $template;
 
         if ($this->debug === true) {
             $output->preserveWhiteSpace = true;
@@ -66,6 +85,11 @@ class Templator
         return new Result($output, $document);
     }
 
+    /**
+     * Create DOMDocument and encode array
+     * @param array $tokens
+     * @return \DOMDocument
+     */
     private function assign(array $tokens)
     {
         $document = new \DOMDocument('1.0', 'UTF-8');

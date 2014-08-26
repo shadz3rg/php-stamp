@@ -4,7 +4,8 @@ namespace OfficeML\Document;
 
 interface DocumentInterface
 {
-    function extract($to, $overwrite);
-    function getContentPath();
-    function getTokenCollection(\DOMDocument $content);
+    public function extract($to, $overwrite);
+    public function getContentPath();
+    public function getTokenCollection(\DOMDocument $content, array $brackets);
+    public function getNodeStructure();
 } 
