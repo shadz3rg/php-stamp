@@ -24,6 +24,7 @@ class Lexer extends AbstractLexer
     const T_PLUS                = 17;
     const T_OPEN_CURLY_BRACE    = 18;
     const T_CLOSE_CURLY_BRACE   = 19;
+    const T_COLON               = 20;
 
     const T_OPEN_BRACKET        = 100;
     const T_CLOSE_BRACKET       = 101;
@@ -122,6 +123,8 @@ class Lexer extends AbstractLexer
                 return self::T_OPEN_CURLY_BRACE;
             case ($value === '}'):
                 return self::T_CLOSE_CURLY_BRACE;
+            case ($value === ':'):
+                return self::T_COLON;
 
             case (is_string($value)):
                 return self::T_STRING;

@@ -18,36 +18,30 @@ class TokenMapper
         $this->xpath = new \DOMXPath($this->content);
     }
 
-    public function parseForTokens($paragraphQuery)
+    public function parseForTokens($textQuery)
     {
+        // query for text nodes with strict path //w:p/w:r/w:t for tokens
         $query = sprintf(
-            $paragraphQuery . '[contains(., "%s")][contains(., "%s")]',
+            $textQuery . '[contains(., "%s")][contains(., "%s")]',
             $this->brackets[0],
             $this->brackets[1]
         );
+        $textNodeList = $this->xpath->query($query);
 
-        $containers = $this->xpath->query($query);
+        $tokens = new TokenCollection();
+        foreach($textNodeList as $textNode) {
+            $this->lexer->setInput(utf8_decode($textNode->textContent));
 
-        $entries = new TokenCollection();
-        foreach($containers as $containerNode) {
-            $containerOffset = 0;
-            $this->lexer->setInput(utf8_decode($containerNode->textContent));
+            // code here
 
-            while ($token = $this->lexer->moveNext()) {
-                $entries->add(
-                    $this->mapObject($token, $containerNode, $containerOffset)
-                );
-                $containerOffset += mb_strlen($token['token']); // TODO Сделать оффсет покрасивше
-            }
         }
 
-        return $entries;
+        return $tokens;
     }
 
-    private function mapObject(array $token, \DOMNode $container, $containerOffset)
+    private function mapObject(array $token, \DOMNode $container)
     {
         $tokenObject = new Token($token['token'], $token['value'], $token['position'], $container);
-        $tokenObject->setOffset($containerOffset);
         return $tokenObject;
     }
 } 

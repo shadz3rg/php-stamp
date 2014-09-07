@@ -57,10 +57,10 @@ class Templator
 
             // find tokens
             $mapper = new TokenMapper($template, $this->brackets);
-            $nodeCollection = $mapper->parseForTokens($nodeStructure[Document::XPATH_PARAGRAPH]);
+            $nodeCollection = $mapper->parseForTokens($document->getTextQuery());
 
             // insert xsl logic
-            $processor->insertTemplateLogic($template, $nodeCollection);
+            $template = $processor->insertTemplateLogic($template, $nodeCollection);
 
             $template->save($contentFile);
 

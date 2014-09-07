@@ -6,6 +6,14 @@ use OfficeML\Processor\TokenMapper;
 
 class WordDocument extends Document
 {
+    private $structure = array(
+                '//w:p', // strict path not needed
+                'w:r',
+                'w:rPr',
+                'w:t'
+            );
+
+
     public function getContentPath()
     {
         return 'word/document.xml';
@@ -20,11 +28,11 @@ class WordDocument extends Document
 
     public function getNodeStructure()
     {
-        return array(
-            '//w:p', // strict path not needed
-            'w:r',
-            'w:rPr',
-            'w:t'
-        );
+        return $this->structure;
+    }
+
+    public function getTextQuery()
+    {
+        return '//w:p/w:r/w:t'; // FIXME
     }
 } 

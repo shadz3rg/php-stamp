@@ -58,83 +58,40 @@ class ProcessorNew
 
         /** @var $token Processor\Token */
         foreach ($tokenCollection as $token) {
+            $containerNode = $token->getContainerNode();
+            $valueParts = explode($token->getToken(), $containerNode->nodeValue, 2); // multiple token in one node
 
-            // Позиция текущей ноды относительно контейнера
-            $positionOffset = 0;
+            $containerNode->nodeValue = '';
 
-            $partialNodes = $xpath->query('.//run', $token->getContainerNode());
+            $before = $template->createTextNode($valueParts[0]);
+            $containerNode->appendChild($before);
 
-            foreach ($partialNodes as $node) {
-
-                $nodeLength = mb_strlen($node->nodeValue);
-                $nodePosition = array(
-                    self::LEFT => $positionOffset,
-                    self::RIGHT => $positionOffset + $nodeLength
-                );
-
-                // Если отрезок токена имеет общие точки с нодой то вырезаем присутствующую часть токена
-                if ($token->intersection($nodePosition[self::LEFT], $nodePosition[self::RIGHT]) === true) {
-
-                    $tokenPosition = $token->getPosition();
-
-                    // Нода
-                    $textNode = $xpath->query('text', $node)->item(0);
-                    $nodeValue = $textNode->nodeValue;
-                    $textNode->nodeValue = '';
-
-                    // Отступы от фрагмента токена, между ними вырезаем
-                    $tokenPadding = $this->findTokenPadding(
-                        $tokenPosition[self::LEFT],
-                        $tokenPosition[self::RIGHT],
-                        $nodePosition[self::LEFT],
-                        $nodePosition[self::RIGHT]
-                    );
-
-                    // Текст до фрагмента токена
-                    if ($tokenPadding[self::LEFT] > 0) {
-                        $before = $template->createTextNode(mb_substr($nodeValue, 0, $tokenPadding[self::LEFT]));
-                        $textNode->appendChild($before);
-                    }
-
-                    // Добавляем логику если мы в нужной ноде с левым краем токена
-                    $between = $nodePosition[self::LEFT] <= $tokenPosition[self::LEFT] && $tokenPosition[self::LEFT] <= $nodePosition[self::RIGHT];
-
-                    if ($token->isSolved() === false && $stripOnly === false && $between === true) {
-                        $tokenFunc = $token->getFunc();
-
-                        if ($tokenFunc !== null) {
-                            if (!isset(Filters::$filters[$tokenFunc['name']])) {
-                                throw new Exception\TokenException('Unknown filter "' . $tokenFunc['name'] . '"');
-                            }
-
-                            $func = Filters::$filters[$tokenFunc['name']];
-                            $token = call_user_func(
-                                $func,
-                                $token,
-                                $textNode,
-                                $template,
-                                $xpath
-                            );
-                        } else {
-                            $placeholder = $template->createElementNS(self::XSL_NS, 'xsl:value-of');
-                            $placeholder->setAttribute('select', '//tokens/' . $token->getValue());
-                            $textNode->appendChild($placeholder);
-                        }
-
-                        $token->resolve();
-                    }
-
-                    // Текст после фрагмента токена
-                    if ($tokenPadding[self::RIGHT] > 0) {
-                        $after = $template->createTextNode(mb_substr($nodeValue, -$tokenPadding[self::RIGHT]));
-                        $textNode->appendChild($after);
-                    }
+            // create node here
+            if ($token->hasFunc() === true) {
+                if (!isset(Filters::$filters[$token->getFuncName()])) {
+                    throw new Exception\TokenException('Unknown filter "' . $token->getFuncName() . '"');
                 }
 
-                // Сдвигаем оффсет на изначальную длину ноды
-                $positionOffset += $nodeLength;
+                /*$func = Filters::$filters[$token->getFuncName()];
+                $token = call_user_func(
+                    $func,
+                    $token,
+                    $textNode,
+                    $template,
+                    $xpath
+                );*/
+
+            } else {
+                $placeholder = $template->createElementNS(self::XSL_NS, 'xsl:value-of');
+                $placeholder->setAttribute('select', '/tokens/' . $token->getValue());
+                $containerNode->appendChild($placeholder);
             }
+
+            $after = $template->createTextNode($valueParts[1]);
+            $containerNode->appendChild($after);
         }
+
+        return $template;
     }
 
 
