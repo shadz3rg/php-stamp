@@ -6,29 +6,17 @@ use OfficeML\Exception\ParsingException;
 
 class TokenMapper
 {
-    private $xpath;
-    private $content;
     private $brackets;
 
-    public function __construct(\DOMDocument $content, $brackets)
+    public function __construct($brackets)
     {
-        $this->content = $content;
         $this->brackets = $brackets;
-        $this->xpath = new \DOMXPath($this->content);
     }
 
-    public function parseForTokens($textQuery)
+    public function parseForTokens(\DOMNodeList $textNodeList)
     {
         $tokens = new TokenCollection();
         $lexer = new Lexer($this->brackets);
-
-        // query for text nodes (with strict path //w:p/w:r/w:t) containing placeholders
-        $query = sprintf(
-            $textQuery . '[contains(., "%s")][contains(., "%s")]',
-            $this->brackets[0],
-            $this->brackets[1]
-        );
-        $textNodeList = $this->xpath->query($query);
 
         foreach($textNodeList as $textNode) {
             $lexer->setInput(utf8_decode($textNode->textContent));
@@ -68,7 +56,7 @@ class TokenMapper
         return $tokens;
     }
 
-    private function handleToken(Lexer $lexer, &$isTokenOpened, $fieldName = null) {
+    private function handleToken(Lexer $lexer, &$isTokenOpened) {
         $token = $lexer->token; // todo look ahead?
 
         // Validation
