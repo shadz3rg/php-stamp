@@ -42,6 +42,15 @@ class Token
     }
 
     /**
+     *
+     * @return bool
+     */
+    public function hasFunc()
+    {
+        return ($this->func !== null);
+    }
+
+    /**
      * Func getter.
      * @return array [id, arg]
      */

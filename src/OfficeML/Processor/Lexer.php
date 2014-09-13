@@ -2,6 +2,7 @@
 namespace OfficeML\Processor;
 
 use Doctrine\Common\Lexer\AbstractLexer;
+use OfficeML\Exception\ParsingException;
 
 class Lexer extends AbstractLexer
 {
@@ -131,6 +132,16 @@ class Lexer extends AbstractLexer
 
             default:
                 return self::T_NONE;
+        }
+    }
+
+    public function expect($expected) {
+        if ($this->token['type'] !== $expected) {
+            throw new ParsingException(
+                'Unexpected' . $this->getLiteral($type) .
+                ', ' .
+                $this->getLiteral($expected) . ' expected.'
+            );
         }
     }
 }
