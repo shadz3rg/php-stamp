@@ -39,11 +39,11 @@ class Processor
 
         $output = $document->createElementNS(self::XSL_NS, 'xsl:output');
         $output->setAttribute('method', 'xml');
-        $output->setAttribute('encoding', 'UTF-8');
+        $output->setAttribute('encoding', 'UTF-8'); // TODO variable encoding?
         $stylesheet->appendChild($output);
 
         $template = $document->createElementNS(self::XSL_NS, 'xsl:template');
-        $template->setAttribute('match', '//tokens');
+        $template->setAttribute('match', '/tokens');
         $template->appendChild($document->documentElement);
         $stylesheet->appendChild($template);
 
@@ -51,6 +51,61 @@ class Processor
 
         return $document;
     }
+
+    public static function insertTemplateLogic(\DOMDocument $template, TokenCollection $tokenCollection, $stripOnly = false)
+    {
+        $xpath = new \DOMXPath($template);
+
+        /** @var $token Processor\Token */
+        foreach ($tokenCollection as $token) {
+            $containerNode = $token->getContainerNode();
+            $valueParts = explode($token->getToken(), $containerNode->nodeValue, 2); // multiple token in one node
+
+            $containerNode->nodeValue = '';
+
+            $before = $template->createTextNode($valueParts[0]);
+            $containerNode->appendChild($before);
+
+            // create node here
+            if ($token->hasFunc() === true) {
+                if (!isset(Filters::$filters[$token->getFuncName()])) {
+                    throw new Exception\TokenException('Unknown filter "' . $token->getFuncName() . '"');
+                }
+
+                /*$func = Filters::$filters[$token->getFuncName()];
+                $token = call_user_func(
+                    $func,
+                    $token,
+                    $textNode,
+                    $template,
+                    $xpath
+                );*/
+
+            } else {
+                $placeholder = $template->createElementNS(self::XSL_NS, 'xsl:value-of');
+                $placeholder->setAttribute('select', '/tokens/' . $token->getValue());
+                $containerNode->appendChild($placeholder);
+            }
+
+            $after = $template->createTextNode($valueParts[1]);
+            $containerNode->appendChild($after);
+        }
+
+        return $template;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     private function findTokenPadding($tokenLeft, $tokenRight, $nodeLeft, $nodeRight)
     {
@@ -168,7 +223,7 @@ class Processor
 
     }
 
-    public function insertTemplateLogic(\DOMDocument $template, TokenCollection $tokenCollection, $stripOnly = false)
+    public function insertTemplateLogic_(\DOMDocument $template, TokenCollection $tokenCollection, $stripOnly = false)
     {
         $xpath = new \DOMXPath($template);
 

@@ -4,7 +4,7 @@ namespace OfficeML;
 
 use OfficeML\Document\Document;
 use OfficeML\Document\DocumentInterface;
-use OfficeML\Processor\TokenMapper;
+use OfficeML\Processor\TagMapper;
 
 class Templator
 {
@@ -52,15 +52,15 @@ class Templator
             $template = $cleaner->cleanup();
 
             // process fixed document
-            $processor = new ProcessorNew($this->brackets);
+            $processor = new Processor($this->brackets);
             $template = $processor->wrapIntoTemplate($template);
 
             // find tokens
-            $mapper = new TokenMapper($template, $this->brackets);
-            $nodeCollection = $mapper->parseForTokens($document->getTextQuery());
+            $mapper = new TagMapper($template, $this->brackets);
+            //$nodeCollection = $mapper->parseForTokens($document->getTextQuery());
 
             // insert xsl logic
-            $template = $processor->insertTemplateLogic($template, $nodeCollection);
+            //$template = $processor->insertTemplateLogic($template, $nodeCollection);
 
             $template->save($contentFile);
 

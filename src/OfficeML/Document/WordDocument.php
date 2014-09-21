@@ -2,7 +2,7 @@
 
 namespace OfficeML\Document;
 
-use OfficeML\Processor\TokenMapper;
+use OfficeML\Processor\TagMapper;
 
 class WordDocument extends Document
 {
@@ -22,7 +22,7 @@ class WordDocument extends Document
     public function getTokenCollection(\DOMDocument $content, array $brackets)
     {
         // TODO Brackets
-        $mapper = new TokenMapper($content, $brackets);
+        $mapper = new TagMapper($content, $brackets);
         return $mapper->parseForTokens('//w:p');
     }
 

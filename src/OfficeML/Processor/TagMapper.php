@@ -4,7 +4,7 @@ namespace OfficeML\Processor;
 
 use OfficeML\Exception\ParsingException;
 
-class TokenMapper
+class TagMapper
 {
     public function __construct()
     {
