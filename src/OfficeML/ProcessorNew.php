@@ -52,7 +52,7 @@ class ProcessorNew
         return $document;
     }
 
-    public function insertTemplateLogic(\DOMDocument $template, TokenCollection $tokenCollection, $stripOnly = false)
+    public static function insertTemplateLogic(\DOMDocument $template, TokenCollection $tokenCollection, $stripOnly = false)
     {
         $xpath = new \DOMXPath($template);
 

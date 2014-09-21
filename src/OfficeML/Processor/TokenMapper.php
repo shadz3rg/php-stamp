@@ -6,30 +6,34 @@ use OfficeML\Exception\ParsingException;
 
 class TokenMapper
 {
-    private $brackets;
-
-    public function __construct($brackets)
+    public function __construct()
     {
-        $this->brackets = $brackets;
     }
 
-    public function parseForTokens(\DOMNodeList $textNodeList)
+    public function parse(\DOMNodeList $nodeList, Lexer $lexer)
     {
-        $tokens = new TokenCollection();
-        $lexer = new Lexer($this->brackets);
+        $tokenCollection = new TokenCollection();
 
-        foreach($textNodeList as $textNode) {
-            $lexer->setInput(utf8_decode($textNode->textContent));
-
-            // Globals
-            $isTokenOpened = false;
-            $tokenFields = array();
+        /** @var \DOMNode $currentNode */
+        foreach($nodeList as $currentNode) {
+            $lexer->setInput(utf8_decode($currentNode->nodeValue));
 
             while ($lexer->moveNext()) {
-                $field = $this->handleToken($lexer, $isTokenOpened);
+
+                if ($lexer->isNextToken(Lexer::T_OPEN_BRACKET) === true) {
+                    $tag = $this->handleToken($lexer);
+                    ProcessorNew::insertTemplateLogic();
+                }
+
+                //var_dump($lexer->getLiteral($lexer->lookahead['type']));
+
+
+
+
+
 
                 // Add field
-                if ($field !== null) {
+                /*if ($field !== null) {
                     $tokenFields = array_merge_recursive($tokenFields, $field);
                 }
 
@@ -46,50 +50,58 @@ class TokenMapper
                         // as in text TODO check whitespaces
                         $tokenFields['token'] = array_splice($this->brackets, 1, 0, implode('.', $tokenFields['path']));
 
-                        $tokenSummary[] = $this->mapObject($tokenFields, $textNode);
+                        $tokenSummary[] = $this->mapObject($tokenFields, $currentNode);
                     }
                     $tokenFields = array();
-                }
+                }*/
             }
         }
 
-        return $tokens;
+        return $tokenCollection;
     }
 
-    private function handleToken(Lexer $lexer, &$isTokenOpened) {
-        $token = $lexer->token; // todo look ahead?
 
-        // Validation
-        if ($token['type'] === Lexer::T_OPEN_BRACKET && $isTokenOpened === true) {
-            throw new ParsingException('Nested token or not closed bracket.');
-        }
+    private function handleToken(Lexer $lexer)
+    {
+        $tag = array();
+        $tagIsOpened = false;
 
-        // Close / Open token
-        switch ($token['type']) {
-            case Lexer::T_OPEN_BRACKET:
-                $isTokenOpened = true;
-                return null;
+        do {
+            $token = $lexer->lookahead;
 
-            case Lexer::T_CLOSE_BRACKET:
-                $isTokenOpened = false;
-                return null;
-        }
+            $tag[] = $token['value']; // full tag to replace
 
-        if ($isTokenOpened === true) {
             switch ($token['type']) {
 
-                case Lexer::T_STRING: // first level of id, after opened token only
-                    return handleString($lexer, 'path');
+                case Lexer::T_OPEN_BRACKET:
+                    if ($tagIsOpened === false) {
+                        $tagIsOpened = true;
+                    } else {
+                        throw new ParsingException('Nested token or not closed bracket.');
+                    }
+                    break;
+
+                case Lexer::T_CLOSE_BRACKET:
+                    return implode($tag);
+
+                case Lexer::T_STRING:
+                    if (ctype_alnum($token['value']) === false) {
+                        //throw new ParsingException('ctype_alnum expected as identifier.');
+                    }
+                    break;
 
                 case Lexer::T_DOT: // next levels of id
-                    $lexer->moveNext();
-                    return handleString($lexer, 'path');
+                    //$lexer->moveNext();
+                    //return handleString($lexer, 'path');
 
                 case Lexer::T_COLON:
-                    $lexer->moveNext();
-                    return handleFunction($lexer, 'func');
+                    //$lexer->moveNext();
+                    //return handleFunction($lexer, 'func');
             }
-        }
+
+        } while ($lexer->moveNext());
+
+
     }
 
     //
