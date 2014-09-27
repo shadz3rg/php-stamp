@@ -31,5 +31,6 @@ class TokenTest extends \PHPUnit_Framework_TestCase
         $isIntersect = $token->intersection(19, 20);
         $this->assertEquals($isIntersect, false);
     }
+
 }
  
