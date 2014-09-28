@@ -50,7 +50,7 @@ class TagMapperTest extends \PHPUnit_Framework_TestCase
     {
         // prepare
         $lexer = new Lexer(array('[[', ']]'));
-        $pathString = '[[root.child:function(arg1, arg2)]]';
+        $pathString = '[[root.child:function(arg1, arg2):function2(arg3, arg4, arg5)]]';
         $lexer->setInput($pathString);
 
         $mapper = new TagMapper();

@@ -12,7 +12,7 @@ class TagMapper
     {
         while ($lexer->moveNext()) {
             if ($lexer->isNextToken(Lexer::T_OPEN_BRACKET) === true) {
-                $lexer->moveNext(); // step on T_OPEN_BRACKET
+                //$lexer->moveNext(); // step on T_OPEN_BRACKET
 
                 $tagData = $this->parseTag($lexer);
                 return $this->mapObject($tagData);
@@ -24,60 +24,57 @@ class TagMapper
 
     private function parseTag(Lexer $lexer)
     {
-        $openBracketToken = $lexer->token;
-
+        // Defaults
         $tagData = array(
             'summary' => array(
-                'position' => $openBracketToken['position'],
+                'textContent' => '',
+                'position' => $lexer->lookahead['position'], // Lexer::T_OPEN_BRACKET
                 'length' => 0
             ),
             'path' => array(),
             'functions' => array()
         );
-var_dump($lexer);
+
+        // *required Parsed path
         $tagData['path'] = $this->parsePath($lexer);
 
+        // *optional Parsed functions
+        while ($lexer->isNextToken(Lexer::T_COLON)) { // if parsePath stopped on delimiter
+            $tagData['functions'][] = $this->parseFunction($lexer);
+        }
 
+        // *required End of tag
+        $expected = Lexer::T_CLOSE_BRACKET;
+        if ($lexer->isNextToken($expected) === false) {
+            throw new ParsingException(
+                'Unexpected token' .
+                ', expected ' . $lexer->getLiteral($expected) .
+                ', got ' . $lexer->getLiteral($lexer->lookahead['type'])
+            );
+        }
 
+        $endAt = $lexer->lookahead['position'] + mb_strlen($lexer->lookahead['value']);
+        $tagData['summary']['length'] = $endAt - $tagData['summary']['position'];
 
+        $tagData['summary']['textContent'] = $lexer->getInputBetweenPosition(
+            $tagData['summary']['position'],
+            $tagData['summary']['length']
+        );
 
-
-
-/*
-        do {
-            $token = $lexer->token;
-
-            switch ($token['type']) {
-
-                case Lexer::T_OPEN_BRACKET:
-                    if ($tagIsOpened === false) {
-                        $tagIsOpened = true;
-                        $tagData['summary']['position'] = $token['position'];
-                        $tagData['path'] = $this->parsePath($lexer);
-                    } else {
-                        throw new ParsingException('Nested token or not closed bracket.');
-                    }
-                    break;
-
-                case Lexer::T_CLOSE_BRACKET:
-                    $endedAt = $token['position'] + strlen($token['value']);
-                    $tagData['summary']['length'] = $endedAt - $tagData['summary']['position'];
-                    return $tagData;
-
-                case Lexer::T_COLON:
-                    //$lexer->moveNext();
-                    //return handleFunction($lexer, 'func');
-            }
-
-        } while ($lexer->moveNext());*/
+        return $tagData;
     }
 
-    private function parsePath(Lexer $lexer, $delimiter = Lexer::T_COLON)
+    private function parsePath(Lexer $lexer, $delimiter = Lexer::T_COLON, $return = Lexer::T_CLOSE_BRACKET)
     {
         $path = array();
         $expected = Lexer::T_STRING;
 
-        while ($token = $lexer->peek()) {
+        while ($lexer->moveNext()) {
+            $token = $lexer->lookahead;
+
+            if ($token['type'] === $delimiter || $token['type'] === $return) {
+                return $path;
+            }
 
             if ($token['type'] !== $expected) {
                 throw new ProcessorException(
@@ -96,14 +93,79 @@ var_dump($lexer);
                 case Lexer::T_DOT:
                     $expected = Lexer::T_STRING;
                     break;
-
-                case $delimiter:
-                    return $path;
             }
 
         };
 
-        return $path;
+        return $path; // IDE fix
+    }
+
+    private function parseFunction(Lexer $lexer, $delimiter = Lexer::T_COLON, $return = Lexer::T_CLOSE_BRACKET) {
+        $function = null;
+        $arguments = array();
+
+        $expected = Lexer::T_STRING;
+        $optional = null;
+
+        while ($lexer->moveNext()) {
+            $token = $lexer->lookahead;
+
+            if ($token['type'] === $delimiter || $token['type'] === $return) {
+                return array('function' => $function, 'arguments' => $arguments);
+            }
+
+            if ($token['type'] !== $expected && $token['type'] !== $optional) { var_dump($token);
+                throw new ProcessorException(
+                    'Unexpected token' .
+                    ', expected ' . $lexer->getLiteral($expected) .
+                    ', got ' . $lexer->getLiteral($token['type'])
+                );
+            }
+
+            $optional = null; // Reset as we passed through
+
+            switch ($token['type']) {
+
+                case Lexer::T_STRING:
+                    // Function id
+                    if ($function === null) {
+                        $function = $token['value'];
+
+                        $expected = Lexer::T_OPEN_PARENTHESIS;
+                        $optional = null;
+
+                        break;
+                    }
+
+                    // Fall for arguments parsing
+                    $arguments[] = $token['value'];
+
+                    $expected = Lexer::T_CLOSE_PARENTHESIS;
+                    $optional = Lexer::T_COMMA;
+
+                    break;
+
+                case Lexer::T_COMMA:
+                    $expected = Lexer::T_STRING;
+
+                    break;
+
+                case Lexer::T_OPEN_PARENTHESIS:
+                    $expected = Lexer::T_CLOSE_PARENTHESIS;
+                    $optional = Lexer::T_STRING;
+
+                    break;
+
+                case Lexer::T_CLOSE_PARENTHESIS:
+                    $expected = $return;
+                    $optional = $delimiter;
+
+                    break;
+            }
+
+        };
+
+        return array('function' => $function, 'arguments' => $arguments);  // IDE fix
     }
 
     private function mapObject(array $tagData)

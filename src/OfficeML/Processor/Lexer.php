@@ -135,13 +135,24 @@ class Lexer extends AbstractLexer
         }
     }
 
-    public function expect($expected) {
-        if ($this->token['type'] !== $expected) {
-            throw new ParsingException(
-                'Unexpected' . $this->getLiteral($type) .
-                ', ' .
-                $this->getLiteral($expected) . ' expected.'
-            );
-        }
+    /**
+     * Substr original lexer's input.
+     *
+     * @param integer $length
+     * @param integer $position
+     *
+     * @return string
+     */
+    public function getInputBetweenPosition($position, $length)
+    {
+        // Get input without modification of original package
+        $reflectionClass = new \ReflectionClass('Doctrine\Common\Lexer\AbstractLexer');
+
+        $reflectionProperty = $reflectionClass->getProperty('input');
+        $reflectionProperty->setAccessible(true);
+
+        $input = $reflectionProperty->getValue($this);
+
+        return mb_substr($input, $position, $length);
     }
 }
