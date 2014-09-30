@@ -31,13 +31,13 @@ class Cleanup extends XMLHelper
 
         /** @var $paragraph \DOMNode */
         foreach ($paragraphs as $paragraph) {
-            $clonedParagraph = $paragraph->cloneNode();
+            $clonedParagraph = $paragraph->cloneNode(true); // fixed missing paragraph props element
 
-            $runs = $this->getRunNodeList($paragraph);
+            $runNodeList = $this->getRunNodeList($clonedParagraph);
 
             $runIndex = 0;
-            $currentRun = $runs->item($runIndex);
-            $nextRun = $runs->item(++$runIndex);
+            $currentRun = $runNodeList->item($runIndex);
+            $nextRun = $runNodeList->item(++$runIndex);
 
             while ($currentRun) {
                 $isEqual = false;
@@ -51,13 +51,14 @@ class Cleanup extends XMLHelper
 
                 if ($isEqual === true) {
                     $this->getValueNode($currentRun)->nodeValue .= $this->getValueNode($nextRun)->nodeValue;
+                    $clonedParagraph->removeChild($nextRun);
                 } else {
-                    $clonedParagraph->appendChild($currentRun);
+                    //$clonedParagraph->appendChild($currentRun);
                     $currentRun = $nextRun;
                 }
 
                 if ($nextRun !== null) {
-                    $nextRun = $runs->item(++$runIndex);
+                    $nextRun = $runNodeList->item(++$runIndex);
                 }
             }
 

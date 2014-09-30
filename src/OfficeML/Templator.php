@@ -90,6 +90,8 @@ class Templator
             $this->assign($values)
         );
 
+        //$output = $template;
+
         if ($this->debug === true) {
             $output->preserveWhiteSpace = true;
             $output->formatOutput = true;

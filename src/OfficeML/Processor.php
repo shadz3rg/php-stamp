@@ -24,6 +24,10 @@ class Processor
         $output->setAttribute('encoding', 'UTF-8'); // TODO variable encoding?
         $stylesheet->appendChild($output);
 
+        $output = $document->createElementNS(self::XSL_NS, 'xsl:preserve-space');
+        $output->setAttribute('elements', 'w:t');
+        $stylesheet->appendChild($output);
+
         $template = $document->createElementNS(self::XSL_NS, 'xsl:template');
         $template->setAttribute('match', '/' . self::VALUES_PATH);
         $template->appendChild($document->documentElement);
@@ -32,9 +36,11 @@ class Processor
         $document->appendChild($stylesheet);
     }
 
-    public static function insertTemplateLogic(Tag $tag, \DOMNode $node)
+    public static function insertTemplateLogic(Tag $tag, \DOMElement $node)
     {
         $template = $node->ownerDocument;
+
+        $node->setAttribute('xml:space', 'preserve'); // TODO Fix whitespaces in mixed node
 
         /** @var $textNode \DOMText */
         foreach ($node->childNodes as $textNode) {
