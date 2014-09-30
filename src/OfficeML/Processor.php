@@ -1,37 +1,18 @@
 <?php
 namespace OfficeML;
 
-use OfficeML\Processor\Lexer;
-use OfficeML\Processor\Filters;
-use OfficeML\NodeCollection\WordNodeCollection;
 use OfficeML\Processor\Tag;
-use OfficeML\Processor\TokenCollection;
-use OfficeML\Processor\Token;
 
 class Processor
 {
     const XSL_NS = 'http://www.w3.org/1999/XSL/Transform';
-    const LEFT = 0;
-    const RIGHT = 1;
-
-    private $brackets;
-    private $lexer;
-
-    /**
-     * @param array $brackets
-     * @throws Exception\InvalidArgumentException
-     */
-    public function __construct(array $brackets)
-    {
-        $this->brackets = $brackets;
-
-        $this->lexer = new Lexer($this->brackets);
-    }
+    const VALUES_PATH = 'values';
 
     /**
      * Wrap document content into xsl template.
+     *
      * @param \DOMDocument $document
-     * @return \DOMDocument
+     * @return void
      */
     public function wrapIntoTemplate(\DOMDocument $document)
     {
@@ -44,40 +25,46 @@ class Processor
         $stylesheet->appendChild($output);
 
         $template = $document->createElementNS(self::XSL_NS, 'xsl:template');
-        $template->setAttribute('match', '/tokens');
+        $template->setAttribute('match', self::VALUES_PATH);
         $template->appendChild($document->documentElement);
         $stylesheet->appendChild($template);
 
         $document->appendChild($stylesheet);
-
-        return $document;
     }
 
     public static function insertTemplateLogic(Tag $tag, \DOMNode $node)
     {
         $template = $node->ownerDocument;
 
-        $nodeValue = utf8_decode($node->nodeValue);
-        $tagFragment = mb_substr($nodeValue, $tag->getPosition(), $tag->getLength());
+        /** @var $textNode \DOMText */
+        foreach ($node->childNodes as $textNode) {
+            $nodeValue = utf8_decode($textNode->nodeValue);
 
-        $node->nodeValue = ''; // reset
+            // before [[tag]] after
+            $nodeValueParts = explode($tag->getTextContent(), $nodeValue, 2); // fix similar tags in one node
 
-        // before [[tag]] after
-        $nodeValueParts = explode($tagFragment, $nodeValue, 2); // multiple token in one node
+            if (count($nodeValueParts) === 2) {
+                $textNode->nodeValue = ''; // reset
 
-        // text before
-        $before = $template->createTextNode($nodeValueParts[0]);
-        $node->appendChild($before);
+                // text before
+                $before = $template->createTextNode($nodeValueParts[0]);
+                $node->insertBefore($before, $textNode);
 
-        // add xsl logic TODO Functions
-        $placeholder = $template->createElementNS(self::XSL_NS, 'xsl:value-of');
-        $placeholder->setAttribute('select', '/tokens/' . $tag->getXmlPath());
-        $node->appendChild($placeholder);
+                // add xsl logic TODO Functions
+                $placeholder = $template->createElementNS(self::XSL_NS, 'xsl:value-of');
+                $placeholder->setAttribute('select', self::VALUES_PATH . '/' . $tag->getXmlPath());
+                $node->insertBefore($placeholder, $textNode);
 
-        // text after
-        $after = $template->createTextNode($nodeValueParts[1]);
-        $node->appendChild($after);
+                // text after
+                $after = $template->createTextNode($nodeValueParts[1]);
+                $node->insertBefore($after, $textNode);
 
-        return $tagFragment;
+                $node->removeChild($textNode);
+
+                return true;
+            }
+        }
+
+        return false;
     }
 }

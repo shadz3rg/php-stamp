@@ -4,6 +4,9 @@ namespace OfficeML\Document;
 
 use OfficeML\Processor\TagMapper;
 
+/*
+ * http://msdn.microsoft.com/ru-ru/library/office/gg278327(v=office.15).aspx
+ */
 class WordDocument extends Document
 {
     private $structure = array(
@@ -19,19 +22,12 @@ class WordDocument extends Document
         return 'word/document.xml';
     }
 
-    public function getTokenCollection(\DOMDocument $content, array $brackets)
-    {
-        // TODO Brackets
-        $mapper = new TagMapper($content, $brackets);
-        return $mapper->parseForTokens('//w:p');
-    }
-
     public function getNodeStructure()
     {
         return $this->structure;
     }
 
-    public function getTextQuery()
+    public function getNodePath()
     {
         return '//w:p/w:r/w:t'; // FIXME
     }

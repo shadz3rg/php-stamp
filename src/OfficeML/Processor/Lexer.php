@@ -2,7 +2,6 @@
 namespace OfficeML\Processor;
 
 use Doctrine\Common\Lexer\AbstractLexer;
-use OfficeML\Exception\ParsingException;
 
 class Lexer extends AbstractLexer
 {

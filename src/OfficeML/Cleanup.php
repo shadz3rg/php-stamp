@@ -11,7 +11,7 @@ class Cleanup extends XMLHelper
 
     private $paragraphQuery;
     private $runQuery;
-    private $propertyQuery;
+    private $runPropertyQuery;
     private $textQuery;
 
     public function __construct(\DOMDocument $document, $paragraphQuery, $runQuery, $propertyQuery, $textQuery)
@@ -21,7 +21,7 @@ class Cleanup extends XMLHelper
 
         $this->paragraphQuery = $paragraphQuery;
         $this->runQuery = $runQuery;
-        $this->propertyQuery = $propertyQuery;
+        $this->runPropertyQuery = $propertyQuery;
         $this->textQuery = $textQuery;
     }
 
@@ -63,8 +63,6 @@ class Cleanup extends XMLHelper
 
             $paragraph->parentNode->replaceChild($clonedParagraph, $paragraph);
         }
-
-        return $this->document;
     }
 
     private function getParagraphNodeList()
@@ -79,7 +77,7 @@ class Cleanup extends XMLHelper
 
     private function getPropertyNode(\DOMNode $runNode)
     {
-        $nodeList = $this->xpath->query($this->propertyQuery, $runNode);
+        $nodeList = $this->xpath->query($this->runPropertyQuery, $runNode);
         return $nodeList->item(0);
     }
 
@@ -87,5 +85,22 @@ class Cleanup extends XMLHelper
     {
         $nodeList = $this->xpath->query($this->textQuery, $runNode);
         return $nodeList->item(0);
+    }
+
+    public function hardcoreMode()
+    {
+        // reset locale
+        $nodeList = $this->xpath->query('//w:lang');
+        /** @var $langNode \DOMNode */
+        foreach ($nodeList as $langNode) {
+            $langNode->parentNode->removeChild($langNode);
+        }
+
+        // cleanup empty rPr
+        $nodeList = $this->xpath->query('//' . $this->runPropertyQuery . '[not(node())]');
+        /** @var $langNode \DOMNode */
+        foreach ($nodeList as $node) {
+            $node->parentNode->removeChild($node);
+        }
     }
 }

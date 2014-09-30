@@ -62,7 +62,6 @@ abstract class Document implements DocumentInterface
     }
 
     abstract public function getContentPath();
-    abstract public function getTokenCollection(\DOMDocument $content, array $brackets);
     abstract public function getNodeStructure();
-    abstract public function getTextQuery();
+    abstract public function getNodePath();
 }

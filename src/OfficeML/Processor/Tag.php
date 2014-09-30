@@ -45,4 +45,9 @@ class Tag
     {
         return implode('/', $this->path);
     }
+
+    public function getTextContent()
+    {
+        return $this->summary['textContent'];
+    }
 } 

@@ -4,6 +4,7 @@ namespace OfficeML;
 
 use OfficeML\Document\Document;
 use OfficeML\Document\DocumentInterface;
+use OfficeML\Processor\Lexer;
 use OfficeML\Processor\TagMapper;
 
 class Templator
@@ -49,18 +50,32 @@ class Templator
                 $nodeStructure[Document::XPATH_PROPERTY],
                 $nodeStructure[Document::XPATH_TEXT]
             );
-            $template = $cleaner->cleanup();
+            $cleaner->hardcoreMode();
+            $cleaner->cleanup();
+
+
+            $template->preserveWhiteSpace = true;
+            $template->formatOutput = true;
+            echo '<pre>' . htmlentities($template->saveXML()) . '</pre>';
 
             // process fixed document
-            $processor = new Processor($this->brackets);
-            $template = $processor->wrapIntoTemplate($template);
+            $processor = new Processor;
+            $processor->wrapIntoTemplate($template);
 
-            // find tokens
-            $mapper = new TagMapper($template, $this->brackets);
-            //$nodeCollection = $mapper->parseForTokens($document->getTextQuery());
+            // find tags
+            $nodeList = $this->queryTemplate($template, $document->getNodePath());
 
-            // insert xsl logic
-            //$template = $processor->insertTemplateLogic($template, $nodeCollection);
+            $lexer = new Lexer($this->brackets);
+            $mapper = new TagMapper;
+
+            foreach ($nodeList as $node) {
+                $decodedValue = utf8_decode($node->nodeValue);
+                $lexer->setInput($decodedValue);
+
+                while ($tag = $mapper->parse($lexer)) {
+                    $processor->insertTemplateLogic($tag, $node);
+                }
+            }
 
             $template->save($contentFile);
 
@@ -68,13 +83,13 @@ class Templator
             $template->load($contentFile);
         }
 
-        // Collide w/ values
-        //$xslt = new \XSLTProcessor();
-        //$xslt->importStylesheet($template);
+        // Fill with values
+        $xslt = new \XSLTProcessor();
+        $xslt->importStylesheet($template);
 
-        //$output = $xslt->transformToDoc(
-            //$this->assign($values)
-        //);
+        $output = $xslt->transformToDoc(
+            $this->assign($values)
+        );
         $output = $template;
 
         if ($this->debug === true) {
@@ -83,6 +98,12 @@ class Templator
         }
 
         return new Result($output, $document);
+    }
+
+    private function queryTemplate(\DOMDocument $document, $xpathQuery)
+    {
+        $xpath = new \DOMXPath($document);
+        return $xpath->query($xpathQuery);
     }
 
     /**
@@ -94,7 +115,7 @@ class Templator
     {
         $document = new \DOMDocument('1.0', 'UTF-8');
 
-        $tokensNode = $document->createElement('tokens');
+        $tokensNode = $document->createElement(Processor::VALUES_PATH);
         $document->appendChild($tokensNode);
 
         Helper::xmlEncode($tokens, $tokensNode, $document);

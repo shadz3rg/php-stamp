@@ -4,7 +4,6 @@ namespace OfficeML\Processor;
 
 use OfficeML\Exception\ParsingException;
 use OfficeML\Exception\ProcessorException;
-use OfficeML\Processor\Tag;
 
 class TagMapper
 {
@@ -12,8 +11,6 @@ class TagMapper
     {
         while ($lexer->moveNext()) {
             if ($lexer->isNextToken(Lexer::T_OPEN_BRACKET) === true) {
-                //$lexer->moveNext(); // step on T_OPEN_BRACKET
-
                 $tagData = $this->parseTag($lexer);
                 return $this->mapObject($tagData);
             }
@@ -28,7 +25,7 @@ class TagMapper
         $tagData = array(
             'summary' => array(
                 'textContent' => '',
-                'position' => $lexer->lookahead['position'], // Lexer::T_OPEN_BRACKET
+                'position' => $lexer->lookahead['position'], // currently on Lexer::T_OPEN_BRACKET
                 'length' => 0
             ),
             'path' => array(),

@@ -12,6 +12,10 @@ class XMLHelper
      */
     public function deepEqual($node1, $node2)
     {
+        if ($node1 === null && $node2 === null) {
+            return false;
+        }
+
         if (($node1 === null && $node2 !== null) || ($node1 !== null && $node2 === null)) {
             return false;
         }
@@ -46,9 +50,15 @@ class XMLHelper
         $node2Child = $node2->firstChild;
 
         while ($node1Child) {
-            if ($node2Child === null || $this->deepEqual($node1Child, $node2Child) === false) {
+
+            if ($node2Child === null) { // if $node1 child count > $node2 child count
                 return false;
             }
+
+            if ($this->deepEqual($node1Child, $node2Child) === false) {
+                return false;
+            }
+
 
             $node1Child = $node1Child->nextSibling;
             $node2Child = $node2Child->nextSibling;
