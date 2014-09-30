@@ -8,12 +8,12 @@ class XMLHelper
      * @param $node2 \DOMNode|null
      * @return bool
      * @link http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-Node3-isEqualNode
-     * @link https://github.com/WebKit/webkit/blob/master/Source/WebCore/dom/Node.cpp#L1060
+     * @link https://github.com/WebKit/webkit/blob/master/Source/WebCore/dom/Node.cpp#L1081
      */
     public function deepEqual($node1, $node2)
     {
         if ($node1 === null && $node2 === null) {
-            return false;
+            return true;
         }
 
         if (($node1 === null && $node2 !== null) || ($node1 !== null && $node2 === null)) {

@@ -50,9 +50,8 @@ class Templator
                 $nodeStructure[Document::XPATH_PROPERTY],
                 $nodeStructure[Document::XPATH_TEXT]
             );
-            $cleaner->hardcoreMode();
+            $cleaner->hardcoreMode(); // really hardcore :D
             $cleaner->cleanup();
-
 
             $template->preserveWhiteSpace = true;
             $template->formatOutput = true;
@@ -90,7 +89,6 @@ class Templator
         $output = $xslt->transformToDoc(
             $this->assign($values)
         );
-        $output = $template;
 
         if ($this->debug === true) {
             $output->preserveWhiteSpace = true;

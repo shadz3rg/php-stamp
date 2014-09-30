@@ -25,7 +25,7 @@ class Processor
         $stylesheet->appendChild($output);
 
         $template = $document->createElementNS(self::XSL_NS, 'xsl:template');
-        $template->setAttribute('match', self::VALUES_PATH);
+        $template->setAttribute('match', '/' . self::VALUES_PATH);
         $template->appendChild($document->documentElement);
         $stylesheet->appendChild($template);
 
@@ -38,7 +38,7 @@ class Processor
 
         /** @var $textNode \DOMText */
         foreach ($node->childNodes as $textNode) {
-            $nodeValue = utf8_decode($textNode->nodeValue);
+            $nodeValue = $textNode->nodeValue; // utf8_decode
 
             // before [[tag]] after
             $nodeValueParts = explode($tag->getTextContent(), $nodeValue, 2); // fix similar tags in one node
@@ -52,7 +52,7 @@ class Processor
 
                 // add xsl logic TODO Functions
                 $placeholder = $template->createElementNS(self::XSL_NS, 'xsl:value-of');
-                $placeholder->setAttribute('select', self::VALUES_PATH . '/' . $tag->getXmlPath());
+                $placeholder->setAttribute('select', '/' . self::VALUES_PATH . '/' . $tag->getXmlPath());
                 $node->insertBefore($placeholder, $textNode);
 
                 // text after
