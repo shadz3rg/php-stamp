@@ -2,29 +2,33 @@
 
 namespace OfficeML\Document;
 
-use OfficeML\Processor\TagMapper;
+use OfficeML\Exception\InvalidArgumentException;
 
 /**
  * @link http://msdn.microsoft.com/ru-ru/library/office/gg278327(v=office.15).aspx
  */
 class WordDocument extends Document
 {
-    private $structure = array(
-                '//w:p', // strict path not needed
-                'w:r',
-                'w:rPr',
-                'w:t'
-            );
-
+    private $structure = array('w:p', 'w:r', 'w:rPr', 'w:t');
 
     public function getContentPath()
     {
         return 'word/document.xml';
     }
 
-    public function getNodeStructure()
+    public function getNodeQuery($type, $global = false)
     {
-        return $this->structure;
+        if (isset($this->structure[$type]) === false) {
+            throw new InvalidArgumentException('Element with this index not defined in structure');
+        }
+
+        $return = array();
+        if ($global === true) {
+            $return[] = '//';
+        }
+        $return[] = $this->structure[$type];
+
+        return implode($return);
     }
 
     public function getNodePath()

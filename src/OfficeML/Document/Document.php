@@ -62,6 +62,6 @@ abstract class Document implements DocumentInterface
     }
 
     abstract public function getContentPath();
-    abstract public function getNodeStructure();
     abstract public function getNodePath();
+    abstract public function getNodeQuery($type, $global = false);
 }

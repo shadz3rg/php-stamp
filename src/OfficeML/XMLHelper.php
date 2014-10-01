@@ -112,6 +112,12 @@ class XMLHelper
         }
     }
 
+    public static function queryTemplate(\DOMDocument $document, $xpathQuery)
+    {
+        $xpath = new \DOMXPath($document);
+        return $xpath->query($xpathQuery);
+    }
+
     public static function prettyPrint(\DOMDocument $document)
     {
         $document->preserveWhiteSpace = false;

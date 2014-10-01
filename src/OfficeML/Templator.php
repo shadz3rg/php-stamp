@@ -32,23 +32,22 @@ class Templator
 
     public function render(Document $document, array $values)
     {
-        $nodeStructure = $document->getNodeStructure();
         $contentFile = $document->extract($this->cachePath, $this->debug);
 
         $template = new \DOMDocument('1.0', 'UTF-8');
         $template->load($contentFile);
 
-        // fix node breaks
-        $cleaner = new Cleanup(
-            $template,
-            $nodeStructure[Document::XPATH_PARAGRAPH],
-            $nodeStructure[Document::XPATH_RUN],
-            $nodeStructure[Document::XPATH_RUN_PROPERTY],
-            $nodeStructure[Document::XPATH_TEXT]
-        );
-
         // process xml document into xsl template
         if ($template->documentElement->nodeName !== 'xsl:stylesheet') {
+
+            // fix node breaks
+            $cleaner = new Cleanup(
+                $template,
+                $document->getNodeQuery(Document::XPATH_PARAGRAPH, true),
+                $document->getNodeQuery(Document::XPATH_RUN),
+                $document->getNodeQuery(Document::XPATH_RUN_PROPERTY),
+                $document->getNodeQuery(Document::XPATH_TEXT)
+            );
 
             // prepare xml document
             Processor::escapeXsl($template);
@@ -59,7 +58,7 @@ class Templator
             Processor::wrapIntoTemplate($template);
 
             // find node list with text and handle tags TODO query contains bracket
-            $nodeList = $this->queryTemplate($template, $document->getNodePath());
+            $nodeList = XMLHelper::queryTemplate($template, $document->getNodePath());
             $this->handleNodeList($nodeList);
 
             // cache template
@@ -82,11 +81,7 @@ class Templator
         return new Result($output, $document);
     }
 
-    private function queryTemplate(\DOMDocument $document, $xpathQuery)
-    {
-        $xpath = new \DOMXPath($document);
-        return $xpath->query($xpathQuery);
-    }
+
 
     private function handleNodeList(\DOMNodeList $nodeList)
     {
