@@ -3,7 +3,6 @@
 namespace OfficeML;
 
 use OfficeML\Document\Document;
-use OfficeML\Document\DocumentInterface;
 use OfficeML\Processor\Lexer;
 use OfficeML\Processor\TagMapper;
 
@@ -30,6 +29,13 @@ class Templator
         $this->brackets = $brackets;
     }
 
+    /**
+     * Process given document into template and render it with given values.
+     *
+     * @param Document $document
+     * @param array $values
+     * @return Result
+     */
     public function render(Document $document, array $values)
     {
         $contentFile = $document->extract($this->cachePath, $this->debug);
@@ -59,7 +65,7 @@ class Templator
 
             // find node list with text and handle tags TODO query contains bracket
             $nodeList = XMLHelper::queryTemplate($template, $document->getNodePath());
-            $this->handleNodeList($nodeList);
+            $this->handleTags($nodeList);
 
             // cache template
             $template->save($contentFile);
@@ -81,9 +87,7 @@ class Templator
         return new Result($output, $document);
     }
 
-
-
-    private function handleNodeList(\DOMNodeList $nodeList)
+    private function handleTags(\DOMNodeList $nodeList)
     {
         $lexer = new Lexer($this->brackets);
         $mapper = new TagMapper;

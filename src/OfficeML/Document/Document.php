@@ -13,7 +13,6 @@ abstract class Document implements DocumentInterface
 
     public $documentName;
     public $documentPath;
-    public $contentPath;
 
     /**
      * Constructor.

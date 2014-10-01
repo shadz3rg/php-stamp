@@ -26,25 +26,5 @@ class XMLHelperTest extends \PHPUnit_Framework_TestCase
 
         $this->assertTrue($result);
     }
-
-    /** @test */
-    public function it_ignores()
-    {
-        // prepare xml
-        $xml = '<root>
-                    <child><pr><b/></pr></child>
-                    <child><pr><b/><ignoreme/></pr></child>
-                </root>';
-        $content = new \DOMDocument('1.0', 'UTF-8');
-        $content->loadXML($xml);
-
-        $xpath = new \DOMXPath($content);
-        $nodeList = $xpath->query('/root/child');
-
-        $helper = new XMLHelper();
-        $result = $helper->deepEqual($nodeList->item(0), $nodeList->item(1), array('ignoreme'));
-
-        $this->assertTrue($result);
-    }
 }
  
