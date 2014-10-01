@@ -32,57 +32,44 @@ class Templator
 
     public function render(Document $document, array $values)
     {
+        $nodeStructure = $document->getNodeStructure();
         $contentFile = $document->extract($this->cachePath, $this->debug);
 
         $template = new \DOMDocument('1.0', 'UTF-8');
         $template->load($contentFile);
 
-        // process document into template
+        // fix node breaks
+        $cleaner = new Cleanup(
+            $template,
+            $nodeStructure[Document::XPATH_PARAGRAPH],
+            $nodeStructure[Document::XPATH_RUN],
+            $nodeStructure[Document::XPATH_PROPERTY],
+            $nodeStructure[Document::XPATH_TEXT]
+        );
+
+        // process xml document into xsl template
         if ($template->documentElement->nodeName !== 'xsl:stylesheet') {
 
-            $nodeStructure = $document->getNodeStructure();
-
-            // fix node breaks
-            $cleaner = new Cleanup(
-                $template,
-                $nodeStructure[Document::XPATH_PARAGRAPH],
-                $nodeStructure[Document::XPATH_RUN],
-                $nodeStructure[Document::XPATH_PROPERTY],
-                $nodeStructure[Document::XPATH_TEXT]
-            );
-            $cleaner->hardcoreMode(); // really hardcore :D
+            // prepare xml document
+            Processor::escapeXsl($template);
+            $cleaner->hardcoreCleanup();
             $cleaner->cleanup();
 
-            $template->preserveWhiteSpace = true;
-            $template->formatOutput = true;
-            echo '<pre>' . htmlentities($template->saveXML()) . '</pre>';
+            // process prepared xml document
+            Processor::wrapIntoTemplate($template);
 
-            // process fixed document
-            $processor = new Processor;
-            $processor->wrapIntoTemplate($template);
-
-            // find tags
+            // find node list with text and handle tags TODO query contains bracket
             $nodeList = $this->queryTemplate($template, $document->getNodePath());
+            $this->handleNodeList($nodeList);
 
-            $lexer = new Lexer($this->brackets);
-            $mapper = new TagMapper;
-
-            foreach ($nodeList as $node) {
-                $decodedValue = utf8_decode($node->nodeValue);
-                $lexer->setInput($decodedValue);
-
-                while ($tag = $mapper->parse($lexer)) {
-                    $processor->insertTemplateLogic($tag, $node);
-                }
-            }
-
+            // cache template
             $template->save($contentFile);
 
-            // FIXME Workaround for disappeared xml: attributes, reload as temporary fix
+            // FIXME workaround for disappeared xml: attributes, reload as temporary fix
             $template->load($contentFile);
         }
 
-        // Fill with values
+        // fill with values
         $xslt = new \XSLTProcessor();
         $xslt->importStylesheet($template);
 
@@ -90,12 +77,7 @@ class Templator
             $this->assign($values)
         );
 
-        //$output = $template;
-
-        if ($this->debug === true) {
-            $output->preserveWhiteSpace = true;
-            $output->formatOutput = true;
-        }
+        Processor::undoEscapeXsl($template);
 
         return new Result($output, $document);
     }
@@ -106,8 +88,24 @@ class Templator
         return $xpath->query($xpathQuery);
     }
 
+    private function handleNodeList(\DOMNodeList $nodeList)
+    {
+        $lexer = new Lexer($this->brackets);
+        $mapper = new TagMapper;
+
+        foreach ($nodeList as $node) {
+            $decodedValue = utf8_decode($node->nodeValue);
+            $lexer->setInput($decodedValue);
+
+            while ($tag = $mapper->parse($lexer)) {
+                Processor::insertTemplateLogic($tag, $node);
+            }
+        }
+    }
+
     /**
-     * Create DOMDocument and encode array
+     * Create DOMDocument and encode array into XML recursively
+     *
      * @param array $tokens
      * @return \DOMDocument
      */
@@ -118,7 +116,7 @@ class Templator
         $tokensNode = $document->createElement(Processor::VALUES_PATH);
         $document->appendChild($tokensNode);
 
-        Helper::xmlEncode($tokens, $tokensNode, $document);
+        XMLHelper::xmlEncode($tokens, $tokensNode, $document);
 
         return $document;
     }

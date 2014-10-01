@@ -15,7 +15,7 @@ class Result
         $this->document = $document;
     }
 
-    public function getDOMDocument()
+    public function getSource()
     {
         return $this->output;
     }

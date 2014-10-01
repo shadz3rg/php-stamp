@@ -4,8 +4,8 @@ namespace OfficeML\Document;
 
 use OfficeML\Processor\TagMapper;
 
-/*
- * http://msdn.microsoft.com/ru-ru/library/office/gg278327(v=office.15).aspx
+/**
+ * @link http://msdn.microsoft.com/ru-ru/library/office/gg278327(v=office.15).aspx
  */
 class WordDocument extends Document
 {

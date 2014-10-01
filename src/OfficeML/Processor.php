@@ -14,7 +14,7 @@ class Processor
      * @param \DOMDocument $document
      * @return void
      */
-    public function wrapIntoTemplate(\DOMDocument $document)
+    public static function wrapIntoTemplate(\DOMDocument $document)
     {
         $stylesheet = $document->createElementNS(self::XSL_NS, 'xsl:stylesheet');
         $stylesheet->setAttribute('version', '1.0');
@@ -22,10 +22,6 @@ class Processor
         $output = $document->createElementNS(self::XSL_NS, 'xsl:output');
         $output->setAttribute('method', 'xml');
         $output->setAttribute('encoding', 'UTF-8'); // TODO variable encoding?
-        $stylesheet->appendChild($output);
-
-        $output = $document->createElementNS(self::XSL_NS, 'xsl:preserve-space');
-        $output->setAttribute('elements', 'w:t');
         $stylesheet->appendChild($output);
 
         $template = $document->createElementNS(self::XSL_NS, 'xsl:template');
@@ -72,5 +68,33 @@ class Processor
         }
 
         return false;
+    }
+
+    public static function escapeXsl(\DOMDocument $document)
+    {
+        $xpath = new \DOMXPath($document);
+        // escape attr for xsl
+        $nodeList = $xpath->query('//*[contains(@uri, "{") and contains(@uri ,"}")]');
+        /** @var $node \DOMNode  */
+        foreach ($nodeList as $node) {
+            /** @var $attr \DOMAttr  */
+            foreach ($node->attributes as $attr) {
+                $attr->nodeValue = str_replace(array('{', '}'), array('{{', '}}'), $attr->nodeValue);
+            }
+        }
+    }
+
+    public static function undoEscapeXsl(\DOMDocument $document)
+    {
+        $xpath = new \DOMXPath($document);
+        // escape attr for xsl
+        $nodeList = $xpath->query('//*[contains(@uri, "{{") and contains(@uri ,"}}")]');
+        /** @var $node \DOMNode  */
+        foreach ($nodeList as $node) {
+            /** @var $attr \DOMAttr  */
+            foreach ($node->attributes as $attr) {
+                $attr->nodeValue = str_replace(array('{{', '}}'), array('{', '}'), $attr->nodeValue);
+            }
+        }
     }
 }
