@@ -8,7 +8,7 @@ abstract class Document implements DocumentInterface
 {
     const XPATH_PARAGRAPH  = 0;
     const XPATH_RUN  = 1;
-    const XPATH_PROPERTY  = 2;
+    const XPATH_RUN_PROPERTY  = 2;
     const XPATH_TEXT  = 3;
 
     public $documentName;

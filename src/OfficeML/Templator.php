@@ -43,7 +43,7 @@ class Templator
             $template,
             $nodeStructure[Document::XPATH_PARAGRAPH],
             $nodeStructure[Document::XPATH_RUN],
-            $nodeStructure[Document::XPATH_PROPERTY],
+            $nodeStructure[Document::XPATH_RUN_PROPERTY],
             $nodeStructure[Document::XPATH_TEXT]
         );
 
