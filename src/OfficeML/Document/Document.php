@@ -11,8 +11,8 @@ abstract class Document implements DocumentInterface
     const XPATH_RUN_PROPERTY  = 2;
     const XPATH_TEXT  = 3;
 
-    public $documentName;
-    public $documentPath;
+    private $documentName;
+    private $documentPath;
 
     /**
      * Constructor.
@@ -40,12 +40,12 @@ abstract class Document implements DocumentInterface
      */
     public function extract($to, $overwrite)
     {
-        $filePath = $to . $this->documentName . '/' . $this->getContentPath();
+        $filePath = $to . $this->getDocumentName() . '/' . $this->getContentPath();
 
         if (!file_exists($filePath) || $overwrite === true) {
             $zip = new \ZipArchive();
 
-            $code = $zip->open($this->documentPath);
+            $code = $zip->open($this->getDocumentPath());
             if ($code !== true) {
                 throw new InvalidArgumentException(
                     'Can`t open archive "' . $this->documentPath . '", code "' . $code . '" returned.'
@@ -60,7 +60,13 @@ abstract class Document implements DocumentInterface
         return $filePath;
     }
 
-    abstract public function getContentPath();
-    abstract public function getNodePath();
-    abstract public function getNodeQuery($type, $global = false);
+    public function getDocumentName()
+    {
+        return $this->documentName;
+    }
+
+    public function getDocumentPath()
+    {
+        return $this->documentPath;
+    }
 }

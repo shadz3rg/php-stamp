@@ -3,13 +3,14 @@
 namespace OfficeML;
 
 use OfficeML\Document\Document;
+use OfficeML\Document\DocumentInterface;
 
 class Result
 {
     private $output;
     private $document;
 
-    public function __construct(\DOMDocument $output, Document $document)
+    public function __construct(\DOMDocument $output, DocumentInterface $document)
     {
         $this->output = $output;
         $this->document = $document;
@@ -23,12 +24,12 @@ class Result
     public function download($fileName = null)
     {
         if ($fileName === null) {
-            $fileName = $this->document->documentName;
+            $fileName = $this->document->getDocumentName();
         }
 
         $tempArchive = tempnam(sys_get_temp_dir(), 'doc');
 
-        if (copy($this->document->documentPath, $tempArchive) === true) {
+        if (copy($this->document->getDocumentPath(), $tempArchive) === true) {
             $zip = new \ZipArchive();
             $zip->open($tempArchive);
             $zip->addFromString($this->document->getContentPath(), $this->output->saveXML());

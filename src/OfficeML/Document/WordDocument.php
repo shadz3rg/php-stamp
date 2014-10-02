@@ -2,6 +2,7 @@
 
 namespace OfficeML\Document;
 
+use OfficeML\Document\WordDocument\Cleanup;
 use OfficeML\Exception\InvalidArgumentException;
 
 /**
@@ -35,4 +36,19 @@ class WordDocument extends Document
     {
         return '//w:p/w:r/w:t'; // FIXME
     }
-} 
+
+    public function cleanup(\DOMDocument $template)
+    {
+        // fix node breaks
+        $cleaner = new Cleanup(
+            $template,
+            $this->getNodeQuery(Document::XPATH_PARAGRAPH, true),
+            $this->getNodeQuery(Document::XPATH_RUN),
+            $this->getNodeQuery(Document::XPATH_RUN_PROPERTY),
+            $this->getNodeQuery(Document::XPATH_TEXT)
+        );
+
+        $cleaner->hardcoreCleanup();
+        $cleaner->cleanup();
+    }
+}

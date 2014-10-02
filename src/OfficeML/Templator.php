@@ -3,6 +3,7 @@
 namespace OfficeML;
 
 use OfficeML\Document\Document;
+use OfficeML\Document\DocumentInterface;
 use OfficeML\Processor\Lexer;
 use OfficeML\Processor\TagMapper;
 
@@ -32,11 +33,11 @@ class Templator
     /**
      * Process given document into template and render it with given values.
      *
-     * @param Document $document
+     * @param DocumentInterface $document
      * @param array $values
      * @return Result
      */
-    public function render(Document $document, array $values)
+    public function render(DocumentInterface $document, array $values)
     {
         $contentFile = $document->extract($this->cachePath, $this->debug);
 
@@ -46,19 +47,10 @@ class Templator
         // process xml document into xsl template
         if ($template->documentElement->nodeName !== 'xsl:stylesheet') {
 
-            // fix node breaks
-            $cleaner = new Cleanup(
-                $template,
-                $document->getNodeQuery(Document::XPATH_PARAGRAPH, true),
-                $document->getNodeQuery(Document::XPATH_RUN),
-                $document->getNodeQuery(Document::XPATH_RUN_PROPERTY),
-                $document->getNodeQuery(Document::XPATH_TEXT)
-            );
-
             // prepare xml document
             Processor::escapeXsl($template);
-            $cleaner->hardcoreCleanup();
-            $cleaner->cleanup();
+
+            $document->cleanup($template);
 
             // process prepared xml document
             Processor::wrapIntoTemplate($template);
