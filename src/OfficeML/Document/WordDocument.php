@@ -51,4 +51,15 @@ class WordDocument extends Document
         $cleaner->hardcoreCleanup();
         $cleaner->cleanup();
     }
+
+    public function getExpression($id)
+    {
+        $className = 'OfficeML\\Document\\WordDocument\\Expression\\' . ucfirst($id);
+
+        if (class_exists($className) === false) {
+            throw new InvalidArgumentException('Class by id ' . $id . ' not found.');
+        }
+
+        return new $className;
+    }
 }

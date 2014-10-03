@@ -1,6 +1,8 @@
 <?php
 namespace OfficeML;
 
+use OfficeML\Exception\ParsingException;
+
 class XMLHelper
 {
     /**
@@ -129,6 +131,19 @@ class XMLHelper
         $document->formatOutput = false;
 
         return '<pre>' . htmlentities($xmlString) . '</pre>';
+    }
+
+    public static function parentUntil($nodeName, \DOMNode $node)
+    {
+        $parent = $node->parentNode;
+        while ($parent->nodeName !== $nodeName) {
+            $parent = $parent->parentNode;
+            if ($parent === null) {
+                throw new ParsingException('Row not found.');
+            }
+        }
+
+        return $parent;
     }
 
     /**

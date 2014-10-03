@@ -57,7 +57,7 @@ class Templator
 
             // find node list with text and handle tags TODO query contains bracket
             $nodeList = XMLHelper::queryTemplate($template, $document->getNodePath());
-            $this->handleTags($nodeList);
+            $this->handleTags($nodeList, $document);
 
             // cache template
             $template->save($contentFile);
@@ -79,17 +79,24 @@ class Templator
         return new Result($output, $document);
     }
 
-    private function handleTags(\DOMNodeList $nodeList)
+    private function handleTags(\DOMNodeList $nodeList, DocumentInterface $document)
     {
         $lexer = new Lexer($this->brackets);
         $mapper = new TagMapper;
 
+        /** @var $node \DOMElement */
         foreach ($nodeList as $node) {
             $decodedValue = utf8_decode($node->nodeValue);
             $lexer->setInput($decodedValue);
 
             while ($tag = $mapper->parse($lexer)) {
-                Processor::insertTemplateLogic($tag, $node);
+
+                foreach ($tag->getFunctions() as $function) {
+                    $expression = $document->getExpression($function['function']);
+                    $expression->insertTemplateLogic($function['arguments'], $node, $node->ownerDocument);
+                }
+
+                Processor::insertTemplateLogic($tag, $node, $node->ownerDocument);
             }
         }
     }

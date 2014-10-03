@@ -46,6 +46,11 @@ class Tag
         return implode('/', $this->path);
     }
 
+    public function getFunctions()
+    {
+        return $this->functions; // TODO improve
+    }
+
     public function getTextContent()
     {
         return $this->summary['textContent'];

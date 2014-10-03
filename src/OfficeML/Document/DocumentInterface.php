@@ -2,6 +2,8 @@
 
 namespace OfficeML\Document;
 
+use OfficeML\Expression;
+
 interface DocumentInterface
 {
     public function extract($to, $overwrite);
@@ -13,4 +15,10 @@ interface DocumentInterface
     public function getNodeQuery($type, $global = false);
 
     public function cleanup(\DOMDocument $template);
+
+    /**
+     * @param $id
+     * @return Expression
+     */
+    public function getExpression($id);
 } 

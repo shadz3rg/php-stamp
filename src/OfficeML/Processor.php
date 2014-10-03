@@ -32,10 +32,8 @@ class Processor
         $document->appendChild($stylesheet);
     }
 
-    public static function insertTemplateLogic(Tag $tag, \DOMElement $node)
+    public static function insertTemplateLogic(Tag $tag, \DOMElement $node, \DOMDocument $template)
     {
-        $template = $node->ownerDocument;
-
         $node->setAttribute('xml:space', 'preserve'); // TODO Fix whitespaces in mixed node
 
         /** @var $textNode \DOMText */
