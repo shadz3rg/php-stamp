@@ -2,7 +2,9 @@
 
 namespace OfficeML;
 
+use OfficeML\Processor\Tag;
+
 interface Expression
 {
-    public function insertTemplateLogic(array $arguments, \DOMNode $node, \DOMDocument $template);
+    public function insertTemplateLogic(array $arguments, \DOMNode $node, Tag $tag);
 } 

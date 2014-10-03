@@ -6,7 +6,7 @@ use OfficeML\Processor\Tag;
 class Processor
 {
     const XSL_NS = 'http://www.w3.org/1999/XSL/Transform';
-    const VALUES_PATH = 'values';
+    const VALUE_NODE = 'values';
 
     /**
      * Wrap document content into xsl template.
@@ -25,15 +25,17 @@ class Processor
         $stylesheet->appendChild($output);
 
         $template = $document->createElementNS(self::XSL_NS, 'xsl:template');
-        $template->setAttribute('match', '/' . self::VALUES_PATH);
+        $template->setAttribute('match', '/' . self::VALUE_NODE);
         $template->appendChild($document->documentElement);
         $stylesheet->appendChild($template);
 
         $document->appendChild($stylesheet);
     }
 
-    public static function insertTemplateLogic(Tag $tag, \DOMElement $node, \DOMDocument $template)
+    public static function insertTemplateLogic($search, $path, \DOMElement $node)
     {
+        $template = $node->ownerDocument;
+
         $node->setAttribute('xml:space', 'preserve'); // TODO Fix whitespaces in mixed node
 
         /** @var $textNode \DOMText */
@@ -41,7 +43,7 @@ class Processor
             $nodeValue = $textNode->nodeValue; // utf8_decode
 
             // before [[tag]] after
-            $nodeValueParts = explode($tag->getTextContent(), $nodeValue, 2); // fix similar tags in one node
+            $nodeValueParts = explode($search, $nodeValue, 2); // fix similar tags in one node
 
             if (count($nodeValueParts) === 2) {
                 $textNode->nodeValue = ''; // reset
@@ -52,7 +54,7 @@ class Processor
 
                 // add xsl logic TODO Functions
                 $placeholder = $template->createElementNS(self::XSL_NS, 'xsl:value-of');
-                $placeholder->setAttribute('select', '/' . self::VALUES_PATH . '/' . $tag->getXmlPath());
+                $placeholder->setAttribute('select', $path);
                 $node->insertBefore($placeholder, $textNode);
 
                 // text after

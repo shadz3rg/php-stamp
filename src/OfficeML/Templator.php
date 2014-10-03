@@ -55,9 +55,9 @@ class Templator
             // process prepared xml document
             Processor::wrapIntoTemplate($template);
 
-            // find node list with text and handle tags TODO query contains bracket
+            // find node list with text and handle tags TODO add contains brackets to query
             $nodeList = XMLHelper::queryTemplate($template, $document->getNodePath());
-            $this->handleTags($nodeList, $document);
+            $this->searchAndReplace($nodeList, $document);
 
             // cache template
             $template->save($contentFile);
@@ -79,7 +79,7 @@ class Templator
         return new Result($output, $document);
     }
 
-    private function handleTags(\DOMNodeList $nodeList, DocumentInterface $document)
+    private function searchAndReplace(\DOMNodeList $nodeList, DocumentInterface $document)
     {
         $lexer = new Lexer($this->brackets);
         $mapper = new TagMapper;
@@ -90,13 +90,16 @@ class Templator
             $lexer->setInput($decodedValue);
 
             while ($tag = $mapper->parse($lexer)) {
-
                 foreach ($tag->getFunctions() as $function) {
                     $expression = $document->getExpression($function['function']);
-                    $expression->insertTemplateLogic($function['arguments'], $node, $node->ownerDocument);
+                    $expression->insertTemplateLogic($function['arguments'], $node, $tag);
                 }
 
-                Processor::insertTemplateLogic($tag, $node, $node->ownerDocument);
+                // insert simple value-of
+                if ($tag->hasFunctions() === false) {
+                    $absolutePath = '/' . Processor::VALUE_NODE . '/' . $tag->getXmlPath();
+                    Processor::insertTemplateLogic($tag->getTextContent(), $absolutePath, $node);
+                }
             }
         }
     }
@@ -111,7 +114,7 @@ class Templator
     {
         $document = new \DOMDocument('1.0', 'UTF-8');
 
-        $tokensNode = $document->createElement(Processor::VALUES_PATH);
+        $tokensNode = $document->createElement(Processor::VALUE_NODE);
         $document->appendChild($tokensNode);
 
         XMLHelper::xmlEncode($tokens, $tokensNode, $document);

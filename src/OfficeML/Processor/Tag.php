@@ -46,6 +46,16 @@ class Tag
         return implode('/', $this->path);
     }
 
+    public function getRelativePath()
+    {
+        return end($this->path);
+    }
+
+    public function hasFunctions()
+    {
+        return (count($this->functions) !== 0);
+    }
+
     public function getFunctions()
     {
         return $this->functions; // TODO improve

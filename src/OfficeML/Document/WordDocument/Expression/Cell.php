@@ -5,17 +5,20 @@ namespace OfficeML\Document\WordDocument\Expression;
 use OfficeML\Exception\ExpressionException;
 use OfficeML\Expression;
 use OfficeML\Processor;
+use OfficeML\Processor\Tag;
 use OfficeML\XMLHelper;
 
 class Cell implements Expression
 {
-    public function insertTemplateLogic(array $arguments, \DOMNode $node, \DOMDocument $template)
+    public function insertTemplateLogic(array $arguments, \DOMNode $node, Tag $tag)
     {
         if (count($arguments) !== 1) {
             throw new ExpressionException('Wrong arguments number, 1 needed, got ' . count($arguments));
         }
 
         list($rowName) = $arguments;
+
+        $template = $node->ownerDocument;
 
         // find existing or initiate new table row template
         if ($this->isRowTemplateExist($rowName, $template) === false) {
@@ -28,7 +31,7 @@ class Cell implements Expression
 
             // call-template for each row
             $foreachNode = $template->createElementNS(Processor::XSL_NS, 'xsl:for-each');
-            $foreachNode->setAttribute('select', '/' . Processor::VALUES_PATH . '/' . $rowName . '/item');
+            $foreachNode->setAttribute('select', '/' . Processor::VALUE_NODE . '/' . $rowName . '/item');
             $callTemplateNode = $template->createElementNS(Processor::XSL_NS, 'xsl:call-template');
             $callTemplateNode->setAttribute('name', $rowName);
             $foreachNode->appendChild($callTemplateNode);
@@ -39,12 +42,14 @@ class Cell implements Expression
             // move node into row template
             $rowTemplate->appendChild($rowNode);
             $template->documentElement->appendChild($rowTemplate);
+
         }
 
-        $placeholder = $template->createElementNS(Processor::XSL_NS, 'xsl:value-of');
-        $placeholder->setAttribute('select', $rowName);
+        $relativePath = $tag->getRelativePath();
+        Processor::insertTemplateLogic($tag->getTextContent(), $relativePath, $node);
 
-        $node->appendChild($placeholder);
+
+
         return $node;
     }
 
