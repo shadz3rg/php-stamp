@@ -74,7 +74,7 @@ class Templator
             $this->assign($values)
         );
 
-        Processor::undoEscapeXsl($template);
+        Processor::undoEscapeXsl($output);
 
         return new Result($output, $document);
     }
