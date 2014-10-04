@@ -2,7 +2,8 @@
 
 namespace OfficeML\Document;
 
-use OfficeML\Expression;
+use OfficeML\Extension\ExtensionInterface;
+use OfficeML\Processor\Tag;
 
 interface DocumentInterface
 {
@@ -18,7 +19,8 @@ interface DocumentInterface
 
     /**
      * @param $id
-     * @return Expression
+     * @param $tag
+     * @return ExtensionInterface
      */
-    public function getExpression($id);
+    public function getExpression($id, Tag $tag);
 } 

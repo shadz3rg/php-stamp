@@ -4,6 +4,7 @@ namespace OfficeML\Document;
 
 use OfficeML\Document\WordDocument\Cleanup;
 use OfficeML\Exception\InvalidArgumentException;
+use OfficeML\Processor\Tag;
 
 /**
  * @link http://msdn.microsoft.com/ru-ru/library/office/gg278327(v=office.15).aspx
@@ -52,14 +53,14 @@ class WordDocument extends Document
         $cleaner->cleanup();
     }
 
-    public function getExpression($id)
+    public function getExpression($id, Tag $tag)
     {
-        $className = 'OfficeML\\Document\\WordDocument\\Expression\\' . ucfirst($id);
+        $className = 'OfficeML\\Document\\WordDocument\\Extension\\' . ucfirst($id);
 
         if (class_exists($className) === false) {
             throw new InvalidArgumentException('Class by id ' . $id . ' not found.');
         }
 
-        return new $className;
+        return new $className($tag);
     }
 }

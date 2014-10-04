@@ -1,24 +1,34 @@
 <?php
 
-namespace OfficeML\Document\WordDocument\Expression;
+namespace OfficeML\Document\WordDocument\Extension;
 
-use OfficeML\Exception\ExpressionException;
-use OfficeML\Expression;
+use OfficeML\Exception\ExtensionException;
+use OfficeML\Extension\Extension;
 use OfficeML\Processor;
-use OfficeML\Processor\Tag;
 use OfficeML\XMLHelper;
 
-class ListItem implements Expression
+class ListItem extends Extension
 {
-    public function insertTemplateLogic(array $arguments, \DOMNode $node, Tag $tag)
+    /**
+     * @inherit
+     */
+    protected function prepareArguments(array $arguments)
     {
         if (count($arguments) !== 0) {
-            throw new ExpressionException('Wrong arguments number, 0 needed, got ' . count($arguments));
+            throw new ExtensionException('Wrong arguments number, 0 needed, got ' . count($arguments));
         }
 
+        return $arguments;
+    }
+
+    /**
+     * @inherit
+     */
+    protected function insertTemplateLogic(array $arguments, \DOMElement $node)
+    {
         $template = $node->ownerDocument;
 
-        $listName = $tag->getRelativePath();
+        $listName = $this->tag->getRelativePath();
 
         // find existing or initiate new table row template
         if ($this->isListItemTemplateExist($listName, $template) === false) {
@@ -45,12 +55,8 @@ class ListItem implements Expression
 
         }
 
-// FIXME пофиксить повторное использование функции
-        Processor::insertTemplateLogic($tag->getTextContent(), '.', $node);
-
-
-
-        return $node;
+        // FIXME пофиксить повторное использование функции
+        Processor::insertTemplateLogic($this->tag->getTextContent(), '.', $node);
     }
 
     private function isListItemTemplateExist($rowName, \DOMDocument $template)
@@ -59,7 +65,7 @@ class ListItem implements Expression
         $nodeList = $xpath->query('/xsl:stylesheet/xsl:template[@name="' . $rowName . '"]');
 
         if ($nodeList->length > 1) {
-            throw new ExpressionException('Unexpected template count.');
+            throw new ExtensionException('Unexpected template count.');
         }
 
         return ($nodeList->length === 1);

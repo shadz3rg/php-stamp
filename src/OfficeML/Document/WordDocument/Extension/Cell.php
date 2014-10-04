@@ -1,21 +1,31 @@
 <?php
 
-namespace OfficeML\Document\WordDocument\Expression;
+namespace OfficeML\Document\WordDocument\Extension;
 
-use OfficeML\Exception\ExpressionException;
-use OfficeML\Expression;
+use OfficeML\Exception\ExtensionException;
+use OfficeML\Extension\Extension;
 use OfficeML\Processor;
-use OfficeML\Processor\Tag;
 use OfficeML\XMLHelper;
 
-class Cell implements Expression
+class Cell extends Extension
 {
-    public function insertTemplateLogic(array $arguments, \DOMNode $node, Tag $tag)
+    /**
+     * @inherit
+     */
+    protected function prepareArguments(array $arguments)
     {
         if (count($arguments) !== 1) {
-            throw new ExpressionException('Wrong arguments number, 1 needed, got ' . count($arguments));
+            throw new ExtensionException('Wrong arguments number, 1 needed, got ' . count($arguments));
         }
 
+        return $arguments;
+    }
+
+    /**
+     * @inherit
+     */
+    protected function insertTemplateLogic(array $arguments, \DOMElement $node)
+    {
         list($rowName) = $arguments;
 
         $template = $node->ownerDocument;
@@ -44,10 +54,8 @@ class Cell implements Expression
             $template->documentElement->appendChild($rowTemplate);
         }
 
-        $relativePath = $tag->getRelativePath();
-        Processor::insertTemplateLogic($tag->getTextContent(), $relativePath, $node);
-
-        return $node;
+        $relativePath = $this->tag->getRelativePath();
+        Processor::insertTemplateLogic($this->tag->getTextContent(), $relativePath, $node);
     }
 
     private function isRowTemplateExist($rowName, \DOMDocument $template)
@@ -56,9 +64,9 @@ class Cell implements Expression
         $nodeList = $xpath->query('/xsl:stylesheet/xsl:template[@name="' . $rowName . '"]');
 
         if ($nodeList->length > 1) {
-            throw new ExpressionException('Unexpected template count.');
+            throw new ExtensionException('Unexpected template count.');
         }
 
         return ($nodeList->length === 1);
     }
-} 
+}

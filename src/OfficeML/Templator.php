@@ -101,8 +101,8 @@ class Templator
             while ($tag = $mapper->parse($lexer)) {
 
                 foreach ($tag->getFunctions() as $function) {
-                    $expression = $document->getExpression($function['function']);
-                    $expression->insertTemplateLogic($function['arguments'], $node, $tag);
+                    $expression = $document->getExpression($function['function'], $tag);
+                    $expression->execute($function['arguments'], $node);
                 }
 
                 // insert simple value-of
