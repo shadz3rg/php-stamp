@@ -42,13 +42,10 @@ class Cell implements Expression
             // move node into row template
             $rowTemplate->appendChild($rowNode);
             $template->documentElement->appendChild($rowTemplate);
-
         }
 
         $relativePath = $tag->getRelativePath();
         Processor::insertTemplateLogic($tag->getTextContent(), $relativePath, $node);
-
-
 
         return $node;
     }
