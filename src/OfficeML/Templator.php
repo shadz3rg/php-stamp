@@ -39,6 +39,23 @@ class Templator
      */
     public function render(DocumentInterface $document, array $values)
     {
+        // fill with values
+        $xslt = new \XSLTProcessor();
+
+        $template = $this->getTemplate($document);
+        $xslt->importStylesheet($template);
+
+        $content = $xslt->transformToDoc(
+            $this->createValuesDocument($values)
+        );
+
+        Processor::undoEscapeXsl($content);
+
+        return new Result($content, $document);
+    }
+
+    private function getTemplate(DocumentInterface $document)
+    {
         $contentFile = $document->extract($this->cachePath, $this->debug);
 
         $template = new \DOMDocument('1.0', 'UTF-8');
@@ -46,37 +63,29 @@ class Templator
 
         // process xml document into xsl template
         if ($template->documentElement->nodeName !== 'xsl:stylesheet') {
+            $this->createTemplate($template, $document);
 
-            // prepare xml document
-            Processor::escapeXsl($template);
-
-            $document->cleanup($template);
-
-            // process prepared xml document
-            Processor::wrapIntoTemplate($template);
-
-            // find node list with text and handle tags TODO add contains brackets to query
-            $nodeList = XMLHelper::queryTemplate($template, $document->getNodePath());
-            $this->searchAndReplace($nodeList, $document);
-
-            // cache template
+            // cache template FIXME workaround for disappeared xml: attributes, reload as temporary fix
             $template->save($contentFile);
-
-            // FIXME workaround for disappeared xml: attributes, reload as temporary fix
             $template->load($contentFile);
         }
 
-        // fill with values
-        $xslt = new \XSLTProcessor();
-        $xslt->importStylesheet($template);
+        return $template;
+    }
 
-        $output = $xslt->transformToDoc(
-            $this->assign($values)
-        );
+    private function createTemplate(\DOMDocument $template, DocumentInterface $document)
+    {
+        // prepare xml document
+        Processor::escapeXsl($template);
 
-        Processor::undoEscapeXsl($output);
+        $document->cleanup($template);
 
-        return new Result($output, $document);
+        // process prepared xml document
+        Processor::wrapIntoTemplate($template);
+
+        // find node list with text and handle tags TODO add contains brackets to query
+        $nodeList = XMLHelper::queryTemplate($template, $document->getNodePath());
+        $this->searchAndReplace($nodeList, $document);
     }
 
     private function searchAndReplace(\DOMNodeList $nodeList, DocumentInterface $document)
@@ -90,6 +99,7 @@ class Templator
             $lexer->setInput($decodedValue);
 
             while ($tag = $mapper->parse($lexer)) {
+
                 foreach ($tag->getFunctions() as $function) {
                     $expression = $document->getExpression($function['function']);
                     $expression->insertTemplateLogic($function['arguments'], $node, $tag);
@@ -107,17 +117,17 @@ class Templator
     /**
      * Create DOMDocument and encode array into XML recursively
      *
-     * @param array $tokens
+     * @param array $values
      * @return \DOMDocument
      */
-    private function assign(array $tokens)
+    private function createValuesDocument(array $values)
     {
         $document = new \DOMDocument('1.0', 'UTF-8');
 
         $tokensNode = $document->createElement(Processor::VALUE_NODE);
         $document->appendChild($tokensNode);
 
-        XMLHelper::xmlEncode($tokens, $tokensNode, $document);
+        XMLHelper::xmlEncode($values, $tokensNode, $document);
 
         return $document;
     }
