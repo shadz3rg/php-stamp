@@ -2,7 +2,6 @@
 
 namespace OfficeML;
 
-use OfficeML\Document\Document;
 use OfficeML\Document\DocumentInterface;
 use OfficeML\Processor\Lexer;
 use OfficeML\Processor\TagMapper;

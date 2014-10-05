@@ -13,12 +13,18 @@ class WordDocument extends Document
 {
     private $structure = array('w:p', 'w:r', 'w:rPr', 'w:t');
 
+    /**
+     * @inherit
+     */
     public function getContentPath()
     {
         return 'word/document.xml';
     }
 
-    public function getNodeQuery($type, $global = false)
+    /**
+     * @inherit
+     */
+    public function getNodeName($type, $global = false)
     {
         if (isset($this->structure[$type]) === false) {
             throw new InvalidArgumentException('Element with this index not defined in structure');
@@ -33,26 +39,35 @@ class WordDocument extends Document
         return implode($return);
     }
 
+    /**
+     * @inherit
+     */
     public function getNodePath()
     {
-        return '//w:p/w:r/w:t'; // FIXME
+        return '//w:p/w:r/w:t';
     }
 
+    /**
+     * @inherit
+     */
     public function cleanup(\DOMDocument $template)
     {
         // fix node breaks
         $cleaner = new Cleanup(
             $template,
-            $this->getNodeQuery(Document::XPATH_PARAGRAPH, true),
-            $this->getNodeQuery(Document::XPATH_RUN),
-            $this->getNodeQuery(Document::XPATH_RUN_PROPERTY),
-            $this->getNodeQuery(Document::XPATH_TEXT)
+            $this->getNodeName(Document::XPATH_PARAGRAPH, true),
+            $this->getNodeName(Document::XPATH_RUN),
+            $this->getNodeName(Document::XPATH_RUN_PROPERTY),
+            $this->getNodeName(Document::XPATH_TEXT)
         );
 
         $cleaner->hardcoreCleanup();
         $cleaner->cleanup();
     }
 
+    /**
+     * @inherit
+     */
     public function getExpression($id, Tag $tag)
     {
         $className = 'OfficeML\\Document\\WordDocument\\Extension\\' . ucfirst($id);
