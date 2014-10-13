@@ -44,7 +44,7 @@ class WriterDocument extends Document
      */
     public function getNodePath()
     {
-        return '//w:p/w:r/w:t';
+        return '//text:p/text:span';
     }
 
     /**

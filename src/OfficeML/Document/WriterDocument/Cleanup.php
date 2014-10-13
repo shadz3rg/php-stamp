@@ -55,14 +55,64 @@ class Cleanup extends XMLHelper
         $styleNodeList = $this->xpath->query('//style:style');
         $equalityMap = $this->equalityMap($styleNodeList);
 
-        //
-        //$this->groupText($equalityMap);
+        $nodeList = $this->xpath->query('//text:p');
+        $this->groupText($nodeList, $equalityMap);
     }
 
-    private function groupText(\DOMNodeList $nodeList, array $equalityMap)
+    private function groupText(\DOMNodeList $nodeList, array $equalityMap, $nameAttribute = 'text:style-name')
     {
-        foreach ($nodeList as $node) {
-            
+        /** @var $paragraphNode \DOMElement */
+        foreach ($nodeList as $paragraphNode) {
+            $parentStyle = $paragraphNode->getAttribute($nameAttribute); // by default
+
+            $clonedParagraph = $paragraphNode->cloneNode(true);
+            $childNodeList = $clonedParagraph->childNodes;
+
+            // loop data
+            $spanIndex = 0;
+            /** @var $currentSpan \DOMElement|\DOMText */
+            $currentSpan = $childNodeList->item($spanIndex);
+            /** @var $nextSpan \DOMElement|\DOMText */
+            $nextSpan = $childNodeList->item(++$spanIndex);
+
+            while ($currentSpan) {
+                if ($nextSpan !== null) {
+                    $styleName1 = ($currentSpan->nodeType === XML_ELEMENT_NODE) ? $currentSpan->getAttribute($nameAttribute) : $parentStyle;
+                    $styleName2 = ($nextSpan->nodeType === XML_ELEMENT_NODE) ? $nextSpan->getAttribute($nameAttribute) : $parentStyle;
+
+                    $isEqual = $this->inSameGroup($styleName1, $styleName2, $equalityMap);
+                    //var_dump(array($styleName1,$styleName2, $isEqual));
+
+                    if ($isEqual === true) {
+
+                        if ($nextSpan->nodeType === XML_ELEMENT_NODE) {
+                            // merge elements
+                            foreach ($nextSpan->childNodes as $ch) {
+                                if ($currentSpan->nodeType === XML_ELEMENT_NODE) {
+                                    $currentSpan->appendChild($ch);
+                                } else if ($currentSpan->nodeType === XML_TEXT_NODE) {
+                                    $clonedParagraph->insertBefore($ch, $nextSpan);
+                                }
+                            }
+                        } else if ($nextSpan->nodeType === XML_TEXT_NODE) {
+                            // add text
+                            $template = $currentSpan->ownerDocument;
+                            $currentSpan->appendChild($template->createTextNode($nextSpan->textContent));
+                        }
+
+                        $clonedParagraph->removeChild($nextSpan);
+                        $nextSpan = $childNodeList->item($spanIndex); // node list shifts on removeChild so index stays the same
+                    } else {
+                        $currentSpan = $nextSpan;
+                        $nextSpan = $childNodeList->item(++$spanIndex);
+                    }
+
+                } else {
+                    // loop breaks on null here
+                    $currentSpan = $nextSpan;
+                }
+            }
+            $paragraphNode->parentNode->replaceChild($clonedParagraph, $paragraphNode);
         }
     }
 

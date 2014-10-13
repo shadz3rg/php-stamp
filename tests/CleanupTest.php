@@ -93,7 +93,7 @@ class CleanupTest extends \PHPUnit_Framework_TestCase
         // prepare
         $xml = '<root xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0">
                     <text:p text:style-name="P1">
-                        <text:span text:style-name="T2">Привет</text:span>
+                        <text:span text:style-name="T2">Hello</text:span>
                         <text:span text:style-name="T3">
                           <text:s />
                         </text:span>
@@ -104,7 +104,9 @@ class CleanupTest extends \PHPUnit_Framework_TestCase
                      </text:p>
                 </root>';
         $document = new \DOMDocument();
+        $document->preserveWhiteSpace = false;
         $document->loadXML($xml);
+
         $xpath = new \DOMXpath($document);
         $nodeList = $xpath->query('//text:p');
 
@@ -121,14 +123,15 @@ class CleanupTest extends \PHPUnit_Framework_TestCase
 
         $xml = '<root xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0">
                     <text:p text:style-name="P1">
-                        Привет<text:s />[[username]]
+                        <text:span text:style-name="T2">Hello<text:s />[[username]]</text:span>
                         <text:span text:style-name="T7">.</text:span>
-                     </text:p>
+                    </text:p>
                 </root>';
         $compareAgainst = new \DOMDocument();
+        $compareAgainst->preserveWhiteSpace = false;
         $compareAgainst->loadXML($xml);
 
-        $this->assertXmlStringEqualsXmlString($compareAgainst->saveXML(), $document->saveXML());
+        $this->assertEquals($compareAgainst->saveXML(), $document->saveXML());
     }
 }
  

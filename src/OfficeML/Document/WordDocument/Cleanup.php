@@ -42,7 +42,7 @@ class Cleanup extends XMLHelper
             $currentRun = $runNodeList->item($runIndex);
             $nextRun = $runNodeList->item(++$runIndex);
 
-            while ($currentRun) {
+            while ($currentRun) { //todo refactor as writerdocument loop
                 $isEqual = false;
 
                 if ($nextRun !== null) {
