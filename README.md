@@ -57,9 +57,3 @@ Version
 
 Still just experement :3
 
-License
-----
-
-LGPL
-
-
