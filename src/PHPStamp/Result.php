@@ -1,9 +1,9 @@
 <?php
 
-namespace OfficeML;
+namespace PHPStamp;
 
-use OfficeML\Document\Document;
-use OfficeML\Document\DocumentInterface;
+use PHPStamp\Document\Document;
+use PHPStamp\Document\DocumentInterface;
 
 class Result
 {

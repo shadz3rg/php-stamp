@@ -1,10 +1,10 @@
 <?php
 
-namespace OfficeML;
+namespace PHPStamp;
 
-use OfficeML\Document\DocumentInterface;
-use OfficeML\Processor\Lexer;
-use OfficeML\Processor\TagMapper;
+use PHPStamp\Document\DocumentInterface;
+use PHPStamp\Processor\Lexer;
+use PHPStamp\Processor\TagMapper;
 
 class Templator
 {

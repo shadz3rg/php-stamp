@@ -1,16 +1,16 @@
 {
-    "name": "shooz/docx",
-    "description": "Office documents template toolkit.",
+    "name": "xhrequest/PHPStamp",
+    "description": "Simple XML templating library",
     "require": {
         "doctrine/lexer": "dev-master"
     },
     "authors": [
         {
-            "name": "Gorokhov Oleg",
+            "name": "Oleg G.",
             "email": "ukhardc0r3@gmail.com"
         }
     ],
     "autoload": {
-        "psr-0": { "OfficeML": "src/" }
+        "psr-0": { "PHPStamp": "src/" }
     }
 }

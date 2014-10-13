@@ -1,8 +1,8 @@
 <?php
 
-namespace OfficeML\Document\WordDocument;
+namespace PHPStamp\Document\WordDocument;
 
-use OfficeML\XMLHelper;
+use PHPStamp\XMLHelper;
 
 class Cleanup extends XMLHelper
 {

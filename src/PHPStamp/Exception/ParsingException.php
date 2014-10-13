@@ -6,7 +6,7 @@
  * Time: 13:16
  */
 
-namespace OfficeML\Exception;
+namespace PHPStamp\Exception;
 
 
 class ParsingException extends \Exception {

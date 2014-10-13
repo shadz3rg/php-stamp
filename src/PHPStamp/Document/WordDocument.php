@@ -1,10 +1,10 @@
 <?php
 
-namespace OfficeML\Document;
+namespace PHPStamp\Document;
 
-use OfficeML\Document\WordDocument\Cleanup;
-use OfficeML\Exception\InvalidArgumentException;
-use OfficeML\Processor\Tag;
+use PHPStamp\Document\WordDocument\Cleanup;
+use PHPStamp\Exception\InvalidArgumentException;
+use PHPStamp\Processor\Tag;
 
 /**
  * @link http://msdn.microsoft.com/ru-ru/library/office/gg278327(v=office.15).aspx
@@ -70,7 +70,7 @@ class WordDocument extends Document
      */
     public function getExpression($id, Tag $tag)
     {
-        $className = 'OfficeML\\Document\\WordDocument\\Extension\\' . ucfirst($id);
+        $className = 'PHPStamp\\Document\\WordDocument\\Extension\\' . ucfirst($id);
 
         if (class_exists($className) === false) {
             throw new InvalidArgumentException('Class by id ' . $id . ' not found.');

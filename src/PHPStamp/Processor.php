@@ -1,7 +1,7 @@
 <?php
-namespace OfficeML;
+namespace PHPStamp;
 
-use OfficeML\Processor\Tag;
+use PHPStamp\Processor\Tag;
 
 class Processor
 {

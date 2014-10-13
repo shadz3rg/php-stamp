@@ -1,21 +1,21 @@
 <?php
 
-namespace OfficeML\Document\WordDocument\Extension;
+namespace PHPStamp\Document\WordDocument\Extension;
 
-use OfficeML\Exception\ExtensionException;
-use OfficeML\Extension\Extension;
-use OfficeML\Processor;
-use OfficeML\XMLHelper;
+use PHPStamp\Exception\ExtensionException;
+use PHPStamp\Extension\Extension;
+use PHPStamp\Processor;
+use PHPStamp\XMLHelper;
 
-class ListItem extends Extension
+class Cell extends Extension
 {
     /**
      * @inherit
      */
     protected function prepareArguments(array $arguments)
     {
-        if (count($arguments) !== 0) {
-            throw new ExtensionException('Wrong arguments number, 0 needed, got ' . count($arguments));
+        if (count($arguments) !== 1) {
+            throw new ExtensionException('Wrong arguments number, 1 needed, got ' . count($arguments));
         }
 
         return $arguments;
@@ -26,24 +26,24 @@ class ListItem extends Extension
      */
     protected function insertTemplateLogic(array $arguments, \DOMElement $node)
     {
+        list($rowName) = $arguments;
+
         $template = $node->ownerDocument;
 
-        $listName = $this->tag->getRelativePath();
-
         // find existing or initiate new table row template
-        if ($this->isListItemTemplateExist($listName, $template) === false) {
+        if ($this->isRowTemplateExist($rowName, $template) === false) {
 
             $rowTemplate = $template->createElementNS(Processor::XSL_NS, 'xsl:template');
-            $rowTemplate->setAttribute('name', $listName);
+            $rowTemplate->setAttribute('name', $rowName);
 
             // find row node
-            $rowNode = XMLHelper::parentUntil('w:p', $node);
+            $rowNode = XMLHelper::parentUntil('w:tr', $node);
 
             // call-template for each row
             $foreachNode = $template->createElementNS(Processor::XSL_NS, 'xsl:for-each');
-            $foreachNode->setAttribute('select', '/' . Processor::VALUE_NODE . '/' . $listName . '/item');
+            $foreachNode->setAttribute('select', '/' . Processor::VALUE_NODE . '/' . $rowName . '/item');
             $callTemplateNode = $template->createElementNS(Processor::XSL_NS, 'xsl:call-template');
-            $callTemplateNode->setAttribute('name', $listName);
+            $callTemplateNode->setAttribute('name', $rowName);
             $foreachNode->appendChild($callTemplateNode);
 
             // insert call-template before moving
@@ -52,14 +52,13 @@ class ListItem extends Extension
             // move node into row template
             $rowTemplate->appendChild($rowNode);
             $template->documentElement->appendChild($rowTemplate);
-
         }
 
-        // FIXME пофиксить повторное использование функции
-        Processor::insertTemplateLogic($this->tag->getTextContent(), '.', $node);
+        $relativePath = $this->tag->getRelativePath();
+        Processor::insertTemplateLogic($this->tag->getTextContent(), $relativePath, $node);
     }
 
-    private function isListItemTemplateExist($rowName, \DOMDocument $template)
+    private function isRowTemplateExist($rowName, \DOMDocument $template)
     {
         $xpath = new \DOMXPath($template);
         $nodeList = $xpath->query('/xsl:stylesheet/xsl:template[@name="' . $rowName . '"]');
@@ -70,4 +69,4 @@ class ListItem extends Extension
 
         return ($nodeList->length === 1);
     }
-} 
+}

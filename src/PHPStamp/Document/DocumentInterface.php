@@ -1,10 +1,10 @@
 <?php
 
-namespace OfficeML\Document;
+namespace PHPStamp\Document;
 
-use OfficeML\Exception\InvalidArgumentException;
-use OfficeML\Extension\ExtensionInterface;
-use OfficeML\Processor\Tag;
+use PHPStamp\Exception\InvalidArgumentException;
+use PHPStamp\Extension\ExtensionInterface;
+use PHPStamp\Processor\Tag;
 
 interface DocumentInterface
 {

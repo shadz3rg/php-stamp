@@ -1,4 +1,4 @@
 <?php
-namespace OfficeML\Exception;
+namespace PHPStamp\Exception;
 
 class ExtensionException extends \Exception {}

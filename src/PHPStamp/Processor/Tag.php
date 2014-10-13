@@ -6,7 +6,7 @@
  * Time: 14:52
  */
 
-namespace OfficeML\Processor;
+namespace PHPStamp\Processor;
 
 
 class Tag

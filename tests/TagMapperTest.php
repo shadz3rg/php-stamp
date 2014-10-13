@@ -11,7 +11,7 @@ class TagMapperTest extends \PHPUnit_Framework_TestCase
     public function it_parse_path_correctly()
     {
         $method = new \ReflectionMethod(
-            'OfficeML\Processor\TagMapper', 'parsePath'
+            'PHPStamp\Processor\TagMapper', 'parsePath'
         );
         $method->setAccessible(true);
 
@@ -41,7 +41,7 @@ class TagMapperTest extends \PHPUnit_Framework_TestCase
         // case 3
         $pathString = 'root-child';
         $lexer->setInput($pathString);
-        $this->setExpectedException('OfficeML\Exception\ProcessorException');
+        $this->setExpectedException('PHPStamp\Exception\ProcessorException');
         $result = $method->invoke(new TagMapper, $lexer);
     }
 

@@ -1,5 +1,5 @@
 <?php
-namespace OfficeML\Exception;
+namespace PHPStamp\Exception;
 
 class ProcessorException extends \Exception {
 

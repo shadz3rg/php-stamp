@@ -1,5 +1,5 @@
 <?php
-namespace OfficeML\Processor;
+namespace PHPStamp\Processor;
 
 use Doctrine\Common\Lexer\AbstractLexer;
 

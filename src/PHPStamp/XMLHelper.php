@@ -1,7 +1,7 @@
 <?php
-namespace OfficeML;
+namespace PHPStamp;
 
-use OfficeML\Exception\ParsingException;
+use PHPStamp\Exception\ParsingException;
 
 class XMLHelper
 {

@@ -1,9 +1,9 @@
 <?php
 
-namespace OfficeML\Processor;
+namespace PHPStamp\Processor;
 
-use OfficeML\Exception\ParsingException;
-use OfficeML\Exception\ProcessorException;
+use PHPStamp\Exception\ParsingException;
+use PHPStamp\Exception\ProcessorException;
 
 class TagMapper
 {

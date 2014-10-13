@@ -1,8 +1,8 @@
 <?php
 
-namespace OfficeML\Extension;
+namespace PHPStamp\Extension;
 
-use OfficeML\Processor\Tag;
+use PHPStamp\Processor\Tag;
 
 abstract class Extension implements ExtensionInterface
 {

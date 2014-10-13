@@ -1,9 +1,9 @@
 <?php
 
-namespace OfficeML\Document;
+namespace PHPStamp\Document;
 
-use OfficeML\Exception\InvalidArgumentException;
-use OfficeML\Processor\Tag;
+use PHPStamp\Exception\InvalidArgumentException;
+use PHPStamp\Processor\Tag;
 
 abstract class Document implements DocumentInterface
 {
