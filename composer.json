@@ -1,6 +1,6 @@
 {
-    "name": "xhrequest/PHPStamp",
-    "description": "Simple XML templating library",
+    "name": "shadz3rg/PHPStamp",
+    "description": "A library for templating XML based office documents (such as .docx, .odt)",
     "require": {
         "doctrine/lexer": "dev-master"
     },

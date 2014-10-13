@@ -78,13 +78,13 @@ class Templator
         Processor::escapeXsl($template);
 
         $document->cleanup($template);
-        echo XMLHelper::prettyPrint($template);
+
         // process prepared xml document
         Processor::wrapIntoTemplate($template);
 
         // find node list with text and handle tags TODO add contains brackets to query
         $nodeList = XMLHelper::queryTemplate($template, $document->getNodePath());
-        //$this->searchAndReplace($nodeList, $document);
+        $this->searchAndReplace($nodeList, $document);
     }
 
     private function searchAndReplace(\DOMNodeList $nodeList, DocumentInterface $document)
