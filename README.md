@@ -2,7 +2,7 @@ PHPStamp
 =========
 
 PHPStamp is a *prototype* of a simple PHP templating library for XML-based Office documents.  
-Aim of this software is to provide native XML way of templating this formats as an altenative of treating DOM document as string for regex replacing, which has a lot of downsides.
+Aim of this software is to provide native XML way of templating this formats as an altenative of treating DOM document as string for regex replacing, which has a lot of downsides.  
 Basically this library tries to clean messy WYSIWYG-generated code and create reusable XSL stylesheet from it.  
 
 Features
