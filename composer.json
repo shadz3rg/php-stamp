@@ -1,6 +1,6 @@
 {
     "name": "shadz3rg/PHPStamp",
-    "description": "A library for templating XML based office documents (such as .docx, .odt)",
+    "description": "A library for true XSL-way templating of XML-based Office documents. Supports MS Word docx.",
     "require": {
         "doctrine/lexer": "dev-master"
     },
