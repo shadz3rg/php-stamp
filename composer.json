@@ -1,13 +1,12 @@
 {
-    "name": "shadz3rg/PHPStamp",
+    "name": "shadz3rg/php-stamp",
     "description": "A library for true XSL-way templating of XML-based Office documents. Supports MS Word docx.",
     "require": {
         "doctrine/lexer": "dev-master"
     },
     "authors": [
         {
-            "name": "Oleg G.",
-            "email": "ukhardc0r3@gmail.com"
+            "name": "Oleg G."
         }
     ],
     "autoload": {
