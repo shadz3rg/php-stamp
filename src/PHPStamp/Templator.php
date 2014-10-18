@@ -82,8 +82,14 @@ class Templator
         // process prepared xml document
         Processor::wrapIntoTemplate($template);
 
-        // find node list with text and handle tags TODO add contains brackets to query
-        $nodeList = XMLHelper::queryTemplate($template, $document->getNodePath());
+        // find node list with text and handle tags
+        $query = $document->getNodePath();
+        $query .= sprintf(
+            '[contains(text(), "%s") and contains(text(), "%s")]',
+            $this->brackets[0],
+            $this->brackets[1]
+        );
+        $nodeList = XMLHelper::queryTemplate($template, $query);
         $this->searchAndReplace($nodeList, $document);
     }
 

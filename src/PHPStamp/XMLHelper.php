@@ -112,7 +112,7 @@ class XMLHelper
 
         /** @var $attribute \DOMNode */
         foreach ($node1->attributes as $attribute) {
-            // TODO namespace problem, localName as fast fix
+            // namespace problem, localName as fix
             $compareAgainst = $node2->attributes->getNamedItem($attribute->localName);
 
             if ($compareAgainst === null || $attribute->nodeValue !== $compareAgainst->nodeValue) {

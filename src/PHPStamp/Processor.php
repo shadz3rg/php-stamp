@@ -21,7 +21,7 @@ class Processor
 
         $output = $document->createElementNS(self::XSL_NS, 'xsl:output');
         $output->setAttribute('method', 'xml');
-        $output->setAttribute('encoding', 'UTF-8'); // TODO variable encoding?
+        $output->setAttribute('encoding', 'UTF-8');
         $stylesheet->appendChild($output);
 
         $template = $document->createElementNS(self::XSL_NS, 'xsl:template');
@@ -36,7 +36,7 @@ class Processor
     {
         $template = $node->ownerDocument;
 
-        $node->setAttribute('xml:space', 'preserve'); // TODO Fix whitespaces in mixed node
+        $node->setAttribute('xml:space', 'preserve'); // fix whitespaces in mixed node
 
         /** @var $textNode \DOMText */
         foreach ($node->childNodes as $textNode) {
@@ -52,7 +52,7 @@ class Processor
                 $before = $template->createTextNode($nodeValueParts[0]);
                 $node->insertBefore($before, $textNode);
 
-                // add xsl logic TODO Functions
+                // add xsl logic
                 $placeholder = $template->createElementNS(self::XSL_NS, 'xsl:value-of');
                 $placeholder->setAttribute('select', $path);
                 $node->insertBefore($placeholder, $textNode);

@@ -91,7 +91,7 @@ class Cleanup extends XMLHelper
         return $nodeList->item(0);
     }
 
-    public function hardcoreCleanup() // TODO Move into document specific class
+    public function hardcoreCleanup()
     {
         // reset locale
         $nodeList = $this->xpath->query('//w:lang');
