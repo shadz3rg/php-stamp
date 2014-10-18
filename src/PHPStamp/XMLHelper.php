@@ -6,6 +6,7 @@ use PHPStamp\Exception\ParsingException;
 class XMLHelper
 {
     /**
+     * Check two given nodes for equality.
      * @param $node1 \DOMNode|null
      * @param $node2 \DOMNode|null
      * @return bool
@@ -89,6 +90,12 @@ class XMLHelper
         return true;
     }
 
+    /**
+     * Check two given nodes for equal attributes.
+     * @param \DOMNode $node1
+     * @param \DOMNode $node2
+     * @return bool
+     */
     private function compareAttributes(\DOMNode $node1, \DOMNode $node2)
     {
         if ($node1->hasAttributes() === false && $node2->hasAttributes() === false) {
@@ -114,12 +121,24 @@ class XMLHelper
         }
     }
 
+    /**
+     * Fetch node list from document.
+     * @param \DOMDocument $document
+     * @param $xpathQuery
+     * @return \DOMNodeList
+     */
     public static function queryTemplate(\DOMDocument $document, $xpathQuery)
     {
         $xpath = new \DOMXPath($document);
         return $xpath->query($xpathQuery);
     }
 
+    /**
+     * Formats DOMDocument for html output.
+     * @codeCoverageIgnore
+     * @param \DOMDocument $document
+     * @return string
+     */
     public static function prettyPrint(\DOMDocument $document)
     {
         $document->preserveWhiteSpace = false;
@@ -133,6 +152,13 @@ class XMLHelper
         return '<pre>' . htmlentities($xmlString) . '</pre>';
     }
 
+    /**
+     * Find closest parent node.
+     * @param $nodeName
+     * @param \DOMNode $node
+     * @return \DOMNode
+     * @throws Exception\ParsingException
+     */
     public static function parentUntil($nodeName, \DOMNode $node)
     {
         $parent = $node->parentNode;
