@@ -30,42 +30,42 @@ class Cleanup extends XMLHelper
 
     public function cleanup()
     {
-        $paragraphs = $this->getParagraphNodeList();
+        $paragraphNodeList = $this->getParagraphNodeList();
 
-        /** @var $paragraph \DOMNode */
-        foreach ($paragraphs as $paragraph) {
-            $clonedParagraph = $paragraph->cloneNode(true); // fixed missing paragraph props element
-
-            $runNodeList = $this->getRunNodeList($clonedParagraph);
+        /** @var $paragraphNode \DOMNode */
+        foreach ($paragraphNodeList as $paragraphNode) {
+            $clonedParagraphNode = $paragraphNode->cloneNode(true); // fixed missing paragraph props element
+            $runNodeList = $this->getRunNodeList($clonedParagraphNode);
 
             $runIndex = 0;
-            $currentRun = $runNodeList->item($runIndex);
-            $nextRun = $runNodeList->item(++$runIndex);
+            $currentRunNode = $runNodeList->item($runIndex);
 
-            while ($currentRun) { //todo refactor as writerdocument loop
-                $isEqual = false;
+            $runIndex += 1;
+            $nextRunNode = $runNodeList->item($runIndex);
 
-                if ($nextRun !== null) {
+            while ($currentRunNode) {
+                if ($nextRunNode !== null) {
                     $isEqual = $this->deepEqual(
-                        $this->getPropertyNode($currentRun),
-                        $this->getPropertyNode($nextRun)
+                        $this->getPropertyNode($currentRunNode),
+                        $this->getPropertyNode($nextRunNode)
                     );
-                }
 
-                if ($isEqual === true) {
-                    $this->getValueNode($currentRun)->nodeValue .= $this->getValueNode($nextRun)->nodeValue;
-                    $clonedParagraph->removeChild($nextRun);
+                    if ($isEqual === true) {
+                        $this->getValueNode($currentRunNode)->nodeValue .= $this->getValueNode($nextRunNode)->nodeValue;
+                        $clonedParagraphNode->removeChild($nextRunNode);
+                    } else {
+                        $currentRunNode = $nextRunNode;
+                    }
+
+                    // even if we remove element from document node list still contains it, so jump on next
+                    $runIndex += 1;
+                    $nextRunNode = $runNodeList->item($runIndex);
+
                 } else {
-                    //$clonedParagraph->appendChild($currentRun);
-                    $currentRun = $nextRun;
-                }
-
-                if ($nextRun !== null) {
-                    $nextRun = $runNodeList->item(++$runIndex);
+                    $currentRunNode = $nextRunNode;
                 }
             }
-
-            $paragraph->parentNode->replaceChild($clonedParagraph, $paragraph);
+            $paragraphNode->parentNode->replaceChild($clonedParagraphNode, $paragraphNode);
         }
     }
 
