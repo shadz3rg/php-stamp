@@ -51,7 +51,11 @@ class Cleanup extends XMLHelper
                     );
 
                     if ($isEqual === true) {
-                        $this->getValueNode($currentRunNode)->nodeValue .= $this->getValueNode($nextRunNode)->nodeValue;
+                        $appendTextNode = $this->document->createTextNode(
+                            $this->getValueNode($nextRunNode)->textContent
+                        );
+                        $this->getValueNode($currentRunNode)->appendChild($appendTextNode);
+
                         $clonedParagraphNode->removeChild($nextRunNode);
                     } else {
                         $currentRunNode = $nextRunNode;
@@ -67,6 +71,9 @@ class Cleanup extends XMLHelper
             }
             $paragraphNode->parentNode->replaceChild($clonedParagraphNode, $paragraphNode);
         }
+
+        // merge appended text nodes
+        $this->document->normalizeDocument();
     }
 
     private function getParagraphNodeList()
