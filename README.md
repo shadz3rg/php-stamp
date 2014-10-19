@@ -30,6 +30,10 @@ Just install it through composer.
 
 Usage
 ----
+
+#####Template.  
+
+![alt tag](https://dl.dropboxusercontent.com/u/108509650/step1.png)  
 ```php
 <?php
     require 'vendor/autoload.php';
@@ -38,22 +42,38 @@ Usage
     use PHPStamp\Document\WordDocument;
     
     $cachePath = 'path/to/writable/directory/';
-    $optionalBrackets = array('(((', ')))');
-    $templator = new Templator($cachePath, $optionalBrackets);
+    $templator = new Templator($cachePath);
     
     $documentPath = 'path/to/document.docx';
     $document = new WordDocument($documentPath);
     
     $values = array(
-        'tag' => 'value', 
-        'row' => array(
-            'tag1' => 'value1', 
-            'tag2' => 'value2'
+        'library' => 'PHPStamp 0.1',
+        'simpleValue' => 'I am simple value',
+        'nested' => array(
+            'firstValue' => 'First child value',
+            'secondValue' => 'Second child value'
+        ),
+        'header' => 'test of a table row',
+        'students' => array(
+            array('id' => 1, 'name' => 'Student 1', 'mark' => '10'),
+            array('id' => 2, 'name' => 'Student 2', 'mark' => '4'),
+            array('id' => 3, 'name' => 'Student 3', 'mark' => '7')
+        ),
+        'maxMark' => 10,
+        'todo' => array(
+            'TODO 1',
+            'TODO 2',
+            'TODO 3'
         )
     );
     $result = $templator->render($document, $values);
     $result->download();
 ```
+
+#####Result.  
+
+![alt tag](https://dl.dropboxusercontent.com/u/108509650/step2.png)
 
 Version
 ----
