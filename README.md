@@ -23,7 +23,7 @@ Just install it through composer.
 ```json
 {
     "require": {
-       "shadz3rg/PHPStamp": "dev-master"
+       "shadz3rg/php-stamp": "dev-master"
     }
 }
 ```
