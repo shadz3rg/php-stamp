@@ -23,9 +23,9 @@ Just install it through composer.
 ```json
 {
 	"minimum-stability": "dev",
-  "require": {
-     "shadz3rg/php-stamp": "dev-master"
-  }
+	"require": {
+		"shadz3rg/php-stamp": "dev-master"
+  	}
 }
 ```
 
