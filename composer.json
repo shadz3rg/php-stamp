@@ -9,7 +9,8 @@
     },
     "authors": [
         {
-            "name": "Oleg G."
+            "name": "Oleg",
+            "email": "ukhardc0r3@gmail.com"
         }
     ],
     "autoload": {
