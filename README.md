@@ -22,9 +22,10 @@ Installation
 Just install it through composer.
 ```json
 {
-    "require": {
-       "shadz3rg/php-stamp": "dev-master"
-    }
+	"minimum-stability": "dev",
+  "require": {
+     "shadz3rg/php-stamp": "dev-master"
+  }
 }
 ```
 
