@@ -2,24 +2,24 @@ PHPStamp
 =========
 
 PHPStamp is a *prototype* of a simple PHP templating library for XML-based Office documents.  
-Aim of this software is to provide native XML way of templating this formats as an altenative of treating DOM document as string for regex replacing, which has a lot of downsides.  
-Basically this library tries to clean messy WYSIWYG-generated code and create reusable XSL stylesheet from it.  
+Library aims to provide native XML-way of templating this formats as an altenative to treating DOM document as a string for regex replacing, which has a lot of downsides.  
+Basically it tries to clean messy WYSIWYG-generated code and create reusable XSL stylesheet from document.  
 
 Features
 ----
-  - Current version supports only Microsoft Office Open XML .docx format. Odt support WIP.
+  - Current version supports only Microsoft Office Open XML DOCX format. ODT support WIP.
   - Configurable brackets for tags-placeholders.
-  - Basic extension system which helps generating block of content such as Cells or ListItems.
+  - Basic extension system, which helps generating content blocks such as Cells or ListItems.
   - Caching XSL template to filesystem.
 
 Requirements
 ----
 Library requires PHP 5.3+ with DOM, XSL and Zip extensions.  
-Also depends on ```doctrine2/Lexer``` Composer package.
+Also depends on ```doctrine2/Lexer``` package.
 
 Installation
 ----
-Just install it through composer.
+Install with Composer.
 ```json
 {
 	"minimum-stability": "dev",
