@@ -51,11 +51,13 @@ class Cleanup extends XMLHelper
                     );
 
                     if ($isEqual === true) {
-                        $appendTextNode = $this->document->createTextNode(
-                            $this->getValueNode($nextRunNode)->textContent
-                        );
-                        $this->getValueNode($currentRunNode)->appendChild($appendTextNode);
+                        $nextValueNode = $this->getValueNode($nextRunNode);
+                        $currentValueNode = $this->getValueNode($currentRunNode);
 
+                        if ($nextValueNode !== null && $currentValueNode !== null) { // fixme libreoffice docx quick fix
+                            $appendTextNode = $this->document->createTextNode($nextValueNode->textContent);
+                            $currentValueNode->appendChild($appendTextNode);
+                        }
                         $clonedParagraphNode->removeChild($nextRunNode);
                     } else {
                         $currentRunNode = $nextRunNode;
