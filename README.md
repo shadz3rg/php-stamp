@@ -5,6 +5,10 @@ PHPStamp is a *prototype* of a simple PHP templating library for XML-based Offic
 Library aims to provide native XML-way of templating this formats as an altenative to treating DOM document as a string for regex replacing, which has a lot of downsides.  
 Basically it tries to clean messy WYSIWYG-generated code and create reusable XSL stylesheet from document.  
 
+Some additional information:  
+http://habrahabr.ru/post/244421/  
+https://redd.it/30conp  
+
 Features
 ----
   - Current version supports only Microsoft Office Open XML DOCX format. ODT support WIP.
