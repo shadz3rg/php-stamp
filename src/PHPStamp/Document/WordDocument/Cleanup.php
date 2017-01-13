@@ -57,6 +57,11 @@ class Cleanup extends XMLHelper
                         if ($nextValueNode !== null && $currentValueNode !== null) { // fixme libreoffice docx quick fix
                             $appendTextNode = $this->document->createTextNode($nextValueNode->textContent);
                             $currentValueNode->appendChild($appendTextNode);
+                            
+                            if ($currentValueNode->hasAttribute('xml:space') === false &&
+                                $currentValueNode->textContent !== trim($currentValueNode->textContent)) {
+                                $currentValueNode->setAttribute('xml:space', 'preserve');
+                            }
                         }
                         $clonedParagraphNode->removeChild($nextRunNode);
                     } else {
