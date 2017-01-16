@@ -49,6 +49,10 @@ class Cleanup extends XMLHelper
                         $this->getPropertyNode($currentRunNode),
                         $this->getPropertyNode($nextRunNode)
                     );
+                    
+                    if ($this->getValueNode($currentRunNode) === null || $this->getValueNode($nextRunNode) === null) {
+                        $isEqual = false;
+                    }
 
                     if ($isEqual === true) {
                         $nextValueNode = $this->getValueNode($nextRunNode);
