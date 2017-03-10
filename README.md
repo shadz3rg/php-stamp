@@ -82,6 +82,5 @@ Usage
 
 Version
 ----
-
-Still just experement :3
+0.1-stable
 
