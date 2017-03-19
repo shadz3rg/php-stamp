@@ -36,9 +36,9 @@ Install with Composer.
 Usage
 ----
 
-#####Template.  
+##### Template.  
 
-![alt tag](https://dl.dropboxusercontent.com/u/108509650/step1.png)  
+![alt tag](https://habrastorage.org/files/0bf/dbf/f89/0bfdbff896ba45e1ac966c54abd050aa.png)  
 ```php
 <?php
     require 'vendor/autoload.php';
@@ -76,9 +76,9 @@ Usage
     $result->download();
 ```
 
-#####Result.  
+##### Result.  
 
-![alt tag](https://dl.dropboxusercontent.com/u/108509650/step2.png)
+![alt tag](https://habrastorage.org/files/290/6aa/6e6/2906aa6e6cba4fa08655b1f58463a4d8.png)
 
 Version
 ----
