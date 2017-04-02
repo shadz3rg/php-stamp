@@ -24,12 +24,16 @@ Also depends on ```doctrine2/Lexer``` package.
 Installation
 ----
 Install with Composer.
+
+`composer require shadz3rg/php-stamp`
+
+or
+
 ```json
 {
-	"minimum-stability": "dev",
-	"require": {
-		"shadz3rg/php-stamp": "dev-master"
-  	}
+    "require": {
+        "shadz3rg/php-stamp": "0.1.*"
+    }
 }
 ```
 
