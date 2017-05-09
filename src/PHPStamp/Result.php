@@ -45,4 +45,18 @@ class Result
             exit;
         }
     }
+    
+    public function buildFile()
+    {
+        $tempArchive = tempnam(sys_get_temp_dir(), 'doc');
+        if (copy($this->document->getDocumentPath(), $tempArchive) === true) {
+            $zip = new \ZipArchive();
+            $zip->open($tempArchive);
+            $zip->addFromString($this->document->getContentPath(), $this->output->saveXML());
+            $zip->close();
+            return $tempArchive;
+        }
+
+        return false;
+    }
 } 
