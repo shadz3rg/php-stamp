@@ -39,7 +39,7 @@ class Result
             header('Content-Disposition: attachment;filename="' . $fileName . '"');
 
             // Send file - required ob_clean() & exit;
-            ob_clean();
+            if (ob_get_contents()) ob_clean();
             readfile($tempArchive);
             unlink($tempArchive);
             exit;
