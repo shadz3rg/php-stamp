@@ -70,12 +70,16 @@ class WordDocument extends Document
      */
     public function getExpression($id, Tag $tag)
     {
-        $className = 'PHPStamp\\Document\\WordDocument\\Extension\\' . ucfirst($id);
-
-        if (class_exists($className) === false) {
-            throw new InvalidArgumentException('Class by id ' . $id . ' not found.');
-        }
-
+        $available = array(
+			'cell' => 'PHPStamp\\Document\\WordDocument\\Extension\\Cell',
+			'listitem' => 'PHPStamp\\Document\\WordDocument\\Extension\\ListItem',
+		);
+		
+		if (isset($available[$id]) === false) {
+			throw new InvalidArgumentException('Class by id "' . $id . '" not found.');
+		}
+		
+        $className = $available[$id];
         return new $className($tag);
     }
 }
