@@ -1,17 +1,17 @@
 PHPStamp
 =========
 
-PHPStamp is a *prototype* of a simple PHP templating library for XML-based Office documents.  
-Library aims to provide native XML-way of templating this formats as an altenative to treating DOM document as a string for regex replacing, which has a lot of downsides.  
+PHPStamp is a simple PHP templating library for XML-based Microsoft Word documents.  
+Library aims to provide native XML-way of templating this documents as an altenative to treating DOM document as a string for regex replacing, which has a lot of downsides.  
+
 Basically it tries to clean messy WYSIWYG-generated code and create reusable XSL stylesheet from document.  
-
 Some additional information:  
-http://habrahabr.ru/post/244421/  
-https://redd.it/30conp  
-
+(EN) https://redd.it/30conp  
+(RU) http://habrahabr.ru/post/244421/  
+ 
 Features
 ----
-  - Current version supports only Microsoft Office Open XML DOCX format. ODT support WIP.
+  - Current version supports Microsoft Office OpenXML DOCX format.
   - Configurable brackets for tags-placeholders.
   - Basic extension system, which helps generating content blocks such as Cells or ListItems.
   - Caching XSL template to filesystem.
@@ -83,8 +83,3 @@ Usage
 ##### Result.  
 
 ![alt tag](https://habrastorage.org/files/290/6aa/6e6/2906aa6e6cba4fa08655b1f58463a4d8.png)
-
-Version
-----
-0.1-stable
-
