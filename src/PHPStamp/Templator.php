@@ -100,8 +100,7 @@ class Templator
 
         /** @var $node \DOMElement */
         foreach ($nodeList as $node) {
-            $decodedValue = utf8_decode($node->nodeValue);
-            $lexer->setInput($decodedValue);
+            $lexer->setInput($node->nodeValue);
 
             while ($tag = $mapper->parse($lexer)) {
 

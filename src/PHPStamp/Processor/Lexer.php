@@ -53,6 +53,7 @@ class Lexer extends AbstractLexer
     {
         return array(
             '[a-z_\\\][a-z0-9_\\\]*[a-z0-9_]{1}',
+            '[а-я_\\\][а-я0-9_\\\]*[а-я0-9_]{1}',
             '(?:[0-9]+(?:[\.][0-9]+)*)(?:e[+-]?[0-9]+)?',
             "'(?:[^']|''|')*'", // Паттерн исключает слова в кавычках (только). Доработка - |'
             '\?[0-9]*|[a-z_][a-z0-9_]*'   ,
@@ -132,6 +133,16 @@ class Lexer extends AbstractLexer
             default:
                 return self::T_NONE;
         }
+    }
+
+    /**
+     * Regex modifiers
+     *
+     * @return string
+     */
+    protected function getModifiers()
+    {
+        return 'iu';
     }
 
     /**
