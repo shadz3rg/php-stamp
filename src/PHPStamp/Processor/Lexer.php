@@ -1,8 +1,6 @@
 <?php
 namespace PHPStamp\Processor;
 
-use Doctrine\Common\Lexer\AbstractLexer;
-
 class Lexer extends AbstractLexer
 {
     const T_NONE                = 1;
@@ -57,6 +55,7 @@ class Lexer extends AbstractLexer
             '(?:[0-9]+(?:[\.][0-9]+)*)(?:e[+-]?[0-9]+)?',
             "'(?:[^']|''|')*'", // Паттерн исключает слова в кавычках (только). Доработка - |'
             '\?[0-9]*|[a-z_][a-z0-9_]*'   ,
+            '\?[0-9]*|[а-я_][а-я0-9_]*'   ,
 
             /**
              * Паттерн включает слова начинающиеся не с цифры и >= 2 символов
