@@ -3,9 +3,6 @@
     "description": "A library for true XSL-way templating of XML-based Office documents. Supports MS Word docx.",
     "keywords": ["docx", "template", "word"],
     "license": "MIT",
-    "require": {
-        "doctrine/lexer": "1.0.*@dev"
-    },
     "authors": [
         {
             "name": "Oleg",
