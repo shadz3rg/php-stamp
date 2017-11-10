@@ -155,7 +155,7 @@ class Lexer extends AbstractLexer
     public function getInputBetweenPosition($position, $length)
     {
         // Get input without modification of original package
-        $reflectionClass = new \ReflectionClass('Doctrine\Common\Lexer\AbstractLexer');
+        $reflectionClass = new \ReflectionClass('PHPStamp\Processor\AbstractLexer');
 
         $reflectionProperty = $reflectionClass->getProperty('input');
         $reflectionProperty->setAccessible(true);
