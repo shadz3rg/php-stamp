@@ -7,12 +7,29 @@ use PHPStamp\Document\DocumentInterface;
 
 class Result
 {
+    /**
+     * @var \DOMDocument
+     */
     private $output;
+    /**
+     * @var DocumentInterface
+     */
     private $document;
+    /**
+     * @var \DOMDocument[]
+     */
+    private $footerList;
+    /**
+     * @var \DOMDocument[]
+     */
+    private $headerList;
 
-    public function __construct(\DOMDocument $output, DocumentInterface $document)
+    public function __construct(\DOMDocument $mainDocument,
+        $headerDocumentList, $footerDocumentList, DocumentInterface $document)
     {
-        $this->output = $output;
+        $this->output = $mainDocument;
+        $this->headerList = $headerDocumentList;
+        $this->footerList = $footerDocumentList;
         $this->document = $document;
     }
 
@@ -53,6 +70,12 @@ class Result
             $zip = new \ZipArchive();
             $zip->open($tempArchive);
             $zip->addFromString($this->document->getContentPath(), $this->output->saveXML());
+            foreach($this->headerList as $i => $header) {
+                $zip->addFromString($this->document->getHeaderPath($i), $header->saveXML());
+            }
+            foreach($this->footerList as $i => $footer) {
+                $zip->addFromString($this->document->getFooterPath($i), $footer->saveXML());
+            }
             $zip->close();
             return $tempArchive;
         }

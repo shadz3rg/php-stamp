@@ -22,6 +22,22 @@ class WordDocument extends Document
     }
 
     /**
+     * @inheritdoc
+     */
+    public function getFooterPath($i)
+    {
+        return 'word/footer' . $i . '.xml';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getHeaderPath($i)
+    {
+        return 'word/header' . $i . '.xml';
+    }
+
+    /**
      * @inherit
      */
     public function getNodeName($type, $global = false)

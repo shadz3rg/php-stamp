@@ -54,6 +54,14 @@ abstract class Document implements DocumentInterface
             if ($zip->extractTo($to . $this->documentName, $this->getContentPath()) === false) {
                 throw new InvalidArgumentException('Destination not reachable.');
             }
+
+            $i = 1;
+            while(true) {
+                if ($zip->extractTo($to . $this->documentName, $this->getFooterPath($i)) === false) {
+                    break;
+                }
+                $i++;
+            }
         }
 
         return $filePath;
@@ -84,6 +92,16 @@ abstract class Document implements DocumentInterface
      * @inherit
      */
     public abstract function getContentPath();
+
+    /**
+     * @inheritdoc
+     */
+    public abstract function getFooterPath($i);
+
+    /**
+     * @inheritdoc
+     */
+    public abstract function getHeaderPath($i);
 
     /**
      * @inherit
