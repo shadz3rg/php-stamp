@@ -79,4 +79,22 @@ interface DocumentInterface
      * @return ExtensionInterface
      */
     function getExpression($id, Tag $tag);
+
+    /**
+     * Get path to running title file Footer
+     *
+     * @param int $i Increment id
+     *
+     * @return string
+     */
+    function getFooterPath($i);
+
+    /**
+     * Get path to running title file Footer
+     *
+     * @param int $i Increment id
+     *
+     * @return string
+     */
+    function getHeaderPath($i);
 } 

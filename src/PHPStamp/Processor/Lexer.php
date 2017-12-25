@@ -1,8 +1,6 @@
 <?php
 namespace PHPStamp\Processor;
 
-use Doctrine\Common\Lexer\AbstractLexer;
-
 class Lexer extends AbstractLexer
 {
     const T_NONE                = 1;
@@ -53,9 +51,11 @@ class Lexer extends AbstractLexer
     {
         return array(
             '[a-z_\\\][a-z0-9_\\\]*[a-z0-9_]{1}',
+            '[а-я_\\\][а-я0-9_\\\]*[а-я0-9_]{1}',
             '(?:[0-9]+(?:[\.][0-9]+)*)(?:e[+-]?[0-9]+)?',
             "'(?:[^']|''|')*'", // Паттерн исключает слова в кавычках (только). Доработка - |'
             '\?[0-9]*|[a-z_][a-z0-9_]*'   ,
+            '\?[0-9]*|[а-я_][а-я0-9_]*'   ,
 
             /**
              * Паттерн включает слова начинающиеся не с цифры и >= 2 символов
@@ -135,6 +135,16 @@ class Lexer extends AbstractLexer
     }
 
     /**
+     * Regex modifiers
+     *
+     * @return string
+     */
+    protected function getModifiers()
+    {
+        return 'iu';
+    }
+
+    /**
      * Substr original lexer's input.
      *
      * @param integer $length
@@ -145,7 +155,7 @@ class Lexer extends AbstractLexer
     public function getInputBetweenPosition($position, $length)
     {
         // Get input without modification of original package
-        $reflectionClass = new \ReflectionClass('Doctrine\Common\Lexer\AbstractLexer');
+        $reflectionClass = new \ReflectionClass('PHPStamp\Processor\AbstractLexer');
 
         $reflectionProperty = $reflectionClass->getProperty('input');
         $reflectionProperty->setAccessible(true);

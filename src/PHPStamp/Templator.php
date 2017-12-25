@@ -8,6 +8,12 @@ use PHPStamp\Processor\TagMapper;
 
 class Templator
 {
+    /**
+     * Constant for running title
+     */
+    const RUNNING_TITLE = 'header';
+    const RUNNING_FOOTER = 'footer';
+
     public $debug = false;
 
     private $cachePath;
@@ -38,10 +44,59 @@ class Templator
      */
     public function render(DocumentInterface $document, array $values)
     {
-        // fill with values
-        $xslt = new \XSLTProcessor();
-
         $template = $this->getTemplate($document);
+        $mainDocument = $this->transform($template, $values);
+        $headerList = $this->renderRunningTitle($document, $values, Templator::RUNNING_TITLE);
+        $footerList = $this->renderRunningTitle($document, $values, Templator::RUNNING_FOOTER);
+
+        return new Result($mainDocument, $headerList, $footerList, $document);
+    }
+
+    /**
+     * Render running title
+     * @param DocumentInterface $document
+     * @param array             $values
+     * @param string            $type
+     *
+     * @return array
+     */
+    private function renderRunningTitle(DocumentInterface $document, array $values, $type = Templator::RUNNING_TITLE)
+    {
+        $i = 1;
+        $documentList = [];
+        while(true) {
+            switch($type) {
+                case Templator::RUNNING_TITLE:
+                    $template = $this->getHeaderTemplate($document, $i);
+                    break;
+                case Templator::RUNNING_FOOTER:
+                    $template = $this->getFooterTemplate($document, $i);
+                    break;
+            }
+
+            if (empty($template)) {
+                break;
+            }
+
+            $documentList[$i] = $this->transform($template, $values);
+
+            $i++;
+        }
+
+        return $documentList;
+    }
+
+    /**
+     * Transform document
+     *
+     * @param \DOMDocument $template
+     * @param array $values
+     *
+     * @return \DOMDocument
+     */
+    private function transform($template, $values)
+    {
+        $xslt = new \XSLTProcessor();
         $xslt->importStylesheet($template);
 
         $content = $xslt->transformToDoc(
@@ -50,7 +105,67 @@ class Templator
 
         Processor::undoEscapeXsl($content);
 
-        return new Result($content, $document);
+        return $content;
+    }
+
+    /**
+     * Return running title footer
+     *
+     * @param DocumentInterface $document
+     * @param int               $i
+     *
+     * @return bool|\DOMDocument
+     */
+    private function getFooterTemplate(DocumentInterface $document, $i)
+    {
+        $footerPath = $document->getFooterPath($i);
+        $fullPath = $this->cachePath . $document->getDocumentName() . '/' . $footerPath;
+        if (!file_exists($fullPath)) {
+            return false;
+        }
+        $template = new \DOMDocument('1.0', 'UTF-8');
+        $template->load($fullPath);
+
+
+        // process xml document into xsl template
+        if ($template->documentElement->nodeName !== 'xsl:stylesheet') {
+            $this->createTemplate($template, $document);
+
+            $template->save($fullPath);
+            $template->load($fullPath);
+        }
+
+        return $template;
+    }
+
+    /**
+     * Return running title header
+     *
+     * @param DocumentInterface $document
+     * @param int               $i
+     *
+     * @return bool|\DOMDocument
+     */
+    private function getHeaderTemplate(DocumentInterface $document, $i)
+    {
+        $headerPath = $document->getHeaderPath($i);
+        $fullPath = $this->cachePath . $document->getDocumentName() . '/' . $headerPath;
+        if (!file_exists($fullPath)) {
+            return false;
+        }
+        $template = new \DOMDocument('1.0', 'UTF-8');
+        $template->load($fullPath);
+
+
+        // process xml document into xsl template
+        if ($template->documentElement->nodeName !== 'xsl:stylesheet') {
+            $this->createTemplate($template, $document);
+
+            $template->save($fullPath);
+            $template->load($fullPath);
+        }
+
+        return $template;
     }
 
     private function getTemplate(DocumentInterface $document)
@@ -64,7 +179,6 @@ class Templator
         if ($template->documentElement->nodeName !== 'xsl:stylesheet') {
             $this->createTemplate($template, $document);
 
-            // cache template FIXME workaround for disappeared xml: attributes, reload as temporary fix
             $template->save($contentFile);
             $template->load($contentFile);
         }
@@ -100,8 +214,7 @@ class Templator
 
         /** @var $node \DOMElement */
         foreach ($nodeList as $node) {
-            $decodedValue = utf8_decode($node->nodeValue);
-            $lexer->setInput($decodedValue);
+            $lexer->setInput($node->nodeValue);
 
             while ($tag = $mapper->parse($lexer)) {
 
