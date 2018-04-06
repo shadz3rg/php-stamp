@@ -4,7 +4,10 @@
     "keywords": ["docx", "template", "word"],
     "license": "MIT",
     "require": {
-        "doctrine/lexer": "1.0.*@dev"
+        "php": ">=5.3.0",
+        "ext-xsl": "*",
+        "ext-zip": "*",
+        "doctrine/lexer": "1.0.1"
     },
     "authors": [
         {
