@@ -9,12 +9,40 @@ use PHPStamp\Processor\TagMapper;
 
 class Templator
 {
+    /**
+     * Enable debug mode to generate template with every render call.
+     *
+     * @var bool
+     */
     public $debug = false;
+
+    /**
+     * Enable track mode to generate template with every original document change.
+     *
+     * @var bool
+     */
     public $trackDocument = false;
 
+    /**
+     * Writable path to store compiled template.
+     *
+     * @var string
+     */
     private $cachePath;
+
+    /**
+     * Customizable placeholder brackets.
+     *
+     * @var array
+     */
     private $brackets;
 
+    /**
+     * Create a new Templator.
+     *
+     * @param string $cachePath Writable path to store compiled template.
+     * @param array $brackets Customizable placeholder brackets.
+     */
     public function __construct($cachePath, $brackets = array('[[', ']]'))
     {
         if (!is_dir($cachePath)) {
@@ -34,8 +62,8 @@ class Templator
     /**
      * Process given document into template and render it with given values.
      *
-     * @param DocumentInterface $document
-     * @param array $values
+     * @param DocumentInterface $document Document to render.
+     * @param array $values Multidimensional array with values to replace placeholders.
      * @return Result
      */
     public function render(DocumentInterface $document, array $values)
@@ -55,6 +83,12 @@ class Templator
         return new Result($content, $document);
     }
 
+    /**
+     * Cache control for document template.
+     *
+     * @param DocumentInterface $document Document to render.
+     * @return \DOMDocument XSL stylesheet.
+     */
     private function getTemplate(DocumentInterface $document)
     {
         $overwrite = false;
@@ -80,6 +114,12 @@ class Templator
         return $template;
     }
 
+    /**
+     * Create reusable template from XML content file.
+     *
+     * @param \DOMDocument $template Main content file.
+     * @param DocumentInterface $document Document to render.
+     */
     private function createTemplate(\DOMDocument $template, DocumentInterface $document)
     {
         // prepare xml document
@@ -101,6 +141,12 @@ class Templator
         $this->searchAndReplace($nodeList, $document);
     }
 
+    /**
+     * Search and replace placeholders with XSL logic.
+     *
+     * @param \DOMNodeList $nodeList List of nodes having at least one placeholder.
+     * @param DocumentInterface $document Document to render.
+     */
     private function searchAndReplace(\DOMNodeList $nodeList, DocumentInterface $document)
     {
         $lexer = new Lexer($this->brackets);
@@ -128,9 +174,9 @@ class Templator
     }
 
     /**
-     * Create DOMDocument and encode array into XML recursively
+     * Create DOMDocument and encode multidimensional array into XML recursively.
      *
-     * @param array $values
+     * @param array $values Multidimensional array.
      * @return \DOMDocument
      */
     private function createValuesDocument(array $values)
@@ -148,8 +194,8 @@ class Templator
     /**
      * Fetch original file hash stored in template comment and compare it with actual file hash.
      *
-     * @param DocumentInterface $document
-     * @return bool
+     * @param DocumentInterface $document Document to render.
+     * @return bool Document was updated?
      */
     private function compareHash(DocumentInterface $document)
     {
@@ -185,8 +231,8 @@ class Templator
     /**
      * Represent META data as string and store in template.
      *
-     * @param \DOMDocument $template
-     * @param DocumentInterface $document
+     * @param \DOMDocument $template XSL stylesheet.
+     * @param DocumentInterface $document Document to render.
      */
     private function storeComment(\DOMDocument $template, DocumentInterface $document)
     {
