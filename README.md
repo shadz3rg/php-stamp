@@ -1,20 +1,24 @@
 PHPStamp
 =========
 
-PHPStamp is a simple PHP templating library for XML-based Microsoft Word documents.  
-Library aims to provide native XML-way of templating this documents as an altenative to treating DOM document as a string for regex replacing, which has a lot of downsides.  
+PHPStamp is a simple PHP templating engine for XML-based Microsoft Word documents.  
+Library aims to provide native XML-way of templating for DOCX documents as an altenative to treating its content as a string for regex replacing, which has a lot of downsides.  
+Instead it tries to clean messy WYSIWYG-generated code and create reusable XSL stylesheet from document.  
 
-Basically it tries to clean messy WYSIWYG-generated code and create reusable XSL stylesheet from document.  
 Some additional information:  
 (EN) https://redd.it/30conp  
 (RU) http://habrahabr.ru/post/244421/  
  
 Features
 ----
-  - Current version supports Microsoft Office OpenXML DOCX format.
-  - Configurable brackets for tags-placeholders.
+  - Caching XSL template to filesystem for fast document render.
+  - Track document mode - generate and cache new template if original document was updated.
+  - Configurable brackets for placeholder tags.
   - Basic extension system, which helps generating content blocks such as Cells or ListItems.
-  - Caching XSL template to filesystem.
+
+Known issues
+----
+Values inserted into placeholder tags may be highlighted as incorrect by spellcheck, since library removes language attribute and MS Word tries to check it with system language.
 
 Requirements
 ----
@@ -26,16 +30,6 @@ Installation
 Install with Composer.
 
 `composer require shadz3rg/php-stamp`
-
-or
-
-```json
-{
-    "require": {
-        "shadz3rg/php-stamp": "0.1.*"
-    }
-}
-```
 
 Usage
 ----
@@ -52,6 +46,12 @@ Usage
     
     $cachePath = 'path/to/writable/directory/';
     $templator = new Templator($cachePath);
+    
+    // Enable debug mode to generate template with every render call.
+    // $templator->debug = true;
+    
+    // Enable track mode to generate template with every original document change.
+    // $templator->trackDocument = true;
     
     $documentPath = 'path/to/document.docx';
     $document = new WordDocument($documentPath);
@@ -77,7 +77,21 @@ Usage
         )
     );
     $result = $templator->render($document, $values);
+    
+    // Now you can get template result.
+    // 1. HTTP Download
     $result->download();
+    
+    // Or
+    // 2. Save to file
+    // $saved = $result->save(__DIR__ . '/static', 'Test_Result1.docx');
+    // if ($saved === true) {
+    //     echo 'Saved!';
+    // }
+    
+    // Or
+    // 3. Buffer output
+    // echo $result->output();
 ```
 
 ##### Result.  
