@@ -2,6 +2,7 @@
 
 namespace PHPStamp;
 
+use PHPStamp\Core\CommentTransformer;
 use PHPStamp\Document\DocumentInterface;
 use PHPStamp\Processor\Lexer;
 use PHPStamp\Processor\TagMapper;
@@ -9,6 +10,7 @@ use PHPStamp\Processor\TagMapper;
 class Templator
 {
     public $debug = false;
+    public $trackDocument = false;
 
     private $cachePath;
     private $brackets;
@@ -55,7 +57,12 @@ class Templator
 
     private function getTemplate(DocumentInterface $document)
     {
-        $contentFile = $document->extract($this->cachePath, $this->debug);
+        $overwrite = false;
+        if ($this->trackDocument === true) {
+            $overwrite = $this->compareHash($document);
+        }
+
+        $contentFile = $document->extract($this->cachePath, $this->debug || $overwrite);
 
         $template = new \DOMDocument('1.0', 'UTF-8');
         $template->load($contentFile);
@@ -63,6 +70,7 @@ class Templator
         // process xml document into xsl template
         if ($template->documentElement->nodeName !== 'xsl:stylesheet') {
             $this->createTemplate($template, $document);
+            $this->storeComment($template, $document);
 
             // cache template FIXME workaround for disappeared xml: attributes, reload as temporary fix
             $template->save($contentFile);
@@ -135,5 +143,62 @@ class Templator
         XMLHelper::xmlEncode($values, $tokensNode, $document);
 
         return $document;
+    }
+
+    /**
+     * Fetch original file hash stored in template comment and compare it with actual file hash.
+     *
+     * @param DocumentInterface $document
+     * @return bool
+     */
+    private function compareHash(DocumentInterface $document)
+    {
+        $overwrite = false;
+
+        $contentPath = $this->cachePath . $document->getDocumentName() . '/' . $document->getContentPath();
+        if (file_exists($contentPath) === true) {
+
+            $template = new \DOMDocument('1.0', 'UTF-8');
+            $template->load($contentPath);
+
+            $query = new \DOMXPath($template);
+            $commentList = $query->query('/xsl:stylesheet/comment()');
+
+            if ($commentList->length === 1) {
+                $commentNode = $commentList->item(0);
+
+                $commentContent = $commentNode->nodeValue;
+                $commentContent = trim($commentContent);
+
+                $transformer = new CommentTransformer();
+                $contentMeta = $transformer->reverseTransformer($commentContent);
+
+                if ($document->getDocumentHash() !== $contentMeta['document_hash']) {
+                    $overwrite = true;
+                }
+            }
+        }
+
+        return $overwrite;
+    }
+
+    /**
+     * Represent META data as string and store in template.
+     *
+     * @param \DOMDocument $template
+     * @param DocumentInterface $document
+     */
+    private function storeComment(\DOMDocument $template, DocumentInterface $document)
+    {
+        $meta = array(
+            'generation_date' => date('Y-m-d H:i:s'),
+            'document_hash' => $document->getDocumentHash()
+        );
+
+        $transformer = new CommentTransformer();
+        $commentContent = $transformer->transform($meta);
+
+        $commentNode = $template->createComment($commentContent);
+        $template->documentElement->appendChild($commentNode);
     }
 }

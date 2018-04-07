@@ -27,6 +27,13 @@ interface DocumentInterface
     function extract($to, $overwrite);
 
     /**
+     * Get document file hash.
+     *
+     * @return string
+     */
+    function getDocumentHash();
+
+    /**
      * Get document filename with extension.
      *
      * @return string

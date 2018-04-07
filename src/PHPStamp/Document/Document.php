@@ -62,6 +62,14 @@ abstract class Document implements DocumentInterface
     /**
      * @inherit
      */
+    public function getDocumentHash()
+    {
+        return md5_file($this->documentPath);
+    }
+
+    /**
+     * @inherit
+     */
     public function getDocumentName()
     {
         return $this->documentName;
