@@ -1,4 +1,5 @@
 <?php
+
 namespace PHPStamp\Exception;
 
-class ExtensionException extends \Exception {}
+class ExtensionException extends PHPStampException {}

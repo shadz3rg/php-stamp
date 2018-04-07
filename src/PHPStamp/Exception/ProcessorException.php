@@ -1,6 +1,5 @@
 <?php
+
 namespace PHPStamp\Exception;
 
-class ProcessorException extends \Exception {
-
-} 
+class ProcessorException extends PHPStampException {}
