@@ -4,6 +4,7 @@ namespace PHPStamp\Document;
 
 use PHPStamp\Document\WordDocument\Cleanup;
 use PHPStamp\Exception\InvalidArgumentException;
+use PHPStamp\Extension\Extension;
 use PHPStamp\Processor\Tag;
 
 /**
@@ -14,7 +15,7 @@ class WordDocument extends Document
     private $structure = array('w:p', 'w:r', 'w:rPr', 'w:t');
 
     /**
-     * @inherit
+     * Path to main content file inside document ZIP archive.
      */
     public function getContentPath()
     {
@@ -22,7 +23,12 @@ class WordDocument extends Document
     }
 
     /**
-     * @inherit
+     * Get node name by XPATH_* constant type.
+     *
+     * @param int $type XPATH_* constant.
+     * @param bool $global Append global xpath //.
+     * @return string
+     * @throws InvalidArgumentException
      */
     public function getNodeName($type, $global = false)
     {
@@ -40,7 +46,7 @@ class WordDocument extends Document
     }
 
     /**
-     * @inherit
+     * XPath to text node.
      */
     public function getNodePath()
     {
@@ -48,7 +54,10 @@ class WordDocument extends Document
     }
 
     /**
-     * @inherit
+     * Cleanup Word Document from WYSIWYG mess.
+     *
+     * @param \DOMDocument $template
+     * @throws InvalidArgumentException
      */
     public function cleanup(\DOMDocument $template)
     {
@@ -66,7 +75,12 @@ class WordDocument extends Document
     }
 
     /**
-     * @inherit
+     * Get instance of associated placeholder function.
+     *
+     * @param string $id Id as entered in placeholder.
+     * @param Tag $tag Container tag.
+     * @return Extension
+     * @throws InvalidArgumentException
      */
     public function getExpression($id, Tag $tag)
     {

@@ -13,16 +13,24 @@ abstract class Document implements DocumentInterface
     const XPATH_TEXT  = 3;
 
     /**
+     * Original document filename.
+     *
      * @var string
      */
     private $documentName;
+
     /**
+     * Path to original document.
+     *
      * @var string
      */
     private $documentPath;
 
     /**
-     * @inherit
+     * Creates a new Document.
+     *
+     * @param string $documentPath
+     * @throws InvalidArgumentException
      */
     public function __construct($documentPath)
     {
@@ -35,7 +43,12 @@ abstract class Document implements DocumentInterface
     }
 
     /**
-     * @inherit
+     * Extract main content file.
+     *
+     * @param string $to Path to extract content file.
+     * @param bool $overwrite Overwrite content file.
+     * @return string Full path to extracted document file.
+     * @throws InvalidArgumentException
      */
     public function extract($to, $overwrite)
     {
@@ -60,7 +73,7 @@ abstract class Document implements DocumentInterface
     }
 
     /**
-     * @inherit
+     * Get MD5 hash to detect original document update.
      */
     public function getDocumentHash()
     {
@@ -85,6 +98,7 @@ abstract class Document implements DocumentInterface
 
     /**
      * @inherit
+     * @param \DOMDocument $template
      */
     public abstract function cleanup(\DOMDocument $template);
 
@@ -100,11 +114,15 @@ abstract class Document implements DocumentInterface
 
     /**
      * @inherit
+     * @param int $type XPATH_* constant.
+     * @param bool $global Append global xpath //.
      */
     public abstract function getNodeName($type, $global = false);
 
-   /**
-    * @inherit
-    */
+    /**
+     * @inherit
+     * @param string $id Id as entered in placeholder.
+     * @param Tag $tag Container tag.
+     */
     public abstract function getExpression($id, Tag $tag);
 }
