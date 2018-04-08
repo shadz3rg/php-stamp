@@ -1,15 +1,21 @@
 <?php
 namespace PHPStamp;
 
-use PHPStamp\Processor\Tag;
 
 class Processor
 {
+    /**
+     * XSL Namespace
+     */
     const XSL_NS = 'http://www.w3.org/1999/XSL/Transform';
+
+    /**
+     * Root node for values XML document.
+     */
     const VALUE_NODE = 'values';
 
     /**
-     * Wrap document content into xsl template.
+     * Wrap document content into XSL template.
      *
      * @param \DOMDocument $document
      * @return void
@@ -32,6 +38,14 @@ class Processor
         $document->appendChild($stylesheet);
     }
 
+    /**
+     * Split node into three parts (before [[tag]] after) and replace tag with XSL logic.
+     *
+     * @param string $search Placeholder tag with brackets.
+     * @param string $path XPath to value in the encoded XML document.
+     * @param \DOMElement $node Node with placeholder.
+     * @return bool
+     */
     public static function insertTemplateLogic($search, $path, \DOMElement $node)
     {
         $template = $node->ownerDocument;
@@ -70,6 +84,12 @@ class Processor
         return false;
     }
 
+    /**
+     * Word XML can contain curly braces in attributes, which conflicts with XSL logic.
+     * Escape them before template created.
+     *
+     * @param \DOMDocument $document
+     */
     public static function escapeXsl(\DOMDocument $document)
     {
         $xpath = new \DOMXPath($document);
@@ -84,6 +104,12 @@ class Processor
         }
     }
 
+    /**
+     * Word XML can contain curly braces in attributes, which conflicts with XSL logic.
+     * Undo escape them after template conversion.
+     *
+     * @param \DOMDocument $document
+     */
     public static function undoEscapeXsl(\DOMDocument $document)
     {
         $xpath = new \DOMXPath($document);
