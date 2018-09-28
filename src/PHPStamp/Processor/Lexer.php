@@ -30,18 +30,10 @@ class Lexer extends AbstractLexer
     const T_CLOSE_BRACKET       = 101;
 
     private $brackets = array();
-    private $bracketsQuery = '';
 
     public function __construct(array $brackets)
     {
         $this->brackets = $brackets;
-
-        $toQuery = array(
-            '(?:' . preg_quote($this->brackets[0]) . ')',
-            '(?:' . preg_quote($this->brackets[1]) . ')'
-        );
-
-        $this->bracketsQuery = implode($toQuery);
     }
 
     /**
@@ -63,8 +55,8 @@ class Lexer extends AbstractLexer
              * X    1xx x   -xx
              */
             /*'[a-z_\s][a-z0-9_\s]*[a-z0-9_\s]{1}',*/
-            '\[\[',
-            '\]\]'
+            '(?:' . preg_quote($this->brackets[0]) . ')',
+            '(?:' . preg_quote($this->brackets[1]) . ')'
         );
     }
 

@@ -155,6 +155,7 @@ class Templator
         /** @var $node \DOMElement */
         foreach ($nodeList as $node) {
             $decodedValue = utf8_decode($node->nodeValue);
+
             $lexer->setInput($decodedValue);
 
             while ($tag = $mapper->parse($lexer)) {
@@ -166,6 +167,7 @@ class Templator
 
                 // insert simple value-of
                 if ($tag->hasFunctions() === false) {
+                    var_dump($tag->getTextContent());
                     $absolutePath = '/' . Processor::VALUE_NODE . '/' . $tag->getXmlPath();
                     Processor::insertTemplateLogic($tag->getTextContent(), $absolutePath, $node);
                 }
