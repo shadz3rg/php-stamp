@@ -167,7 +167,6 @@ class Templator
 
                 // insert simple value-of
                 if ($tag->hasFunctions() === false) {
-                    var_dump($tag->getTextContent());
                     $absolutePath = '/' . Processor::VALUE_NODE . '/' . $tag->getXmlPath();
                     Processor::insertTemplateLogic($tag->getTextContent(), $absolutePath, $node);
                 }
