@@ -12,7 +12,7 @@
          stopOnSkipped="false"
          bootstrap="vendor/autoload.php">
     <testsuites>
-        <testsuite name="Test Suite">
+        <testsuite name="Main Suite">
             <directory>tests/</directory>
         </testsuite>
     </testsuites>
