@@ -9,7 +9,7 @@
         "php": ">=5.3.0",
         "ext-xsl": "*",
         "ext-zip": "*",
-        "doctrine/lexer": "1.0.1"
+        "shadz3rg/lexer": "^1.0"
     },
     "authors": [
         {
