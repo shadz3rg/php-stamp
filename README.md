@@ -1,5 +1,7 @@
 PHPStamp
 =========
+Donations is always appreciated  
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=6L3DRXVG67Z2N&currency_code=EUR&amount=2&source=url)  
 
 PHPStamp is a simple PHP templating engine for XML-based Microsoft Word documents.  
 Library aims to provide native XML-way of templating for DOCX documents as an altenative to treating its content as a string for regex replacing, which has a lot of downsides.  
