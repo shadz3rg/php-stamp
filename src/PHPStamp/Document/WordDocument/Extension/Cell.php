@@ -10,31 +10,41 @@ use PHPStamp\XMLHelper;
 class Cell extends Extension
 {
     /**
-     * @inherit
+     * @param array $arguments
+     * @return array
+     * @throws ExtensionException
      */
     protected function prepareArguments(array $arguments)
     {
-        if (count($arguments) !== 1) {
-            throw new ExtensionException('Wrong arguments number, 1 needed, got ' . count($arguments));
+        if (count($arguments) === 0) {
+            throw new ExtensionException('At least 1 argument required.');
         }
 
         return $arguments;
     }
 
     /**
-     * @inherit
+     * @param array $arguments
+     * @param \DOMElement $node
+     * @throws ExtensionException
+     * @throws \PHPStamp\Exception\ParsingException
      */
     protected function insertTemplateLogic(array $arguments, \DOMElement $node)
     {
-        list($rowName) = $arguments;
+        $rowName = $arguments[0];
+
+        $explicitName = $rowName;
+        if (count($arguments) === 2) {
+            $explicitName = $arguments[1];
+        }
 
         $template = $node->ownerDocument;
 
         // find existing or initiate new table row template
-        if ($this->isRowTemplateExist($rowName, $template) === false) {
+        if ($this->isRowTemplateExist($explicitName, $template) === false) {
 
             $rowTemplate = $template->createElementNS(Processor::XSL_NS, 'xsl:template');
-            $rowTemplate->setAttribute('name', $rowName);
+            $rowTemplate->setAttribute('name', $explicitName);
 
             // find row node
             $rowNode = XMLHelper::parentUntil('w:tr', $node);
@@ -43,7 +53,7 @@ class Cell extends Extension
             $foreachNode = $template->createElementNS(Processor::XSL_NS, 'xsl:for-each');
             $foreachNode->setAttribute('select', '/' . Processor::VALUE_NODE . '/' . $rowName . '/item');
             $callTemplateNode = $template->createElementNS(Processor::XSL_NS, 'xsl:call-template');
-            $callTemplateNode->setAttribute('name', $rowName);
+            $callTemplateNode->setAttribute('name', $explicitName);
             $foreachNode->appendChild($callTemplateNode);
 
             // insert call-template before moving
@@ -58,6 +68,12 @@ class Cell extends Extension
         Processor::insertTemplateLogic($this->tag->getTextContent(), $relativePath, $node);
     }
 
+    /**
+     * @param $rowName
+     * @param \DOMDocument $template
+     * @return bool
+     * @throws ExtensionException
+     */
     private function isRowTemplateExist($rowName, \DOMDocument $template)
     {
         $xpath = new \DOMXPath($template);
@@ -67,6 +83,6 @@ class Cell extends Extension
             throw new ExtensionException('Unexpected template count.');
         }
 
-        return ($nodeList->length === 1);
+        return $nodeList->length === 1;
     }
 }
