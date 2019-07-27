@@ -42,6 +42,7 @@ class Templator
      *
      * @param string $cachePath Writable path to store compiled template.
      * @param array $brackets Customizable placeholder brackets.
+     * @throws Exception\InvalidArgumentException
      */
     public function __construct($cachePath, $brackets = array('[[', ']]'))
     {
@@ -65,6 +66,7 @@ class Templator
      * @param DocumentInterface $document Document to render.
      * @param array $values Multidimensional array with values to replace placeholders.
      * @return Result
+     * @throws Exception\InvalidArgumentException
      */
     public function render(DocumentInterface $document, array $values)
     {
@@ -88,6 +90,7 @@ class Templator
      *
      * @param DocumentInterface $document Document to render.
      * @return \DOMDocument XSL stylesheet.
+     * @throws Exception\InvalidArgumentException
      */
     private function getTemplate(DocumentInterface $document)
     {
