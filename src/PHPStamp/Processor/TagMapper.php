@@ -111,7 +111,7 @@ class TagMapper
                 return array('function' => $function, 'arguments' => $arguments);
             }
 
-            if ($token['type'] !== $expected && $token['type'] !== $optional) { var_dump($token);
+            if ($token['type'] !== $expected && $token['type'] !== $optional) {
                 throw new ProcessorException(
                     'Unexpected token' .
                     ', expected ' . $lexer->getLiteral($expected) .
