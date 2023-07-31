@@ -6,7 +6,7 @@
     "keywords": ["docx", "template", "word"],
     "license": "MIT",
     "require": {
-        "php": ">=5.3.0",
+        "php": "^7.2|^8.2",
         "ext-xsl": "*",
         "ext-zip": "*",
         "ext-dom": "*",
@@ -22,5 +22,15 @@
         "psr-0": {
             "PHPStamp": "src/"
         }
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^1.10",
+        "ekino/phpstan-banned-code": "^1.0",
+        "friendsofphp/php-cs-fixer": "^3.22"
+    },
+    "scripts": {
+        "codequality": "phpstan analyse src/ -c phpstan.neon --level=max && php-cs-fixer fix --config=.php-cs-fixer.dist.php -v --dry-run",
+        "cq": "@codequality",
+        "cs": "php-cs-fixer fix --config=.php-cs-fixer.dist.php -v"
     }
 }

@@ -1,0 +1,10 @@
+includes:
+    - vendor/ekino/phpstan-banned-code/extension.neon
+parameters:
+    banned_code:
+        nodes:
+            - type: Expr_FuncCall
+              functions:
+                  - dump
+                  - var_dump
+                  - echo
