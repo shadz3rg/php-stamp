@@ -6,7 +6,7 @@
     "keywords": ["docx", "template", "word"],
     "license": "MIT",
     "require": {
-        "php": "^7.2|^8.2",
+        "php": "^7.4",
         "ext-xsl": "*",
         "ext-zip": "*",
         "ext-dom": "*",
