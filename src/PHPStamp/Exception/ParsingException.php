@@ -2,4 +2,6 @@
 
 namespace PHPStamp\Exception;
 
-class ParsingException extends PHPStampException {}
+class ParsingException extends PHPStampException
+{
+}

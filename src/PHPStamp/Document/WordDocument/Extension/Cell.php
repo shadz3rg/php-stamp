@@ -10,8 +10,8 @@ use PHPStamp\XMLHelper;
 class Cell extends Extension
 {
     /**
-     * @param array $arguments
      * @return array
+     *
      * @throws ExtensionException
      */
     protected function prepareArguments(array $arguments)
@@ -24,8 +24,6 @@ class Cell extends Extension
     }
 
     /**
-     * @param array $arguments
-     * @param \DOMElement $node
      * @throws ExtensionException
      * @throws \PHPStamp\Exception\ParsingException
      */
@@ -42,7 +40,6 @@ class Cell extends Extension
 
         // find existing or initiate new table row template
         if ($this->isRowTemplateExist($explicitName, $template) === false) {
-
             $rowTemplate = $template->createElementNS(Processor::XSL_NS, 'xsl:template');
             $rowTemplate->setAttribute('name', $explicitName);
 
@@ -51,7 +48,7 @@ class Cell extends Extension
 
             // call-template for each row
             $foreachNode = $template->createElementNS(Processor::XSL_NS, 'xsl:for-each');
-            $foreachNode->setAttribute('select', '/' . Processor::VALUE_NODE . '/' . $rowName . '/item');
+            $foreachNode->setAttribute('select', '/'.Processor::VALUE_NODE.'/'.$rowName.'/item');
             $callTemplateNode = $template->createElementNS(Processor::XSL_NS, 'xsl:call-template');
             $callTemplateNode->setAttribute('name', $explicitName);
             $foreachNode->appendChild($callTemplateNode);
@@ -69,15 +66,14 @@ class Cell extends Extension
     }
 
     /**
-     * @param $rowName
-     * @param \DOMDocument $template
      * @return bool
+     *
      * @throws ExtensionException
      */
     private function isRowTemplateExist($rowName, \DOMDocument $template)
     {
         $xpath = new \DOMXPath($template);
-        $nodeList = $xpath->query('/xsl:stylesheet/xsl:template[@name="' . $rowName . '"]');
+        $nodeList = $xpath->query('/xsl:stylesheet/xsl:template[@name="'.$rowName.'"]');
 
         if ($nodeList->length > 1) {
             throw new ExtensionException('Unexpected template count.');

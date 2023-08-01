@@ -2,4 +2,6 @@
 
 namespace PHPStamp\Exception;
 
-class ExtensionException extends PHPStampException {}
+class ExtensionException extends PHPStampException
+{
+}

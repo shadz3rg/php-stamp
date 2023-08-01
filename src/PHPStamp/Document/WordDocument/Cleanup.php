@@ -40,7 +40,7 @@ class Cleanup extends XMLHelper
             $runIndex = 0;
             $currentRunNode = $runNodeList->item($runIndex);
 
-            $runIndex += 1;
+            ++$runIndex;
             $nextRunNode = $runNodeList->item($runIndex);
 
             while ($currentRunNode) {
@@ -49,7 +49,7 @@ class Cleanup extends XMLHelper
                         $this->getPropertyNode($currentRunNode),
                         $this->getPropertyNode($nextRunNode)
                     );
-                    
+
                     if ($this->getValueNode($currentRunNode) === null || $this->getValueNode($nextRunNode) === null) {
                         $isEqual = false;
                     }
@@ -61,9 +61,9 @@ class Cleanup extends XMLHelper
                         if ($nextValueNode !== null && $currentValueNode !== null) { // fixme libreoffice docx quick fix
                             $appendTextNode = $this->document->createTextNode($nextValueNode->textContent);
                             $currentValueNode->appendChild($appendTextNode);
-                            
-                            if ($currentValueNode->hasAttribute('xml:space') === false &&
-                                $currentValueNode->textContent !== trim($currentValueNode->textContent)) {
+
+                            if ($currentValueNode->hasAttribute('xml:space') === false
+                                && $currentValueNode->textContent !== trim($currentValueNode->textContent)) {
                                 $currentValueNode->setAttribute('xml:space', 'preserve');
                             }
                         }
@@ -73,9 +73,8 @@ class Cleanup extends XMLHelper
                     }
 
                     // even if we remove element from document node list still contains it, so jump on next
-                    $runIndex += 1;
+                    ++$runIndex;
                     $nextRunNode = $runNodeList->item($runIndex);
-
                 } else {
                     $currentRunNode = $nextRunNode;
                 }
@@ -100,12 +99,14 @@ class Cleanup extends XMLHelper
     private function getPropertyNode(\DOMNode $runNode)
     {
         $nodeList = $this->xpath->query($this->runPropertyQuery, $runNode);
+
         return $nodeList->item(0);
     }
 
     private function getValueNode(\DOMNode $runNode)
     {
         $nodeList = $this->xpath->query($this->textQuery, $runNode);
+
         return $nodeList->item(0);
     }
 
@@ -119,8 +120,8 @@ class Cleanup extends XMLHelper
         }
 
         // cleanup empty rPr
-        $nodeList = $this->xpath->query('//' . $this->runPropertyQuery . '[not(node())]');
-        /** @var $langNode \DOMNode */
+        $nodeList = $this->xpath->query('//'.$this->runPropertyQuery.'[not(node())]');
+        /* @var $langNode \DOMNode */
         foreach ($nodeList as $node) {
             $node->parentNode->removeChild($node);
         }

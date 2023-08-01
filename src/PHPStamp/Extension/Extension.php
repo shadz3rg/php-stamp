@@ -30,16 +30,15 @@ abstract class Extension implements ExtensionInterface
 
     /**
      * Prepare / validate / merge with defaults / modify given arguments.
-     * @param array $arguments
+     *
      * @return array
      */
-    protected abstract function prepareArguments(array $arguments);
+    abstract protected function prepareArguments(array $arguments);
 
     /**
      * All template modification magic is here.
-     * @param array $arguments
-     * @param \DOMElement $node
+     *
      * @return void
      */
-    protected abstract function insertTemplateLogic(array $arguments, \DOMElement $node);
+    abstract protected function insertTemplateLogic(array $arguments, \DOMElement $node);
 }

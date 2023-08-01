@@ -1,4 +1,5 @@
 <?php
+
 namespace PHPStamp;
 
 use PHPStamp\Exception\ParsingException;
@@ -7,11 +8,14 @@ class XMLHelper
 {
     /**
      * Check two given nodes for equality.
-     * @param $node1 \DOMNode|null
+     *
+     * @param $node1 \DOzMNode|null
      * @param $node2 \DOMNode|null
+     *
      * @return bool
-     * @link http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-Node3-isEqualNode
-     * @link https://github.com/WebKit/webkit/blob/master/Source/WebCore/dom/Node.cpp#L1081
+     *
+     * @see http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-Node3-isEqualNode
+     * @see https://github.com/WebKit/webkit/blob/master/Source/WebCore/dom/Node.cpp#L1081
      */
     public function deepEqual($node1, $node2)
     {
@@ -53,7 +57,6 @@ class XMLHelper
         $node2Child = $node2->firstChild;
 
         while ($node1Child) {
-
             if ($node2Child === null) { // if $node1 child count > $node2 child count
                 return false;
             }
@@ -61,7 +64,6 @@ class XMLHelper
             if ($this->deepEqual($node1Child, $node2Child) === false) {
                 return false;
             }
-
 
             $node1Child = $node1Child->nextSibling;
             $node2Child = $node2Child->nextSibling;
@@ -92,8 +94,7 @@ class XMLHelper
 
     /**
      * Check two given nodes for equal attributes.
-     * @param \DOMNode $node1
-     * @param \DOMNode $node2
+     *
      * @return bool
      */
     private function compareAttributes(\DOMNode $node1, \DOMNode $node2)
@@ -123,20 +124,21 @@ class XMLHelper
 
     /**
      * Fetch node list from document.
-     * @param \DOMDocument $document
-     * @param $xpathQuery
+     *
      * @return \DOMNodeList
      */
     public static function queryTemplate(\DOMDocument $document, $xpathQuery)
     {
         $xpath = new \DOMXPath($document);
+
         return $xpath->query($xpathQuery);
     }
 
     /**
      * Formats DOMDocument for html output.
+     *
      * @codeCoverageIgnore
-     * @param \DOMDocument $document
+     *
      * @return string
      */
     public static function prettyPrint(\DOMDocument $document)
@@ -149,14 +151,14 @@ class XMLHelper
         $document->preserveWhiteSpace = true;
         $document->formatOutput = false;
 
-        return '<pre>' . htmlentities($xmlString) . '</pre>';
+        return '<pre>'.htmlentities($xmlString).'</pre>';
     }
 
     /**
      * Find closest parent node.
-     * @param $nodeName
-     * @param \DOMNode $node
+     *
      * @return \DOMNode
+     *
      * @throws Exception\ParsingException
      */
     public static function parentUntil($nodeName, \DOMNode $node)
@@ -174,16 +176,13 @@ class XMLHelper
 
     /**
      * Add associative array values into XML object recursively.
-     * @param $mixed
-     * @param \DOMNode $domElement
-     * @param \DOMDocument $domDocument
+     *
      * @param string $itemName
      */
     public static function xmlEncode($mixed, \DOMNode $domElement, \DOMDocument $domDocument, $itemName = 'item')
     {
         if (is_array($mixed)) {
             foreach ($mixed as $index => $mixedElement) {
-
                 $tagName = $index;
                 if (is_int($index)) {
                     $tagName = $itemName;

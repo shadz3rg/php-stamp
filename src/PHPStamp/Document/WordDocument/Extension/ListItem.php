@@ -15,7 +15,7 @@ class ListItem extends Extension
     protected function prepareArguments(array $arguments)
     {
         if (count($arguments) !== 0) {
-            throw new ExtensionException('Wrong arguments number, 0 needed, got ' . count($arguments));
+            throw new ExtensionException('Wrong arguments number, 0 needed, got '.count($arguments));
         }
 
         return $arguments;
@@ -32,7 +32,6 @@ class ListItem extends Extension
 
         // find existing or initiate new table row template
         if ($this->isListItemTemplateExist($listName, $template) === false) {
-
             $rowTemplate = $template->createElementNS(Processor::XSL_NS, 'xsl:template');
             $rowTemplate->setAttribute('name', $listName);
 
@@ -41,7 +40,7 @@ class ListItem extends Extension
 
             // call-template for each row
             $foreachNode = $template->createElementNS(Processor::XSL_NS, 'xsl:for-each');
-            $foreachNode->setAttribute('select', '/' . Processor::VALUE_NODE . '/' . $listName . '/item');
+            $foreachNode->setAttribute('select', '/'.Processor::VALUE_NODE.'/'.$listName.'/item');
             $callTemplateNode = $template->createElementNS(Processor::XSL_NS, 'xsl:call-template');
             $callTemplateNode->setAttribute('name', $listName);
             $foreachNode->appendChild($callTemplateNode);
@@ -52,7 +51,6 @@ class ListItem extends Extension
             // move node into row template
             $rowTemplate->appendChild($rowNode);
             $template->documentElement->appendChild($rowTemplate);
-
         }
 
         // FIXME пофиксить повторное использование функции
@@ -62,12 +60,12 @@ class ListItem extends Extension
     private function isListItemTemplateExist($rowName, \DOMDocument $template)
     {
         $xpath = new \DOMXPath($template);
-        $nodeList = $xpath->query('/xsl:stylesheet/xsl:template[@name="' . $rowName . '"]');
+        $nodeList = $xpath->query('/xsl:stylesheet/xsl:template[@name="'.$rowName.'"]');
 
         if ($nodeList->length > 1) {
             throw new ExtensionException('Unexpected template count.');
         }
 
-        return ($nodeList->length === 1);
+        return $nodeList->length === 1;
     }
-} 
+}

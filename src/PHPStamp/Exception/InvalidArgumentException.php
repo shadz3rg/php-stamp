@@ -2,4 +2,6 @@
 
 namespace PHPStamp\Exception;
 
-class InvalidArgumentException extends PHPStampException {}
+class InvalidArgumentException extends PHPStampException
+{
+}

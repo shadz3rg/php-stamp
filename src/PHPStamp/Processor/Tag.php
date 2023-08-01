@@ -28,16 +28,15 @@ class Tag
     /**
      * Creates a new Tag.
      *
-     * @param array $summary Tag data.
-     * @param array $path Path to value in placeholder.
-     * @param array $functions Parsed functions.
+     * @param array $summary   tag data
+     * @param array $path      path to value in placeholder
+     * @param array $functions parsed functions
      */
     public function __construct(array $summary, array $path, array $functions)
     {
         $this->summary = $summary;
         $this->path = $path;
         $this->functions = $functions;
-
     }
 
     /**
@@ -88,7 +87,7 @@ class Tag
      */
     public function hasFunctions()
     {
-        return (count($this->functions) !== 0);
+        return count($this->functions) !== 0;
     }
 
     /**
@@ -110,4 +109,4 @@ class Tag
     {
         return $this->summary['textContent'];
     }
-} 
+}

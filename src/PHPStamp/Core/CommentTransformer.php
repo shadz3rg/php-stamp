@@ -7,7 +7,6 @@ class CommentTransformer
     /**
      * Represent META array as string.
      *
-     * @param array $comment
      * @return string
      */
     public function transform(array $comment)
@@ -17,11 +16,8 @@ class CommentTransformer
 
     /**
      * Decode string into META array.
-     *
-     * @param $comment
-     * @return mixed
      */
-    public function reverseTransformer($comment)
+    public function reverseTransformer(string $comment)
     {
         return json_decode($comment, true);
     }

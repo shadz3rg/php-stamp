@@ -8,11 +8,11 @@ use PHPStamp\Extension\Extension;
 use PHPStamp\Processor\Tag;
 
 /**
- * @link http://msdn.microsoft.com/ru-ru/library/office/gg278327(v=office.15).aspx
+ * @see http://msdn.microsoft.com/ru-ru/library/office/gg278327(v=office.15).aspx
  */
 class WordDocument extends Document
 {
-    private $structure = array('w:p', 'w:r', 'w:rPr', 'w:t');
+    private $structure = ['w:p', 'w:r', 'w:rPr', 'w:t'];
 
     /**
      * Path to main content file inside document ZIP archive.
@@ -25,9 +25,11 @@ class WordDocument extends Document
     /**
      * Get node name by XPATH_* constant type.
      *
-     * @param int $type XPATH_* constant.
-     * @param bool $global Append global xpath //.
+     * @param int  $type   XPATH_* constant
+     * @param bool $global append global xpath //
+     *
      * @return string
+     *
      * @throws InvalidArgumentException
      */
     public function getNodeName($type, $global = false)
@@ -36,7 +38,7 @@ class WordDocument extends Document
             throw new InvalidArgumentException('Element with this index not defined in structure');
         }
 
-        $return = array();
+        $return = [];
         if ($global === true) {
             $return[] = '//';
         }
@@ -56,7 +58,6 @@ class WordDocument extends Document
     /**
      * Cleanup Word Document from WYSIWYG mess.
      *
-     * @param \DOMDocument $template
      * @throws InvalidArgumentException
      */
     public function cleanup(\DOMDocument $template)
@@ -77,23 +78,26 @@ class WordDocument extends Document
     /**
      * Get instance of associated placeholder function.
      *
-     * @param string $id Id as entered in placeholder.
-     * @param Tag $tag Container tag.
+     * @param string $id  id as entered in placeholder
+     * @param Tag    $tag container tag
+     *
      * @return Extension
+     *
      * @throws InvalidArgumentException
      */
     public function getExpression($id, Tag $tag)
     {
-        $available = array(
-			'cell' => 'PHPStamp\\Document\\WordDocument\\Extension\\Cell',
-			'listitem' => 'PHPStamp\\Document\\WordDocument\\Extension\\ListItem',
-		);
-		
-		if (isset($available[$id]) === false) {
-			throw new InvalidArgumentException('Class by id "' . $id . '" not found.');
-		}
-		
+        $available = [
+            'cell' => 'PHPStamp\\Document\\WordDocument\\Extension\\Cell',
+            'listitem' => 'PHPStamp\\Document\\WordDocument\\Extension\\ListItem',
+        ];
+
+        if (isset($available[$id]) === false) {
+            throw new InvalidArgumentException('Class by id "'.$id.'" not found.');
+        }
+
         $className = $available[$id];
+
         return new $className($tag);
     }
 }

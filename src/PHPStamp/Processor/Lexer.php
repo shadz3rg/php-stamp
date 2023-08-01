@@ -1,35 +1,36 @@
 <?php
+
 namespace PHPStamp\Processor;
 
 use Doctrine\Common\Lexer\AbstractLexer;
 
 class Lexer extends AbstractLexer
 {
-    const T_NONE                = 1;
-    const T_INTEGER             = 2;
-    const T_STRING              = 3;
-    const T_INPUT_PARAMETER     = 4;
-    const T_FLOAT               = 5;
-    const T_CLOSE_PARENTHESIS   = 6;
-    const T_OPEN_PARENTHESIS    = 7;
-    const T_COMMA               = 8;
-    const T_DIVIDE              = 9;
-    const T_DOT                 = 10;
-    const T_EQUALS              = 11;
-    const T_GREATER_THAN        = 12;
-    const T_LOWER_THAN          = 13;
-    const T_MINUS               = 14;
-    const T_MULTIPLY            = 15;
-    const T_NEGATE              = 16;
-    const T_PLUS                = 17;
-    const T_OPEN_CURLY_BRACE    = 18;
-    const T_CLOSE_CURLY_BRACE   = 19;
-    const T_COLON               = 20;
+    public const T_NONE = 1;
+    public const T_INTEGER = 2;
+    public const T_STRING = 3;
+    public const T_INPUT_PARAMETER = 4;
+    public const T_FLOAT = 5;
+    public const T_CLOSE_PARENTHESIS = 6;
+    public const T_OPEN_PARENTHESIS = 7;
+    public const T_COMMA = 8;
+    public const T_DIVIDE = 9;
+    public const T_DOT = 10;
+    public const T_EQUALS = 11;
+    public const T_GREATER_THAN = 12;
+    public const T_LOWER_THAN = 13;
+    public const T_MINUS = 14;
+    public const T_MULTIPLY = 15;
+    public const T_NEGATE = 16;
+    public const T_PLUS = 17;
+    public const T_OPEN_CURLY_BRACE = 18;
+    public const T_CLOSE_CURLY_BRACE = 19;
+    public const T_COLON = 20;
 
-    const T_OPEN_BRACKET        = 100;
-    const T_CLOSE_BRACKET       = 101;
+    public const T_OPEN_BRACKET = 100;
+    public const T_CLOSE_BRACKET = 101;
 
-    private $brackets = array();
+    private $brackets = [];
 
     public function __construct(array $brackets)
     {
@@ -43,14 +44,14 @@ class Lexer extends AbstractLexer
      */
     protected function getCatchablePatterns()
     {
-        return array(
+        return [
             '[a-z_\\\][a-z0-9_\\\]*[a-z0-9_]{1}',
             '(?:[0-9]+(?:[\.][0-9]+)*)(?:e[+-]?[0-9]+)?',
             "'(?:[^']|''|')*'", // Паттерн исключает слова в кавычках (только). Доработка - |'
             '\?[0-9]*|[a-z_][a-z0-9_]*',
-            '(?:' . preg_quote($this->brackets[0]) . ')',
-            '(?:' . preg_quote($this->brackets[1]) . ')'
-        );
+            '(?:'.preg_quote($this->brackets[0]).')',
+            '(?:'.preg_quote($this->brackets[1]).')',
+        ];
     }
 
     /**
@@ -60,7 +61,7 @@ class Lexer extends AbstractLexer
      */
     protected function getNonCatchablePatterns()
     {
-        return array('\s+', '(.)');
+        return ['\s+', '(.)'];
     }
 
     /**
@@ -68,50 +69,50 @@ class Lexer extends AbstractLexer
      *
      * @param string $value
      *
-     * @return integer
+     * @return int
      */
     protected function getType(&$value)
     {
         switch (true) {
             // Заданные брекеты
-            case ($value === $this->brackets[0]):
+            case $value === $this->brackets[0]:
                 return self::T_OPEN_BRACKET;
-            case ($value === $this->brackets[1]):
+            case $value === $this->brackets[1]:
                 return self::T_CLOSE_BRACKET;
 
-            // Знаки
-            case ($value === '.'):
+                // Знаки
+            case $value === '.':
                 return self::T_DOT;
-            case ($value === ','):
+            case $value === ',':
                 return self::T_COMMA;
-            case ($value === '('):
+            case $value === '(':
                 return self::T_OPEN_PARENTHESIS;
-            case ($value === ')'):
+            case $value === ')':
                 return self::T_CLOSE_PARENTHESIS;
-            case ($value === '='):
+            case $value === '=':
                 return self::T_EQUALS;
-            case ($value === '>'):
+            case $value === '>':
                 return self::T_GREATER_THAN;
-            case ($value === '<'):
+            case $value === '<':
                 return self::T_LOWER_THAN;
-            case ($value === '+'):
+            case $value === '+':
                 return self::T_PLUS;
-            case ($value === '-'):
+            case $value === '-':
                 return self::T_MINUS;
-            case ($value === '*'):
+            case $value === '*':
                 return self::T_MULTIPLY;
-            case ($value === '/'):
+            case $value === '/':
                 return self::T_DIVIDE;
-            case ($value === '!'):
+            case $value === '!':
                 return self::T_NEGATE;
-            case ($value === '{'):
+            case $value === '{':
                 return self::T_OPEN_CURLY_BRACE;
-            case ($value === '}'):
+            case $value === '}':
                 return self::T_CLOSE_CURLY_BRACE;
-            case ($value === ':'):
+            case $value === ':':
                 return self::T_COLON;
 
-            case (is_string($value)):
+            case is_string($value):
                 return self::T_STRING;
 
             default:
@@ -122,8 +123,8 @@ class Lexer extends AbstractLexer
     /**
      * Substr original lexer's input.
      *
-     * @param integer $length
-     * @param integer $position
+     * @param int $length
+     * @param int $position
      *
      * @return string
      */

@@ -12,6 +12,7 @@ class TagMapper
         while ($lexer->moveNext()) {
             if ($lexer->isNextToken(Lexer::T_OPEN_BRACKET) === true) {
                 $tagData = $this->parseTag($lexer);
+
                 return $this->mapObject($tagData);
             }
         }
@@ -22,15 +23,15 @@ class TagMapper
     private function parseTag(Lexer $lexer)
     {
         // Defaults
-        $tagData = array(
-            'summary' => array(
+        $tagData = [
+            'summary' => [
                 'textContent' => '',
                 'position' => $lexer->lookahead['position'], // currently on Lexer::T_OPEN_BRACKET
-                'length' => 0
-            ),
-            'path' => array(),
-            'functions' => array()
-        );
+                'length' => 0,
+            ],
+            'path' => [],
+            'functions' => [],
+        ];
 
         // *required Parsed path
         $tagData['path'] = $this->parsePath($lexer);
@@ -43,11 +44,7 @@ class TagMapper
         // *required End of tag
         $expected = Lexer::T_CLOSE_BRACKET;
         if ($lexer->isNextToken($expected) === false) {
-            throw new ParsingException(
-                'Unexpected token' .
-                ', expected ' . $lexer->getLiteral($expected) .
-                ', got ' . $lexer->getLiteral($lexer->lookahead['type'])
-            );
+            throw new ParsingException('Unexpected token, expected '.$lexer->getLiteral($expected).', got '.$lexer->getLiteral($lexer->lookahead['type']));
         }
 
         $endAt = $lexer->lookahead['position'] + mb_strlen($lexer->lookahead['value']);
@@ -63,7 +60,7 @@ class TagMapper
 
     private function parsePath(Lexer $lexer, $delimiter = Lexer::T_COLON, $return = Lexer::T_CLOSE_BRACKET)
     {
-        $path = array();
+        $path = [];
         $expected = Lexer::T_STRING;
 
         while ($lexer->moveNext()) {
@@ -74,11 +71,7 @@ class TagMapper
             }
 
             if ($token['type'] !== $expected) {
-                throw new ProcessorException(
-                    'Unexpected token' .
-                    ', expected ' . $lexer->getLiteral($expected) .
-                    ', got ' . $lexer->getLiteral($token['type'])
-                );
+                throw new ProcessorException('Unexpected token, expected '.$lexer->getLiteral($expected).', got '.$lexer->getLiteral($token['type']));
             }
 
             switch ($token['type']) {
@@ -91,15 +84,15 @@ class TagMapper
                     $expected = Lexer::T_STRING;
                     break;
             }
-
-        };
+        }
 
         return $path; // IDE fix
     }
 
-    private function parseFunction(Lexer $lexer, $delimiter = Lexer::T_COLON, $return = Lexer::T_CLOSE_BRACKET) {
+    private function parseFunction(Lexer $lexer, $delimiter = Lexer::T_COLON, $return = Lexer::T_CLOSE_BRACKET)
+    {
         $function = null;
-        $arguments = array();
+        $arguments = [];
 
         $expected = Lexer::T_STRING;
         $optional = null;
@@ -108,21 +101,16 @@ class TagMapper
             $token = $lexer->lookahead;
 
             if ($token['type'] === $delimiter || $token['type'] === $return) {
-                return array('function' => $function, 'arguments' => $arguments);
+                return ['function' => $function, 'arguments' => $arguments];
             }
 
             if ($token['type'] !== $expected && $token['type'] !== $optional) {
-                throw new ProcessorException(
-                    'Unexpected token' .
-                    ', expected ' . $lexer->getLiteral($expected) .
-                    ', got ' . $lexer->getLiteral($token['type'])
-                );
+                throw new ProcessorException('Unexpected token, expected '.$lexer->getLiteral($expected).', got '.$lexer->getLiteral($token['type']));
             }
 
             $optional = null; // Reset as we passed through
 
             switch ($token['type']) {
-
                 case Lexer::T_STRING:
                     // Function id
                     if ($function === null) {
@@ -159,14 +147,13 @@ class TagMapper
 
                     break;
             }
+        }
 
-        };
-
-        return array('function' => $function, 'arguments' => $arguments);  // IDE fix
+        return ['function' => $function, 'arguments' => $arguments];  // IDE fix
     }
 
     private function mapObject(array $tagData)
     {
         return new Tag($tagData['summary'], $tagData['path'], $tagData['functions']);
     }
-} 
+}

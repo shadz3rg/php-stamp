@@ -40,17 +40,18 @@ class Templator
     /**
      * Create a new Templator.
      *
-     * @param string $cachePath Writable path to store compiled template.
-     * @param array $brackets Customizable placeholder brackets.
+     * @param string $cachePath writable path to store compiled template
+     * @param array  $brackets  customizable placeholder brackets
+     *
      * @throws Exception\InvalidArgumentException
      */
-    public function __construct($cachePath, $brackets = array('[[', ']]'))
+    public function __construct($cachePath, $brackets = ['[[', ']]'])
     {
         if (!is_dir($cachePath)) {
-            throw new Exception\InvalidArgumentException('Cache path "' . $cachePath . '" unreachable.');
+            throw new Exception\InvalidArgumentException('Cache path "'.$cachePath.'" unreachable.');
         }
         if (!is_writable($cachePath)) {
-            throw new Exception\InvalidArgumentException('Cache path "' . $cachePath . '" not writable.');
+            throw new Exception\InvalidArgumentException('Cache path "'.$cachePath.'" not writable.');
         }
         if (count($brackets) !== 2 || array_values($brackets) !== $brackets) {
             throw new Exception\InvalidArgumentException('Brackets are in wrong format.');
@@ -63,9 +64,11 @@ class Templator
     /**
      * Process given document into template and render it with given values.
      *
-     * @param DocumentInterface $document Document to render.
-     * @param array $values Multidimensional array with values to replace placeholders.
+     * @param DocumentInterface $document document to render
+     * @param array             $values   multidimensional array with values to replace placeholders
+     *
      * @return Result
+     *
      * @throws Exception\InvalidArgumentException
      */
     public function render(DocumentInterface $document, array $values)
@@ -88,8 +91,10 @@ class Templator
     /**
      * Cache control for document template.
      *
-     * @param DocumentInterface $document Document to render.
-     * @return \DOMDocument XSL stylesheet.
+     * @param DocumentInterface $document document to render
+     *
+     * @return \DOMDocument XSL stylesheet
+     *
      * @throws Exception\InvalidArgumentException
      */
     private function getTemplate(DocumentInterface $document)
@@ -120,8 +125,8 @@ class Templator
     /**
      * Create reusable template from XML content file.
      *
-     * @param \DOMDocument $template Main content file.
-     * @param DocumentInterface $document Document to render.
+     * @param \DOMDocument      $template main content file
+     * @param DocumentInterface $document document to render
      */
     private function createTemplate(\DOMDocument $template, DocumentInterface $document)
     {
@@ -147,13 +152,13 @@ class Templator
     /**
      * Search and replace placeholders with XSL logic.
      *
-     * @param \DOMNodeList $nodeList List of nodes having at least one placeholder.
-     * @param DocumentInterface $document Document to render.
+     * @param \DOMNodeList      $nodeList list of nodes having at least one placeholder
+     * @param DocumentInterface $document document to render
      */
     private function searchAndReplace(\DOMNodeList $nodeList, DocumentInterface $document)
     {
         $lexer = new Lexer($this->brackets);
-        $mapper = new TagMapper;
+        $mapper = new TagMapper();
 
         /** @var $node \DOMElement */
         foreach ($nodeList as $node) {
@@ -162,7 +167,6 @@ class Templator
             $lexer->setInput($decodedValue);
 
             while ($tag = $mapper->parse($lexer)) {
-
                 foreach ($tag->getFunctions() as $function) {
                     $expression = $document->getExpression($function['function'], $tag);
                     $expression->execute($function['arguments'], $node);
@@ -170,7 +174,7 @@ class Templator
 
                 // insert simple value-of
                 if ($tag->hasFunctions() === false) {
-                    $absolutePath = '/' . Processor::VALUE_NODE . '/' . $tag->getXmlPath();
+                    $absolutePath = '/'.Processor::VALUE_NODE.'/'.$tag->getXmlPath();
                     Processor::insertTemplateLogic($tag->getTextContent(), $absolutePath, $node);
                 }
             }
@@ -180,7 +184,8 @@ class Templator
     /**
      * Create DOMDocument and encode multidimensional array into XML recursively.
      *
-     * @param array $values Multidimensional array.
+     * @param array $values multidimensional array
+     *
      * @return \DOMDocument
      */
     private function createValuesDocument(array $values)
@@ -198,16 +203,16 @@ class Templator
     /**
      * Fetch original file hash stored in template comment and compare it with actual file hash.
      *
-     * @param DocumentInterface $document Document to render.
+     * @param DocumentInterface $document document to render
+     *
      * @return bool Document was updated?
      */
     private function compareHash(DocumentInterface $document)
     {
         $overwrite = false;
 
-        $contentPath = $this->cachePath . $document->getDocumentName() . '/' . $document->getContentPath();
+        $contentPath = $this->cachePath.$document->getDocumentName().'/'.$document->getContentPath();
         if (file_exists($contentPath) === true) {
-
             $template = new \DOMDocument('1.0', 'UTF-8');
             $template->load($contentPath);
 
@@ -235,15 +240,15 @@ class Templator
     /**
      * Represent META data as string and store in template.
      *
-     * @param \DOMDocument $template XSL stylesheet.
-     * @param DocumentInterface $document Document to render.
+     * @param \DOMDocument      $template XSL stylesheet
+     * @param DocumentInterface $document document to render
      */
     private function storeComment(\DOMDocument $template, DocumentInterface $document)
     {
-        $meta = array(
+        $meta = [
             'generation_date' => date('Y-m-d H:i:s'),
-            'document_hash' => $document->getDocumentHash()
-        );
+            'document_hash' => $document->getDocumentHash(),
+        ];
 
         $transformer = new CommentTransformer();
         $commentContent = $transformer->transform($meta);
