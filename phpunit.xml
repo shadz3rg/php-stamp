@@ -1,19 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit backupGlobals="false"
-         backupStaticAttributes="false"
-         colors="true"
-         convertErrorsToExceptions="true"
-         convertNoticesToExceptions="true"
-         convertWarningsToExceptions="true"
-         processIsolation="false"
-         stopOnFailure="false"
-         stopOnError="false"
-         stopOnIncomplete="false"
-         stopOnSkipped="false"
-         bootstrap="vendor/autoload.php">
+<!-- https://phpunit.de/manual/current/en/appendixes.configuration.html -->
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.6/phpunit.xsd" backupGlobals="false" defaultTestSuite="Unit">
+    <coverage>
+        <include>
+            <directory>.</directory>
+        </include>
+        <exclude>
+            <directory suffix=".php">tests</directory>
+            <directory>vendor</directory>
+        </exclude>
+    </coverage>
     <testsuites>
-        <testsuite name="Main Suite">
-            <directory>tests/</directory>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Integration">
+            <directory>tests/Integration</directory>
         </testsuite>
     </testsuites>
+    <php>
+        <ini name="memory_limit" value="512M"/>
+    </php>
 </phpunit>
