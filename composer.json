@@ -1,7 +1,7 @@
 {
     "name": "shadz3rg/php-stamp",
     "description": "The XSL-way templating library for MS Office Word DOCX documents.",
-    "homepage": "https://github.com/shadz3rg/PHPStamp",
+    "homepage": "https://github.com/shadz3rg/php-stamp",
     "type": "library",
     "keywords": ["docx", "template", "word"],
     "license": "MIT",
@@ -20,14 +20,16 @@
         }
     ],
     "autoload": {
-        "psr-0": {
-            "PHPStamp": "src/"
+        "psr-4": {
+            "PHPStamp\\": "src/PHPStamp",
+            "PHPStamp\\Tests\\": "tests/"
         }
     },
     "require-dev": {
         "phpstan/phpstan": "^1.10",
         "ekino/phpstan-banned-code": "^1.0",
-        "friendsofphp/php-cs-fixer": "^3.22"
+        "friendsofphp/php-cs-fixer": "^3.22",
+        "phpunit/phpunit": "^9.6"
     },
     "scripts": {
         "codequality": "phpstan analyse src/ -c phpstan.neon --level=max && php-cs-fixer fix --config=.php-cs-fixer.dist.php -v --dry-run",
