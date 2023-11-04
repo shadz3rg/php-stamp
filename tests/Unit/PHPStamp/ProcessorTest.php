@@ -9,7 +9,7 @@ use PHPStamp\Tests\BaseCase;
 
 class ProcessorTest extends BaseCase
 {
-    public function testWrapIntoTemplate()
+    public function testWrapIntoTemplate(): void
     {
         $content = '<?xml version="1.0" encoding="UTF-8"?>'. PHP_EOL .
             '<w:document xmlns:w="https://schemas.openxmlformats.org/wordprocessingml/2006/main">'.
@@ -45,7 +45,7 @@ class ProcessorTest extends BaseCase
         $this->assertEquals(str_replace('  ', '', $expected), $doc->saveXML());
     }
 
-    public function testInsertTemplateLogic()
+    public function testInsertTemplateLogic(): void
     {
         $template = '<?xml version="1.0" encoding="UTF-8"?>'. PHP_EOL .
             '<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:w="https://schemas.openxmlformats.org/wordprocessingml/2006/main" version="1.0">'.
@@ -97,7 +97,7 @@ class ProcessorTest extends BaseCase
         $this->assertEquals(str_replace('  ', '', $expected), $doc->saveXML());
     }
 
-    public function testEscapeXsl()
+    public function testEscapeXsl(): void
     {
         $content = '<?xml version="1.0" encoding="UTF-8"?>'. PHP_EOL .
             '<w:document xmlns:w="https://schemas.openxmlformats.org/wordprocessingml/2006/main">'.
@@ -128,7 +128,7 @@ class ProcessorTest extends BaseCase
         $this->assertEquals(str_replace('  ', '', $expected), $doc->saveXML());
     }
 
-    public function testUndoEscapeXsl()
+    public function testUndoEscapeXsl(): void
     {
         $content = '<?xml version="1.0" encoding="UTF-8"?>'. PHP_EOL .
             '<w:document xmlns:w="https://schemas.openxmlformats.org/wordprocessingml/2006/main">'.

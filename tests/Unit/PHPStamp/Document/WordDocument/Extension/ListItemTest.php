@@ -12,7 +12,7 @@ class ListItemTest extends BaseCase
 {
     /**
      * @dataProvider
-     * @return array
+     * @return array<string,mixed>
      */
     public function executeProvider(): array
     {
@@ -71,6 +71,7 @@ class ListItemTest extends BaseCase
 
         /** @var \DOMElement $node */
         $node = $nodeList->item(0);
+        $this->assertNotNull($node->nodeValue);
 
         $lexer = new Lexer(['[[', ']]']);
         $lexer->setInput($node->nodeValue);

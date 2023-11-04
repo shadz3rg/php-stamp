@@ -9,7 +9,7 @@ class CleanupTest extends BaseCase
 {
     /**
      * @dataProvider
-     * @return array
+     * @return array<string,mixed>
      */
     public function cleanupProvider(): array
     {
@@ -135,6 +135,7 @@ EOD,
     }
 
     /**
+     * @param array<string> $paths
      * @dataProvider cleanupProvider
      */
     public function testCleanup(string $document, string $expected, array $paths): void
@@ -151,7 +152,7 @@ EOD,
 
     /**
      * @dataProvider
-     * @return array
+     * @return array<string,mixed>
      */
     public function hardcoreCleanupProvider(): array
     {
@@ -232,6 +233,7 @@ EOD,
     }
 
     /**
+     * @param array<string> $paths
      * @dataProvider hardcoreCleanupProvider
      */
     public function testHardcoreCleanup(string $document, string $expected, array $paths): void

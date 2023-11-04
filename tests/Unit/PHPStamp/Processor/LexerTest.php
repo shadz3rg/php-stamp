@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 
 class LexerTest extends TestCase
 {
-    public function testLexer()
+    public function testLexer(): void
     {
         $brackets = array('[[', ']]');
         $lexer = new Lexer($brackets);
@@ -31,7 +31,7 @@ class LexerTest extends TestCase
         $this->assertEquals($expectedStructure, $structure);
     }
 
-    public function testCustomBrackets()
+    public function testCustomBrackets(): void
     {
         $brackets = array('{% tag %}', '{% endtag %}');
         $lexer = new Lexer($brackets);

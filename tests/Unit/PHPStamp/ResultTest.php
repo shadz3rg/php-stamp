@@ -9,7 +9,7 @@ use PHPStamp\Tests\BaseCase;
 
 class ResultTest extends BaseCase
 {
-    public function testBuildFile()
+    public function testBuildFile(): void
     {
         $content = '<?xml version="1.0" encoding="UTF-8"?>'. PHP_EOL .
             '<w:document xmlns:w="https://schemas.openxmlformats.org/wordprocessingml/2006/main">'.

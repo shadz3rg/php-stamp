@@ -11,7 +11,7 @@ class TemplatorTest extends BaseCase
 {
     /**
      * @dataProvider
-     * @return array
+     * @return array<string,mixed>
      */
     public function renderProvider(): array
     {
@@ -46,6 +46,7 @@ class TemplatorTest extends BaseCase
     }
 
     /**
+     * @param array<string,string> $values
      * @dataProvider renderProvider
      */
     public function testRender(string $content, array $values, string $expected): void

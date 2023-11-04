@@ -11,7 +11,7 @@ class CellTest extends BaseCase
 {
     /**
      * @dataProvider
-     * @return array
+     * @return array<string,mixed>
      */
     public function executeProvider(): array
     {
@@ -396,6 +396,7 @@ class CellTest extends BaseCase
 
         /** @var \DOMElement $node */
         foreach ($nodeList as $node) {
+            $this->assertNotNull($node->nodeValue);
             $lexer->setInput($node->nodeValue);
             $mapper = new TagMapper();
             $tag = $mapper->parse($lexer);

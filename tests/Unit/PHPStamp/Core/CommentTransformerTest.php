@@ -6,17 +6,20 @@ use PHPStamp\Core\CommentTransformer;
 use PHPStamp\Exception\DecodeException;
 use PHPStamp\Exception\EncodeException;
 use PHPStamp\Tests\BaseCase;
+use Throwable;
 
 class CommentTransformerTest extends BaseCase
 {
+    private CommentTransformer $transformer;
+
     public function setUp(): void
     {
-        $this->transormer = new CommentTransformer();
+        $this->transformer = new CommentTransformer();
     }
 
     /**
      * @dataProvider
-     * @return array
+     * @return array<string,mixed>
      */
     public function transformProvider(): array
     {
@@ -28,6 +31,8 @@ class CommentTransformerTest extends BaseCase
     }
 
     /**
+     * @param array<string,mixed> $payload
+     * @phpstan-param class-string<Throwable> $exception
      * @dataProvider transformProvider
      * @throws EncodeException
      */
@@ -37,7 +42,7 @@ class CommentTransformerTest extends BaseCase
             $this->expectException($exception);
         }
 
-        $result = $this->transormer->transform($payload);
+        $result = $this->transformer->transform($payload);
         if ($expected !== null) {
             $this->assertEquals($expected, $result);
         }
@@ -45,7 +50,7 @@ class CommentTransformerTest extends BaseCase
 
     /**
      * @dataProvider
-     * @return array
+     * @return array<string,mixed>
      */
     public function reverseTransformProvider(): array
     {
@@ -57,6 +62,8 @@ class CommentTransformerTest extends BaseCase
     }
 
     /**
+     * @param array<string,mixed>|null $expected
+     * @phpstan-param class-string<Throwable> $exception
      * @dataProvider reverseTransformProvider
      * @throws DecodeException
      */
@@ -66,7 +73,7 @@ class CommentTransformerTest extends BaseCase
             $this->expectException($exception);
         }
 
-        $result = $this->transormer->reverseTransformer($serialized);
+        $result = $this->transformer->reverseTransformer($serialized);
         if ($expected !== null) {
             $this->assertEquals($expected, $result);
         }

@@ -7,7 +7,7 @@ use PHPStamp\Tests\BaseCase;
 
 class WordDocumentTest extends BaseCase
 {
-    public function testContentPath()
+    public function testContentPath(): void
     {
         $file = __DIR__.'/../../../resources/students.docx';
 

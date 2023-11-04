@@ -32,7 +32,7 @@
         "phpunit/phpunit": "^9.6"
     },
     "scripts": {
-        "codequality": "phpstan analyse src/ -c phpstan.neon --level=max && php-cs-fixer fix --config=.php-cs-fixer.dist.php -v --dry-run",
+        "codequality": "phpstan analyse -c phpstan.neon --level=max && php-cs-fixer fix --config=.php-cs-fixer.dist.php -v --dry-run",
         "cq": "@codequality",
         "cs": "php-cs-fixer fix --config=.php-cs-fixer.dist.php -v"
     }

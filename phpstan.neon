@@ -1,6 +1,9 @@
 includes:
     - vendor/ekino/phpstan-banned-code/extension.neon
 parameters:
+    paths:
+        - src/
+        - tests/
     banned_code:
         nodes:
             - type: Expr_FuncCall

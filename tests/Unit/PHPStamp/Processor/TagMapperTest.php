@@ -11,7 +11,7 @@ class TagMapperTest extends BaseCase
 {
     /**
      * @dataProvider
-     * @return array
+     * @return array<string,mixed>
      */
     public function parseProvider(): array
     {
@@ -88,6 +88,7 @@ class TagMapperTest extends BaseCase
     }
 
     /**
+     * @param array<Tag> $expected
      * @dataProvider parseProvider
      */
     public function testParse(string $content, array $expected): void

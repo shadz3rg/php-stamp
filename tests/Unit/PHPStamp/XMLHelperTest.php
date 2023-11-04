@@ -5,12 +5,13 @@ namespace PHPStamp\Tests\Unit\PHPStamp;
 use PHPStamp\Exception\ParsingException;
 use PHPStamp\Tests\BaseCase;
 use PHPStamp\XMLHelper;
+use Throwable;
 
 class XMLHelperTest extends BaseCase
 {
     /**
      * @dataProvider
-     * @return array
+     * @return array<string,mixed>
      */
     public function deepEqualProvider(): array
     {
@@ -94,7 +95,7 @@ class XMLHelperTest extends BaseCase
         $root = $document->documentElement;
         $this->assertEquals('root', $root->nodeName);
 
-        /** @var \DOMNodeList $rootChilds */
+        /** @var \DOMNodeList<\DOMNode> $rootChilds */
         $rootChilds = $root->childNodes;
         $this->assertEquals(4, $rootChilds->count()); // DOM_TEXT included
 
@@ -127,12 +128,15 @@ EOT;
         $result = XMLHelper::queryTemplate($document, '/catalog/book[@id="bk101"]/genre');
         $this->assertInstanceOf(\DOMNodeList::class, $result);
         $this->assertEquals(1, $result->count());
-        $this->assertEquals('Computer', $result->item(0)->nodeValue);
+
+        /** @var \DOMNode $node */
+        $node = $result->item(0);
+        $this->assertEquals('Computer', $node->nodeValue);
     }
 
     /**
      * @dataProvider
-     * @return array
+     * @return array<string,mixed>
      */
     public function parentUntilProvider(): array
     {
@@ -165,6 +169,7 @@ EOT;
     }
 
     /**
+     * @phpstan-param class-string<Throwable> $exception
      * @dataProvider parentUntilProvider
      * @throws ParsingException
      */
@@ -181,7 +186,7 @@ EOT;
 
     /**
      * @dataProvider
-     * @return array
+     * @return array<string,mixed>
      */
     public function encodeProvider(): array
     {
@@ -228,6 +233,7 @@ EOT;
     }
 
     /**
+     * @param array<string,string> $data
      * @dataProvider encodeProvider
      */
     public function testEncode(array $data, string $root, string $expected): void
