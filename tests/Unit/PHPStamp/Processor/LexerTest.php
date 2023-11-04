@@ -9,21 +9,21 @@ class LexerTest extends TestCase
 {
     public function testLexer(): void
     {
-        $brackets = array('[[', ']]');
+        $brackets = ['[[', ']]'];
         $lexer = new Lexer($brackets);
 
         $sampleInput = 'This is a test string with a lot!!! of special character and [[ tag ]] inside.';
         $lexer->setInput($sampleInput);
 
-        $expectedStructure = array(
+        $expectedStructure = [
             Lexer::T_STRING, Lexer::T_STRING, Lexer::T_STRING, Lexer::T_STRING, Lexer::T_STRING,
             Lexer::T_STRING, Lexer::T_STRING, Lexer::T_STRING,
             Lexer::T_NEGATE, Lexer::T_NEGATE, Lexer::T_NEGATE,
             Lexer::T_STRING, Lexer::T_STRING, Lexer::T_STRING, Lexer::T_STRING,
-            Lexer::T_OPEN_BRACKET, Lexer::T_STRING, Lexer::T_CLOSE_BRACKET, Lexer::T_STRING, Lexer::T_DOT
-        );
+            Lexer::T_OPEN_BRACKET, Lexer::T_STRING, Lexer::T_CLOSE_BRACKET, Lexer::T_STRING, Lexer::T_DOT,
+        ];
 
-        $structure = array();
+        $structure = [];
         while ($fragment = $lexer->peek()) {
             $structure[] = $fragment['type'];
         }
@@ -33,21 +33,21 @@ class LexerTest extends TestCase
 
     public function testCustomBrackets(): void
     {
-        $brackets = array('{% tag %}', '{% endtag %}');
+        $brackets = ['{% tag %}', '{% endtag %}'];
         $lexer = new Lexer($brackets);
 
         $sampleInput = 'This is a test string with a lot!!! of special character and {% tag %} tag {% endtag %} inside.';
         $lexer->setInput($sampleInput);
 
-        $expectedStructure = array(
+        $expectedStructure = [
             Lexer::T_STRING, Lexer::T_STRING, Lexer::T_STRING, Lexer::T_STRING, Lexer::T_STRING,
             Lexer::T_STRING, Lexer::T_STRING, Lexer::T_STRING,
             Lexer::T_NEGATE, Lexer::T_NEGATE, Lexer::T_NEGATE,
             Lexer::T_STRING, Lexer::T_STRING, Lexer::T_STRING, Lexer::T_STRING,
-            Lexer::T_OPEN_BRACKET, Lexer::T_STRING, Lexer::T_CLOSE_BRACKET, Lexer::T_STRING, Lexer::T_DOT
-        );
+            Lexer::T_OPEN_BRACKET, Lexer::T_STRING, Lexer::T_CLOSE_BRACKET, Lexer::T_STRING, Lexer::T_DOT,
+        ];
 
-        $structure = array();
+        $structure = [];
         while ($fragment = $lexer->peek()) {
             $structure[] = $fragment['type'];
         }

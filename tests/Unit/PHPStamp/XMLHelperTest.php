@@ -11,6 +11,7 @@ class XMLHelperTest extends BaseCase
 {
     /**
      * @dataProvider
+     *
      * @return array<string,mixed>
      */
     public function deepEqualProvider(): array
@@ -22,7 +23,7 @@ class XMLHelperTest extends BaseCase
                 '    <div id="abc">123<span>A</span></div>'.
                 '    <div id="abc">123<span>A</span></div>'.
                 '</root>',
-                true
+                true,
             ],
             'should compare namespace' => [
                 '<?xml version="1.0" encoding="UTF-8"?>'.
@@ -30,7 +31,7 @@ class XMLHelperTest extends BaseCase
                 '    <html:span>123</html:span>'.
                 '    <span>123</span>'.
                 '</root>',
-                false
+                false,
             ],
             'should compare value' => [
                 '<?xml version="1.0" encoding="UTF-8"?>'.
@@ -38,7 +39,7 @@ class XMLHelperTest extends BaseCase
                 '    <span>123</span>'.
                 '    <span>321</span>'.
                 '</root>',
-                false
+                false,
             ],
             'should compare attribute count' => [
                 '<?xml version="1.0" encoding="UTF-8"?>'.
@@ -46,7 +47,7 @@ class XMLHelperTest extends BaseCase
                 '    <span id="1">123</span>'.
                 '    <span>321</span>'.
                 '</root>',
-                false
+                false,
             ],
             'should compare attribute value' => [
                 '<?xml version="1.0" encoding="UTF-8"?>'.
@@ -54,7 +55,7 @@ class XMLHelperTest extends BaseCase
                 '    <span id="1">123</span>'.
                 '    <span id="2">321</span>'.
                 '</root>',
-                false
+                false,
             ],
             'should compare attribute presence' => [
                 '<?xml version="1.0" encoding="UTF-8"?>'.
@@ -62,7 +63,7 @@ class XMLHelperTest extends BaseCase
                 '    <span id="1">123</span>'.
                 '    <span id="1" style="y">321</span>'.
                 '</root>',
-                false
+                false,
             ],
             'should compare child nodes' => [
                 '<?xml version="1.0" encoding="UTF-8"?>'.
@@ -70,7 +71,7 @@ class XMLHelperTest extends BaseCase
                 '    <div><div>123</div></div>'.
                 '    <div><div>123</div><div>321</div></div>'.
                 '</root>',
-                false
+                false,
             ],
             'should compare recursively' => [
                 '<?xml version="1.0" encoding="UTF-8"?>'.
@@ -78,8 +79,8 @@ class XMLHelperTest extends BaseCase
                 '    <div id="A"><div id="B"><div id="C1">123</div><div id="C2">123</div></div></div>'.
                 '    <div id="A"><div id="B"><div id="C1">123</div><div id="C2">123</div></div></div>'.
                 '</root>',
-                true
-            ]
+                true,
+            ],
         ];
     }
 
@@ -136,6 +137,7 @@ EOT;
 
     /**
      * @dataProvider
+     *
      * @return array<string,mixed>
      */
     public function parentUntilProvider(): array
@@ -162,18 +164,20 @@ EOT;
         $node = $titles->item(0);
 
         return [
-            'parent case' => ["book", $node, null],
-            'recursive case' => ["catalog", $node, null],
-            'not found case' => ["unknown", $node, ParsingException::class],
+            'parent case' => ['book', $node, null],
+            'recursive case' => ['catalog', $node, null],
+            'not found case' => ['unknown', $node, ParsingException::class],
         ];
     }
 
     /**
      * @phpstan-param class-string<Throwable> $exception
+     *
      * @dataProvider parentUntilProvider
+     *
      * @throws ParsingException
      */
-    public function testParentUntil(string $nodeName, \DOMNode $node, ?string $exception = null): void
+    public function testParentUntil(string $nodeName, \DOMNode $node, string $exception = null): void
     {
         if ($exception !== null) {
             $this->expectException($exception);
@@ -186,6 +190,7 @@ EOT;
 
     /**
      * @dataProvider
+     *
      * @return array<string,mixed>
      */
     public function encodeProvider(): array
@@ -198,7 +203,7 @@ EOT;
                 '<root>'.
                 '    <test>123</test>'.
                 '    <test2>Hello</test2>'.
-                '</root>'.PHP_EOL
+                '</root>'.PHP_EOL,
             ],
             'recursive tree case' => [
                 ['test' => 1, 'tier0' => ['test' => 2, 'tier1' => ['test' => 3, 'tier2' => 'Hello']]],
@@ -213,7 +218,7 @@ EOT;
                 '            <tier2>Hello</tier2>'.
                 '        </tier1>'.
                 '    </tier0>'.
-                '</root>'.PHP_EOL
+                '</root>'.PHP_EOL,
             ],
             'list case' => [
                 ['test' => ['test1', 'test2', 'test3']],
@@ -234,6 +239,7 @@ EOT;
 
     /**
      * @param array<string,string> $data
+     *
      * @dataProvider encodeProvider
      */
     public function testEncode(array $data, string $root, string $expected): void

@@ -9,6 +9,7 @@ class CleanupTest extends BaseCase
 {
     /**
      * @dataProvider
+     *
      * @return array<string,mixed>
      */
     public function cleanupProvider(): array
@@ -57,7 +58,7 @@ EOD,
 </root>
 
 EOD,
-                ['a', 'b', 'bb', 'c']
+                ['a', 'b', 'bb', 'c'],
             ],
             'style mismatch' => [
                 <<<'EOD'
@@ -97,7 +98,7 @@ EOD,
 </root>
 
 EOD,
-                ['a', 'b', 'bb', 'c']
+                ['a', 'b', 'bb', 'c'],
             ],
             'correct clone' => [
                 <<<'EOD'
@@ -129,13 +130,14 @@ EOD,
 </root>
 
 EOD,
-                ['a', 'b', 'bb', 'c']
+                ['a', 'b', 'bb', 'c'],
             ],
         ];
     }
 
     /**
      * @param array<string> $paths
+     *
      * @dataProvider cleanupProvider
      */
     public function testCleanup(string $document, string $expected, array $paths): void
@@ -152,6 +154,7 @@ EOD,
 
     /**
      * @dataProvider
+     *
      * @return array<string,mixed>
      */
     public function hardcoreCleanupProvider(): array
@@ -192,7 +195,7 @@ EOD,
 </root>
 
 EOD,
-                ['a', 'b', 'bb', 'c']
+                ['a', 'b', 'bb', 'c'],
             ],
             'strip empty run prop nodes' => [
                 <<<'EOD'
@@ -227,13 +230,14 @@ EOD,
 </root>
 
 EOD,
-                ['a', 'b', 'bb', 'c']
+                ['a', 'b', 'bb', 'c'],
             ],
         ];
     }
 
     /**
      * @param array<string> $paths
+     *
      * @dataProvider hardcoreCleanupProvider
      */
     public function testHardcoreCleanup(string $document, string $expected, array $paths): void

@@ -11,6 +11,7 @@ class TagMapperTest extends BaseCase
 {
     /**
      * @dataProvider
+     *
      * @return array<string,mixed>
      */
     public function parseProvider(): array
@@ -28,8 +29,8 @@ class TagMapperTest extends BaseCase
                         ],
                         ['username'],
                         []
-                    )
-                ]
+                    ),
+                ],
             ],
             'nested path' => [
                 'hello [[level0.level1.username]]!',
@@ -42,8 +43,8 @@ class TagMapperTest extends BaseCase
                         ],
                         ['level0', 'level1', 'username'],
                         []
-                    )
-                ]
+                    ),
+                ],
             ],
             'multiple tags' => [
                 'hello [[username]]! Welcome on [[planet]]!',
@@ -65,8 +66,8 @@ class TagMapperTest extends BaseCase
                         ],
                         ['planet'],
                         []
-                    )
-                ]
+                    ),
+                ],
             ],
             'has function' => [
                 'hello [[username:func(arg1, arg2)]]!',
@@ -79,16 +80,17 @@ class TagMapperTest extends BaseCase
                         ],
                         ['username'],
                         [
-                            ['function' => 'func', 'arguments' => ['arg1', 'arg2']]
+                            ['function' => 'func', 'arguments' => ['arg1', 'arg2']],
                         ]
-                    )
-                ]
+                    ),
+                ],
             ],
         ];
     }
 
     /**
      * @param array<Tag> $expected
+     *
      * @dataProvider parseProvider
      */
     public function testParse(string $content, array $expected): void
@@ -106,4 +108,3 @@ class TagMapperTest extends BaseCase
         $this->assertEquals($expected, $tags);
     }
 }
- 

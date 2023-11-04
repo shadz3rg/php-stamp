@@ -19,6 +19,7 @@ class CommentTransformerTest extends BaseCase
 
     /**
      * @dataProvider
+     *
      * @return array<string,mixed>
      */
     public function transformProvider(): array
@@ -32,11 +33,14 @@ class CommentTransformerTest extends BaseCase
 
     /**
      * @param array<string,mixed> $payload
+     *
      * @phpstan-param class-string<Throwable> $exception
+     *
      * @dataProvider transformProvider
+     *
      * @throws EncodeException
      */
-    public function testTransform(array $payload, ?string $expected = null, ?string $exception = null): void
+    public function testTransform(array $payload, string $expected = null, string $exception = null): void
     {
         if ($exception !== null) {
             $this->expectException($exception);
@@ -50,6 +54,7 @@ class CommentTransformerTest extends BaseCase
 
     /**
      * @dataProvider
+     *
      * @return array<string,mixed>
      */
     public function reverseTransformProvider(): array
@@ -63,11 +68,14 @@ class CommentTransformerTest extends BaseCase
 
     /**
      * @param array<string,mixed>|null $expected
+     *
      * @phpstan-param class-string<Throwable> $exception
+     *
      * @dataProvider reverseTransformProvider
+     *
      * @throws DecodeException
      */
-    public function testReverseTransform(string $serialized, ?array $expected = null, ?string $exception = null): void
+    public function testReverseTransform(string $serialized, array $expected = null, string $exception = null): void
     {
         if ($exception !== null) {
             $this->expectException($exception);

@@ -2,7 +2,6 @@
 
 namespace PHPStamp\Tests\Unit\PHPStamp;
 
-use PHPStamp\Document\DocumentInterface;
 use PHPStamp\Document\WordDocument;
 use PHPStamp\Templator;
 use PHPStamp\Tests\BaseCase;
@@ -11,6 +10,7 @@ class TemplatorTest extends BaseCase
 {
     /**
      * @dataProvider
+     *
      * @return array<string,mixed>
      */
     public function renderProvider(): array
@@ -29,9 +29,9 @@ class TemplatorTest extends BaseCase
                 '  </w:body>'.
                 '</w:document>',
                 [
-                    'username' => 'Neo'
+                    'username' => 'Neo',
                 ],
-                '<?xml version="1.0" encoding="UTF-8"?>'. PHP_EOL .
+                '<?xml version="1.0" encoding="UTF-8"?>'.PHP_EOL.
                 '<w:document xmlns:w="https://schemas.openxmlformats.org/wordprocessingml/2006/main">'.
                 '  <w:body>'.
                 '    <w:p>'.
@@ -40,18 +40,19 @@ class TemplatorTest extends BaseCase
                 '      </w:r>'.
                 '    </w:p>'.
                 '  </w:body>'.
-                '</w:document>'. PHP_EOL
-            ]
+                '</w:document>'.PHP_EOL,
+            ],
         ];
     }
 
     /**
      * @param array<string,string> $values
+     *
      * @dataProvider renderProvider
      */
     public function testRender(string $content, array $values, string $expected): void
     {
-        $templator = new Templator(sys_get_temp_dir() . DIRECTORY_SEPARATOR);
+        $templator = new Templator(sys_get_temp_dir().DIRECTORY_SEPARATOR);
         $templator->debug = true;
 
         $document = $this->makeMockDocument($content, WordDocument::class, 'test1.docx');

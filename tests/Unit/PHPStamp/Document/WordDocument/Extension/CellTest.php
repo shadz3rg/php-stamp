@@ -11,13 +11,14 @@ class CellTest extends BaseCase
 {
     /**
      * @dataProvider
+     *
      * @return array<string,mixed>
      */
     public function executeProvider(): array
     {
         return [
             'base case' => [
-                '<?xml version="1.0" encoding="UTF-8"?>'. PHP_EOL .
+                '<?xml version="1.0" encoding="UTF-8"?>'.PHP_EOL.
                 '<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:w="https://schemas.openxmlformats.org/wordprocessingml/2006/main" version="1.0">'.
                 '  <xsl:output method="xml" encoding="UTF-8"/>'.
                 '  <xsl:template xmlns:w="https://schemas.openxmlformats.org/wordprocessingml/2006/main" match="/values">'.
@@ -193,9 +194,9 @@ class CellTest extends BaseCase
                 '      </w:body>'.
                 '    </w:document>'.
                 '  </xsl:template>'.
-                '</xsl:stylesheet>'. PHP_EOL,
+                '</xsl:stylesheet>'.PHP_EOL,
 
-                '<?xml version="1.0" encoding="UTF-8"?>'. PHP_EOL .
+                '<?xml version="1.0" encoding="UTF-8"?>'.PHP_EOL.
                 '<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:w="https://schemas.openxmlformats.org/wordprocessingml/2006/main" version="1.0">'.
                 '  <xsl:output method="xml" encoding="UTF-8"/>'.
                 '  <xsl:template xmlns:w="https://schemas.openxmlformats.org/wordprocessingml/2006/main" match="/values">'.
@@ -376,8 +377,8 @@ class CellTest extends BaseCase
                 '      </w:tc>'.
                 '    </w:tr>'.
                 '  </xsl:template>'.
-                '</xsl:stylesheet>'. PHP_EOL,
-            ]
+                '</xsl:stylesheet>'.PHP_EOL,
+            ],
         ];
     }
 
