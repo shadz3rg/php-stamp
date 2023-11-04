@@ -13,8 +13,14 @@ class TemplatorTest extends BaseCase
      *
      * @return array<string,mixed>
      */
-    public function renderProvider(): array
+    public function renderContentProvider(): array
     {
+        $studentsDoc = new \ZipArchive();
+        $studentsDoc->open(__DIR__.'/../../resources/students.docx');
+
+        $studentsResultDoc = new \ZipArchive();
+        $studentsResultDoc->open(__DIR__.'/../../resources/students_result.docx');
+
         return [
             // https://learn.microsoft.com/ru-ru/office/open-xml/structure-of-a-wordprocessingml-document
             'base case' => [
@@ -48,9 +54,9 @@ class TemplatorTest extends BaseCase
     /**
      * @param array<string,string> $values
      *
-     * @dataProvider renderProvider
+     * @dataProvider renderContentProvider
      */
-    public function testRender(string $content, array $values, string $expected): void
+    public function testContentRender(string $content, array $values, string $expected): void
     {
         $templator = new Templator(sys_get_temp_dir().DIRECTORY_SEPARATOR);
         $templator->debug = true;
@@ -59,6 +65,61 @@ class TemplatorTest extends BaseCase
         $result = $templator->render($document, $values);
 
         $expected = str_replace('  ', '', $expected); // remove indentation
+        $this->assertEquals($expected, $result->getContent()->saveXML());
+    }
+
+    /**
+     * @dataProvider
+     *
+     * @return array<string,mixed>
+     */
+    public function renderFileProvider(): array
+    {
+        return [
+            'students test' => [
+                __DIR__.'/../../resources/students_libre.docx',
+                [
+                    'library' => 'PHPStamp 0.1',
+                    'simpleValue' => 'I am simple value',
+                    'nested' => [
+                        'firstValue' => 'First child value',
+                        'secondValue' => 'Second child value'
+                    ],
+                    'header' => 'test of a table row',
+                    'students' => [
+                        ['id' => 1, 'name' => 'Student 1', 'mark' => '10'],
+                        ['id' => 2, 'name' => 'Student 2', 'mark' => '4'],
+                        ['id' => 3, 'name' => 'Student 3', 'mark' => '7']
+                    ],
+                    'maxMark' => 10,
+                    'todo' => [
+                        'TODO 1',
+                        'TODO 2',
+                        'TODO 3'
+                    ]
+                ],
+                __DIR__.'/../../resources/students_libre_result.docx',
+            ]
+        ];
+    }
+
+    /**
+     * @param array<string,string> $values
+     *
+     * @dataProvider renderFileProvider
+     */
+    public function testFileRender(string $contentFile, array $values, string $expectedFile): void
+    {
+        $templator = new Templator(sys_get_temp_dir().DIRECTORY_SEPARATOR);
+        $templator->debug = true;
+
+        $document = new WordDocument($contentFile);
+        $result = $templator->render($document, $values);
+
+        $zip = new \ZipArchive();
+        $zip->open($expectedFile);
+        $expected = $zip->getFromName(WordDocument::getContentPath());
+
         $this->assertEquals($expected, $result->getContent()->saveXML());
     }
 }

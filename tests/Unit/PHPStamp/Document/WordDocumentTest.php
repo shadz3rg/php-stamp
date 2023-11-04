@@ -9,7 +9,7 @@ class WordDocumentTest extends BaseCase
 {
     public function testContentPath(): void
     {
-        $file = __DIR__.'/../../../resources/students.docx';
+        $file = __DIR__.'/../../../resources/students_ms.docx';
 
         $document = new WordDocument($file);
 
