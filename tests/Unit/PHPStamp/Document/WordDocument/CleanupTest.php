@@ -159,7 +159,7 @@ EOD,
             'strip lang nodes' => [
                 <<<'EOD'
 <?xml version="1.0" encoding="UTF-8"?>
-<root>
+<root xmlns:w="https://schemas.openxmlformats.org/wordprocessingml/2006/main">
     <w:lang abc="123"/>
     <a>
         <w:lang abc="123"/>
@@ -172,48 +172,59 @@ EOD,
         </b>
     </a>
 </root>
+
 EOD,
                 <<<'EOD'
 <?xml version="1.0" encoding="UTF-8"?>
-<root>
+<root xmlns:w="https://schemas.openxmlformats.org/wordprocessingml/2006/main">
+    
     <a>
+        
         <b>
-            <c>Hello World!</c>
+            
+            <c>Hello </c>
+        </b>
+        <b>
+            <c>World!</c>
         </b>
     </a>
 </root>
+
 EOD,
                 ['a', 'b', 'bb', 'c']
             ],
             'strip empty run prop nodes' => [
                 <<<'EOD'
 <?xml version="1.0" encoding="UTF-8"?>
-<root>
+<root xmlns:w="https://schemas.openxmlformats.org/wordprocessingml/2006/main">
     <a>
         <b>
-            <w:rPr abc="123" />
+            <w:rPr abc="123"/>
             <c>Hello </c>
         </b>
         <b>
-            <w:rPr />
+            <w:rPr/>
             <c>World!</c>
         </b>
     </a>
 </root>
+
 EOD,
                 <<<'EOD'
 <?xml version="1.0" encoding="UTF-8"?>
-<root>
+<root xmlns:w="https://schemas.openxmlformats.org/wordprocessingml/2006/main">
     <a>
         <b>
-            <w:rPr abc="123" />
+            <w:rPr abc="123"/>
             <c>Hello </c>
         </b>
         <b>
+            <w:rPr/>
             <c>World!</c>
         </b>
     </a>
 </root>
+
 EOD,
                 ['a', 'b', 'bb', 'c']
             ],
@@ -225,7 +236,8 @@ EOD,
      */
     public function testHardcoreCleanup(string $document, string $expected, array $paths): void
     {
-        $doc = (new \DOMDocument())->loadXML($document);
+        $doc = new \DOMDocument('1.0', 'UTF-8');
+        $doc->loadXML($document);
 
         list($paragraphQuery, $runQuery, $propertyQuery, $textQuery) = $paths;
         $cleanup = new Cleanup($doc, $paragraphQuery, $runQuery, $propertyQuery, $textQuery);

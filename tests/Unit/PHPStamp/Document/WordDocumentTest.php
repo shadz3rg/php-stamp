@@ -9,7 +9,7 @@ class WordDocumentTest extends BaseCase
 {
     public function testContentPath()
     {
-        $file = __DIR__.'../../../resources/students.docx';
+        $file = __DIR__.'/../../../resources/students.docx';
 
         $document = new WordDocument($file);
 
@@ -24,6 +24,6 @@ class WordDocumentTest extends BaseCase
 
         /** @var \DOMElement $root */
         $root = $doc->documentElement;
-        $this->assertEquals($root->nodeValue, 'document');
+        $this->assertEquals('w:document', $root->nodeName);
     }
 }
