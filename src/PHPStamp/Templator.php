@@ -128,7 +128,7 @@ class Templator
      * @param \DOMDocument      $template main content file
      * @param DocumentInterface $document document to render
      */
-    private function createTemplate(\DOMDocument $template, DocumentInterface $document)
+    public function createTemplate(\DOMDocument $template, DocumentInterface $document)
     {
         // prepare xml document
         Processor::escapeXsl($template);
