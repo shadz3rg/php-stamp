@@ -1,6 +1,6 @@
 <?php
 
-namespace tests\PHPStamp\Processor;
+namespace PHPStamp\Tests\Unit\PHPStamp\Processor;
 
 use PHPStamp\Processor\Lexer;
 use PHPUnit\Framework\TestCase;
@@ -28,7 +28,7 @@ class LexerTest extends TestCase
             $structure[] = $fragment['type'];
         }
 
-        $this->assertEquals($expectedStructure, $structure);;
+        $this->assertEquals($expectedStructure, $structure);
     }
 
     public function testCustomBrackets()
