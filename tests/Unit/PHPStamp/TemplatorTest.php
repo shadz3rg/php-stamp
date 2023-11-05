@@ -83,23 +83,23 @@ class TemplatorTest extends BaseCase
                     'simpleValue' => 'I am simple value',
                     'nested' => [
                         'firstValue' => 'First child value',
-                        'secondValue' => 'Second child value'
+                        'secondValue' => 'Second child value',
                     ],
                     'header' => 'test of a table row',
                     'students' => [
                         ['id' => 1, 'name' => 'Student 1', 'mark' => '10'],
                         ['id' => 2, 'name' => 'Student 2', 'mark' => '4'],
-                        ['id' => 3, 'name' => 'Student 3', 'mark' => '7']
+                        ['id' => 3, 'name' => 'Student 3', 'mark' => '7'],
                     ],
                     'maxMark' => 10,
                     'todo' => [
                         'TODO 1',
                         'TODO 2',
-                        'TODO 3'
-                    ]
+                        'TODO 3',
+                    ],
                 ],
                 __DIR__.'/../../resources/students_libre_result.docx',
-            ]
+            ],
         ];
     }
 
