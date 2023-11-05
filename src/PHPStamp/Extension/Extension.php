@@ -6,10 +6,7 @@ use PHPStamp\Processor\Tag;
 
 abstract class Extension implements ExtensionInterface
 {
-    /**
-     * @var Tag
-     */
-    protected $tag;
+    protected Tag $tag;
 
     /**
      * @inherit
@@ -31,12 +28,16 @@ abstract class Extension implements ExtensionInterface
     /**
      * Prepare / validate / merge with defaults / modify given arguments.
      *
-     * @return array
+     * @param array<string> $arguments
+     *
+     * @return array<string>
      */
     abstract protected function prepareArguments(array $arguments);
 
     /**
      * All template modification magic is here.
+     *
+     * @param array<string> $arguments
      *
      * @return void
      */

@@ -14,6 +14,8 @@ interface ExtensionInterface
     /**
      * Prepare all the things and apply current extension.
      *
+     * @param array<string> $arguments
+     *
      * @return void
      */
     public function execute(array $arguments, \DOMElement $node);

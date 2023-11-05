@@ -2,6 +2,8 @@
 
 namespace PHPStamp;
 
+use PHPStamp\Exception\XmlException;
+
 class Processor
 {
     /**
@@ -31,7 +33,13 @@ class Processor
 
         $template = $document->createElementNS(self::XSL_NS, 'xsl:template');
         $template->setAttribute('match', '/'.self::VALUE_NODE);
-        $template->appendChild($document->documentElement);
+
+        $root = $document->documentElement;
+        if ($root === null) {
+            throw new XmlException('Root node expected');
+        }
+
+        $template->appendChild($root);
         $stylesheet->appendChild($template);
 
         $document->appendChild($stylesheet);
@@ -44,19 +52,26 @@ class Processor
      * @param string      $path   XPath to value in the encoded XML document
      * @param \DOMElement $node   node with placeholder
      *
-     * @return bool
+     * @throws XmlException
      */
-    public static function insertTemplateLogic($search, $path, \DOMElement $node)
+    public static function insertTemplateLogic(string $search, string $path, \DOMElement $node): bool
     {
         $template = $node->ownerDocument;
+        if ($template === null) {
+            throw new XmlException('Detached node');
+        }
 
         $node->setAttribute('xml:space', 'preserve'); // fix whitespaces in mixed node
 
-        /** @var $textNode \DOMText */
+        /** @var \DOMText $textNode */
         foreach ($node->childNodes as $textNode) {
             $nodeValue = $textNode->nodeValue; // utf8_decode
+            if ($nodeValue === null) {
+                continue;
+            }
 
             // before [[tag]] after
+            /** @var array<string> $nodeValueParts */
             $nodeValueParts = explode($search, $nodeValue, 2); // fix similar tags in one node
 
             if (count($nodeValueParts) === 2) {
@@ -87,16 +102,31 @@ class Processor
     /**
      * Word XML can contain curly braces in attributes, which conflicts with XSL logic.
      * Escape them before template created.
+     *
+     * @throws XmlException
      */
-    public static function escapeXsl(\DOMDocument $document)
+    public static function escapeXsl(\DOMDocument $document): void
     {
         $xpath = new \DOMXPath($document);
+
         // escape attr for xsl
         $nodeList = $xpath->query('//*[contains(@uri, "{") and contains(@uri ,"}")]');
-        /** @var $node \DOMNode */
+        if ($nodeList === false) {
+            throw new XmlException('Malformed query');
+        }
+
+        /** @var \DOMNode $node */
         foreach ($nodeList as $node) {
-            /** @var $attr \DOMAttr */
+            if ($node->attributes === null) {
+                continue;
+            }
+
+            /** @var \DOMAttr $attr */
             foreach ($node->attributes as $attr) {
+                if ($attr->nodeValue === null) {
+                    continue;
+                }
+
                 $attr->nodeValue = str_replace(['{', '}'], ['{{', '}}'], $attr->nodeValue);
             }
         }
@@ -106,15 +136,28 @@ class Processor
      * Word XML can contain curly braces in attributes, which conflicts with XSL logic.
      * Undo escape them after template conversion.
      */
-    public static function undoEscapeXsl(\DOMDocument $document)
+    public static function undoEscapeXsl(\DOMDocument $document): void
     {
         $xpath = new \DOMXPath($document);
+
         // escape attr for xsl
         $nodeList = $xpath->query('//*[contains(@uri, "{{") and contains(@uri ,"}}")]');
-        /** @var $node \DOMNode */
+        if ($nodeList === false) {
+            throw new XmlException('Malformed query');
+        }
+
+        /** @var \DOMNode $node */
         foreach ($nodeList as $node) {
-            /** @var $attr \DOMAttr */
+            if ($node->attributes === null) {
+                continue;
+            }
+
+            /** @var \DOMAttr $attr */
             foreach ($node->attributes as $attr) {
+                if ($attr->nodeValue === null) {
+                    continue;
+                }
+
                 $attr->nodeValue = str_replace(['{{', '}}'], ['{', '}'], $attr->nodeValue);
             }
         }

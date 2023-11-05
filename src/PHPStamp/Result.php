@@ -3,6 +3,8 @@
 namespace PHPStamp;
 
 use PHPStamp\Document\DocumentInterface;
+use PHPStamp\Exception\TempException;
+use PHPStamp\Exception\XmlException;
 
 class Result
 {
@@ -45,9 +47,12 @@ class Result
     /**
      * Simple HTTP download method.
      *
+     * @deprecated use your framework to serve files correctly
+     * @see https://symfony.com/doc/current/components/http_foundation.html#serving-files
+     *
      * @param null $fileName
      */
-    public function download($fileName = null)
+    public function download($fileName = null): void
     {
         if ($fileName === null) {
             $fileName = $this->document->getDocumentName();
@@ -64,7 +69,7 @@ class Result
             }
             readfile($tempFile);
             unlink($tempFile);
-            exit;
+            exit; /* @phpstan-ignore-line */
         }
     }
 
@@ -72,14 +77,28 @@ class Result
      * Merge XML result with original document into temp file.
      *
      * @return false|string path to built file or false on some error
+     *
+     * @throws TempException
+     * @throws XmlException
      */
     public function buildFile()
     {
-        $tempArchive = tempnam(sys_get_temp_dir(), 'doc');
+        $tempDir = sys_get_temp_dir();
+        $tempArchive = tempnam($tempDir, 'doc');
+        if ($tempArchive === false) {
+            throw new TempException(sprintf('Cannot acquire temp file at %s', $tempDir));
+        }
+
         if (copy($this->document->getDocumentPath(), $tempArchive) === true) {
             $zip = new \ZipArchive();
             $zip->open($tempArchive);
-            $zip->addFromString($this->document->getContentPath(), $this->output->saveXML());
+
+            $content = $this->output->saveXML();
+            if ($content === false) {
+                throw new XmlException('Print XML error');
+            }
+
+            $zip->addFromString($this->document->getContentPath(), $content);
             $zip->close();
 
             return $tempArchive;

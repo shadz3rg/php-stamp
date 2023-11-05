@@ -4,6 +4,7 @@ namespace PHPStamp\Document;
 
 use PHPStamp\Exception\HashException;
 use PHPStamp\Exception\InvalidArgumentException;
+use PHPStamp\Extension\ExtensionInterface;
 use PHPStamp\Processor\Tag;
 
 abstract class Document implements DocumentInterface
@@ -111,7 +112,7 @@ abstract class Document implements DocumentInterface
     /**
      * @inherit
      */
-    abstract public function getContentPath();
+    abstract public static function getContentPath();
 
     /**
      * @inherit
@@ -132,5 +133,5 @@ abstract class Document implements DocumentInterface
      * @param string $id  id as entered in placeholder
      * @param Tag    $tag container tag
      */
-    abstract public function getExpression($id, Tag $tag);
+    abstract public function getExpression(string $id, Tag $tag): ExtensionInterface;
 }

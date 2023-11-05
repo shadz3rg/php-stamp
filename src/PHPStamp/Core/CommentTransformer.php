@@ -10,6 +10,8 @@ class CommentTransformer
     /**
      * Represent META array as string.
      *
+     * @param array<string,mixed> $comment
+     *
      * @throws EncodeException
      */
     public function transform(array $comment): string
@@ -25,10 +27,13 @@ class CommentTransformer
     /**
      * Decode string into META array.
      *
+     * @return array<string,mixed> $comment
+     *
      * @throws DecodeException
      */
     public function reverseTransformer(string $comment): array
     {
+        /** @var array<string,mixed>|null $output */
         $output = json_decode($comment, true);
         if ($output === null) {
             throw new DecodeException();

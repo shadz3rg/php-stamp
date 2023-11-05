@@ -4,6 +4,9 @@ namespace PHPStamp\Processor;
 
 use Doctrine\Common\Lexer\AbstractLexer;
 
+/**
+ * @extends AbstractLexer<int,string>
+ */
 class Lexer extends AbstractLexer
 {
     public const T_NONE = 1;
@@ -30,8 +33,14 @@ class Lexer extends AbstractLexer
     public const T_OPEN_BRACKET = 100;
     public const T_CLOSE_BRACKET = 101;
 
-    private $brackets = [];
+    /**
+     * @var array<string>
+     */
+    private array $brackets;
 
+    /**
+     * @param array<string> $brackets
+     */
     public function __construct(array $brackets)
     {
         $this->brackets = $brackets;
@@ -40,9 +49,9 @@ class Lexer extends AbstractLexer
     /**
      * Lexical catchable patterns.
      *
-     * @return array
+     * @return array<string>
      */
-    protected function getCatchablePatterns()
+    protected function getCatchablePatterns(): array
     {
         return [
             '[a-z_\\\][a-z0-9_\\\]*[a-z0-9_]{1}',
@@ -57,9 +66,9 @@ class Lexer extends AbstractLexer
     /**
      * Lexical non-catchable patterns.
      *
-     * @return array
+     * @return array<string>
      */
-    protected function getNonCatchablePatterns()
+    protected function getNonCatchablePatterns(): array
     {
         return ['\s+', '(.)'];
     }
@@ -68,10 +77,8 @@ class Lexer extends AbstractLexer
      * Retrieve token type. Also processes the token value if necessary.
      *
      * @param string $value
-     *
-     * @return int
      */
-    protected function getType(&$value)
+    protected function getType(&$value): int
     {
         switch (true) {
             // Заданные брекеты
@@ -122,13 +129,8 @@ class Lexer extends AbstractLexer
 
     /**
      * Substr original lexer's input.
-     *
-     * @param int $length
-     * @param int $position
-     *
-     * @return string
      */
-    public function getInputBetweenPosition($position, $length)
+    public function getInputBetweenPosition(int $position, int $length): string
     {
         // Get input without modification of original package
         $reflectionClass = new \ReflectionClass('Doctrine\Common\Lexer\AbstractLexer');
@@ -136,6 +138,7 @@ class Lexer extends AbstractLexer
         $reflectionProperty = $reflectionClass->getProperty('input');
         $reflectionProperty->setAccessible(true);
 
+        /** @var string $input */
         $input = $reflectionProperty->getValue($this);
 
         return mb_substr($input, $position, $length);

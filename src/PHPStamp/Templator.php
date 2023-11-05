@@ -4,6 +4,7 @@ namespace PHPStamp;
 
 use PHPStamp\Core\CommentTransformer;
 use PHPStamp\Document\DocumentInterface;
+use PHPStamp\Exception\XmlException;
 use PHPStamp\Processor\Lexer;
 use PHPStamp\Processor\TagMapper;
 
@@ -11,41 +12,35 @@ class Templator
 {
     /**
      * Enable debug mode to generate template with every render call.
-     *
-     * @var bool
      */
-    public $debug = false;
+    public bool $debug = false;
 
     /**
      * Enable track mode to generate template with every original document change.
-     *
-     * @var bool
      */
-    public $trackDocument = false;
+    public bool $trackDocument = false;
 
     /**
      * Writable path to store compiled template.
-     *
-     * @var string
      */
-    private $cachePath;
+    private string $cachePath;
 
     /**
      * Customizable placeholder brackets.
      *
-     * @var array
+     * @var array<string>
      */
-    private $brackets;
+    private array $brackets;
 
     /**
      * Create a new Templator.
      *
-     * @param string $cachePath writable path to store compiled template
-     * @param array  $brackets  customizable placeholder brackets
+     * @param string        $cachePath writable path to store compiled template
+     * @param array<string> $brackets  customizable placeholder brackets
      *
      * @throws Exception\InvalidArgumentException
      */
-    public function __construct($cachePath, $brackets = ['[[', ']]'])
+    public function __construct(string $cachePath, array $brackets = ['[[', ']]'])
     {
         if (!is_dir($cachePath)) {
             throw new Exception\InvalidArgumentException('Cache path "'.$cachePath.'" unreachable.');
@@ -64,14 +59,13 @@ class Templator
     /**
      * Process given document into template and render it with given values.
      *
-     * @param DocumentInterface $document document to render
-     * @param array             $values   multidimensional array with values to replace placeholders
-     *
-     * @return Result
+     * @param DocumentInterface   $document document to render
+     * @param array<string,mixed> $values   multidimensional array with values to replace placeholders
      *
      * @throws Exception\InvalidArgumentException
+     * @throws XmlException
      */
-    public function render(DocumentInterface $document, array $values)
+    public function render(DocumentInterface $document, array $values): Result
     {
         // fill with values
         $xslt = new \XSLTProcessor();
@@ -79,9 +73,10 @@ class Templator
         $template = $this->getTemplate($document);
         $xslt->importStylesheet($template);
 
-        $content = $xslt->transformToDoc(
-            $this->createValuesDocument($values)
-        );
+        $content = $xslt->transformToDoc($this->createValuesDocument($values));
+        if ($content === false) {
+            throw new XmlException('Cant transform XSL template');
+        }
 
         Processor::undoEscapeXsl($content);
 
@@ -96,8 +91,9 @@ class Templator
      * @return \DOMDocument XSL stylesheet
      *
      * @throws Exception\InvalidArgumentException
+     * @throws XmlException
      */
-    private function getTemplate(DocumentInterface $document)
+    private function getTemplate(DocumentInterface $document): \DOMDocument
     {
         $overwrite = false;
         if ($this->trackDocument === true) {
@@ -109,12 +105,18 @@ class Templator
         $template = new \DOMDocument('1.0', 'UTF-8');
         $template->load($contentFile);
 
+        $root = $template->documentElement;
+        if ($root === null) {
+            throw new XmlException('No root element found');
+        }
+
         // process xml document into xsl template
-        if ($template->documentElement->nodeName !== 'xsl:stylesheet') {
+        if ($root->nodeName !== 'xsl:stylesheet') {
             $this->createTemplate($template, $document);
             $this->storeComment($template, $document);
 
-            // cache template FIXME workaround for disappeared xml: attributes, reload as temporary fix
+            // cache template
+            // FIXME workaround for disappeared xml: attributes, reload as temporary fix
             $template->save($contentFile);
             $template->load($contentFile);
         }
@@ -128,7 +130,7 @@ class Templator
      * @param \DOMDocument      $template main content file
      * @param DocumentInterface $document document to render
      */
-    public function createTemplate(\DOMDocument $template, DocumentInterface $document)
+    public function createTemplate(\DOMDocument $template, DocumentInterface $document): void
     {
         // prepare xml document
         Processor::escapeXsl($template);
@@ -152,18 +154,29 @@ class Templator
     /**
      * Search and replace placeholders with XSL logic.
      *
-     * @param \DOMNodeList      $nodeList list of nodes having at least one placeholder
-     * @param DocumentInterface $document document to render
+     * @param \DOMNodeList<\DOMNode> $nodeList list of nodes having at least one placeholder
+     * @param DocumentInterface      $document document to render
+     *
+     * @throws XmlException
      */
-    private function searchAndReplace(\DOMNodeList $nodeList, DocumentInterface $document)
+    private function searchAndReplace(\DOMNodeList $nodeList, DocumentInterface $document): void
     {
         $lexer = new Lexer($this->brackets);
         $mapper = new TagMapper();
 
-        /** @var $node \DOMElement */
+        /** @var \DOMNode $node */
         foreach ($nodeList as $node) {
-            $decodedValue = utf8_decode($node->nodeValue);
+            if ($node instanceof \DOMElement === false) {
+                // TODO Skip?
+                throw new XmlException('DOMElement expected');
+            }
 
+            $nodeValue = $node->nodeValue;
+            if ($nodeValue === null) {
+                throw new XmlException('Some node value expected');
+            }
+
+            $decodedValue = utf8_decode($nodeValue);
             $lexer->setInput($decodedValue);
 
             while ($tag = $mapper->parse($lexer)) {
@@ -184,7 +197,7 @@ class Templator
     /**
      * Create DOMDocument and encode multidimensional array into XML recursively.
      *
-     * @param array $values multidimensional array
+     * @param array<string,mixed> $values multidimensional array
      *
      * @return \DOMDocument
      */
@@ -206,8 +219,10 @@ class Templator
      * @param DocumentInterface $document document to render
      *
      * @return bool Document was updated?
+     *
+     * @throws XmlException
      */
-    private function compareHash(DocumentInterface $document)
+    private function compareHash(DocumentInterface $document): bool
     {
         $overwrite = false;
 
@@ -218,11 +233,21 @@ class Templator
 
             $query = new \DOMXPath($template);
             $commentList = $query->query('/xsl:stylesheet/comment()');
+            if ($commentList === false) {
+                throw new XmlException('Malformed query');
+            }
 
             if ($commentList->length === 1) {
                 $commentNode = $commentList->item(0);
+                if ($commentNode === null) {
+                    throw new XmlException('Node not found');
+                }
 
                 $commentContent = $commentNode->nodeValue;
+                if ($commentContent === null) {
+                    throw new XmlException('Some value expected');
+                }
+
                 $commentContent = trim($commentContent);
 
                 $transformer = new CommentTransformer();
@@ -242,9 +267,16 @@ class Templator
      *
      * @param \DOMDocument      $template XSL stylesheet
      * @param DocumentInterface $document document to render
+     *
+     * @throws XmlException
      */
-    private function storeComment(\DOMDocument $template, DocumentInterface $document)
+    private function storeComment(\DOMDocument $template, DocumentInterface $document): void
     {
+        $root = $template->documentElement;
+        if ($root === null) {
+            throw new XmlException('Root node expected');
+        }
+
         $meta = [
             'generation_date' => date('Y-m-d H:i:s'),
             'document_hash' => $document->getDocumentHash(),
@@ -252,8 +284,7 @@ class Templator
 
         $transformer = new CommentTransformer();
         $commentContent = $transformer->transform($meta);
-
         $commentNode = $template->createComment($commentContent);
-        $template->documentElement->appendChild($commentNode);
+        $root->appendChild($commentNode);
     }
 }

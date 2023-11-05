@@ -2,6 +2,7 @@
 
 namespace PHPStamp\Tests\Unit\PHPStamp\Processor;
 
+use PHPStamp\Exception\ProcessorException;
 use PHPStamp\Processor\Lexer;
 use PHPStamp\Processor\Tag;
 use PHPStamp\Processor\TagMapper;
@@ -85,6 +86,21 @@ class TagMapperTest extends BaseCase
                     ),
                 ],
             ],
+            'has malformed function' => [
+                'hello [[username:]]!',
+                null,
+                new ProcessorException('Unexpected token, expected PHPStamp\\Processor\\Lexer::T_STRING, got PHPStamp\\Processor\\Lexer::T_CLOSE_BRACKET'),
+            ],
+            'has malformed function args' => [
+                'hello [[username:xxx(]]!',
+                null,
+                new ProcessorException('Unexpected token, expected PHPStamp\\Processor\\Lexer::T_CLOSE_PARENTHESIS, got PHPStamp\\Processor\\Lexer::T_CLOSE_BRACKET'),
+            ],
+            'no closing bracket' => [
+                'hello [[username:xxx(',
+                null,
+                new ProcessorException('Cant match closing bracket'),
+            ],
         ];
     }
 
@@ -93,8 +109,12 @@ class TagMapperTest extends BaseCase
      *
      * @dataProvider parseProvider
      */
-    public function testParse(string $content, array $expected): void
+    public function testParse(string $content, ?array $expected, ProcessorException $exception = null): void
     {
+        if ($exception !== null) {
+            $this->expectExceptionObject($exception);
+        }
+
         $lexer = new Lexer(['[[', ']]']);
         $lexer->setInput($content);
 

@@ -62,7 +62,7 @@ interface DocumentInterface
      *
      * @return string
      */
-    public function getContentPath();
+    public static function getContentPath();
 
     /**
      * Get xpath to parent node what can contain text node with tag.
@@ -74,16 +74,14 @@ interface DocumentInterface
     /**
      * Get node name of given type.
      *
-     * @param bool $global
-     *
      * @return string
      */
-    public function getNodeName($type, $global = false);
+    public function getNodeName(int $type, bool $global = false);
 
     /**
      * Get expression with given id/.
      *
      * @return ExtensionInterface
      */
-    public function getExpression($id, Tag $tag);
+    public function getExpression(string $id, Tag $tag);
 }

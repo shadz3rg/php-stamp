@@ -5,6 +5,7 @@ namespace PHPStamp\Document;
 use PHPStamp\Document\WordDocument\Cleanup;
 use PHPStamp\Exception\InvalidArgumentException;
 use PHPStamp\Extension\Extension;
+use PHPStamp\Extension\ExtensionInterface;
 use PHPStamp\Processor\Tag;
 
 /**
@@ -12,12 +13,15 @@ use PHPStamp\Processor\Tag;
  */
 class WordDocument extends Document
 {
-    private $structure = ['w:p', 'w:r', 'w:rPr', 'w:t'];
+    /**
+     * @var array<string>
+     */
+    private array $structure = ['w:p', 'w:r', 'w:rPr', 'w:t'];
 
     /**
      * Path to main content file inside document ZIP archive.
      */
-    public function getContentPath()
+    public static function getContentPath()
     {
         return 'word/document.xml';
     }
@@ -85,7 +89,7 @@ class WordDocument extends Document
      *
      * @throws InvalidArgumentException
      */
-    public function getExpression($id, Tag $tag)
+    public function getExpression(string $id, Tag $tag): ExtensionInterface
     {
         $available = [
             'cell' => 'PHPStamp\\Document\\WordDocument\\Extension\\Cell',
