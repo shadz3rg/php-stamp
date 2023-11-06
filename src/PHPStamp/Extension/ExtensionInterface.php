@@ -8,17 +8,15 @@ interface ExtensionInterface
 {
     /**
      * Sets tag to work with.
-     *
-     * @param Tag $tag
      */
-    function __construct(Tag $tag);
+    public function __construct(Tag $tag);
 
     /**
      * Prepare all the things and apply current extension.
      *
-     * @param array $arguments
-     * @param \DOMElement $node
+     * @param array<string> $arguments
+     *
      * @return void
      */
-    function execute(array $arguments, \DOMElement $node);
-} 
+    public function execute(array $arguments, \DOMElement $node);
+}

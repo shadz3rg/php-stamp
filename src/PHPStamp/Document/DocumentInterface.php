@@ -12,78 +12,76 @@ interface DocumentInterface
      * Constructor.
      *
      * @param string $documentPath
+     *
      * @throws InvalidArgumentException
      */
-    function __construct($documentPath);
+    public function __construct($documentPath);
 
     /**
      * Extract content file from document.
      *
      * @param string $to
-     * @param bool $overwrite
+     * @param bool   $overwrite
+     *
      * @return string
+     *
      * @throws InvalidArgumentException
      */
-    function extract($to, $overwrite);
+    public function extract($to, $overwrite);
 
     /**
      * Get document file hash.
      *
      * @return string
      */
-    function getDocumentHash();
+    public function getDocumentHash();
 
     /**
      * Get document filename with extension.
      *
      * @return string
      */
-    function getDocumentName();
+    public function getDocumentName();
 
     /**
      * Get path to document file.
      *
      * @return string
      */
-    function getDocumentPath();
+    public function getDocumentPath();
 
     /**
      * Cleanup content xml file.
      *
-     * @param \DOMDocument $template
      * @return void
      */
-    function cleanup(\DOMDocument $template);
+    public function cleanup(\DOMDocument $template);
 
     /**
      * Get path to content file inside document archive.
      *
      * @return string
      */
-    function getContentPath();
+    public static function getContentPath();
 
     /**
      * Get xpath to parent node what can contain text node with tag.
      *
      * @return string
      */
-    function getNodePath();
+    public function getNodePath();
 
     /**
      * Get node name of given type.
      *
-     * @param $type
-     * @param bool $global
      * @return string
      */
-    function getNodeName($type, $global = false);
+    public function getNodeName(int $type, bool $global = false);
 
     /**
-     * Get expression with given id/
+     * Get expression with given id/.
      *
-     * @param $id
-     * @param $tag
      * @return ExtensionInterface
      */
-    function getExpression($id, Tag $tag);
-} 
+    public function getExpression(string $id, Tag $tag);
+}

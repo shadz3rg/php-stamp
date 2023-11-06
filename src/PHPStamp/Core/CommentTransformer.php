@@ -2,27 +2,43 @@
 
 namespace PHPStamp\Core;
 
+use PHPStamp\Exception\DecodeException;
+use PHPStamp\Exception\EncodeException;
+
 class CommentTransformer
 {
     /**
      * Represent META array as string.
      *
-     * @param array $comment
-     * @return string
+     * @param array<string,mixed> $comment
+     *
+     * @throws EncodeException
      */
-    public function transform(array $comment)
+    public function transform(array $comment): string
     {
-        return json_encode($comment);
+        $output = json_encode($comment, JSON_FORCE_OBJECT);
+        if ($output === false) {
+            throw new EncodeException();
+        }
+
+        return $output;
     }
 
     /**
      * Decode string into META array.
      *
-     * @param $comment
-     * @return mixed
+     * @return array<string,mixed> $comment
+     *
+     * @throws DecodeException
      */
-    public function reverseTransformer($comment)
+    public function reverseTransformer(string $comment): array
     {
-        return json_decode($comment, true);
+        /** @var array<string,mixed>|null $output */
+        $output = json_decode($comment, true);
+        if ($output === null) {
+            throw new DecodeException();
+        }
+
+        return $output;
     }
 }

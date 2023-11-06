@@ -2,22 +2,20 @@
 
 namespace PHPStamp\Document\WordDocument;
 
+use PHPStamp\Exception\XmlException;
 use PHPStamp\XMLHelper;
 
 class Cleanup extends XMLHelper
 {
-    /**
-     * @var \DOMDocument
-     */
-    private $document;
-    private $xpath;
+    private \DOMDocument $document;
+    private \DOMXPath $xpath;
 
-    private $paragraphQuery;
-    private $runQuery;
-    private $runPropertyQuery;
-    private $textQuery;
+    private string $paragraphQuery;
+    private string $runQuery;
+    private string $runPropertyQuery;
+    private string $textQuery;
 
-    public function __construct(\DOMDocument $document, $paragraphQuery, $runQuery, $propertyQuery, $textQuery)
+    public function __construct(\DOMDocument $document, string $paragraphQuery, string $runQuery, string $propertyQuery, string $textQuery)
     {
         $this->document = $document;
         $this->xpath = new \DOMXPath($document);
@@ -28,11 +26,14 @@ class Cleanup extends XMLHelper
         $this->textQuery = $textQuery;
     }
 
-    public function cleanup()
+    /**
+     * @throws XmlException
+     */
+    public function cleanup(): void
     {
         $paragraphNodeList = $this->getParagraphNodeList();
 
-        /** @var $paragraphNode \DOMNode */
+        /** @var \DOMNode $paragraphNode */
         foreach ($paragraphNodeList as $paragraphNode) {
             $clonedParagraphNode = $paragraphNode->cloneNode(true); // fixed missing paragraph props element
             $runNodeList = $this->getRunNodeList($clonedParagraphNode);
@@ -40,7 +41,7 @@ class Cleanup extends XMLHelper
             $runIndex = 0;
             $currentRunNode = $runNodeList->item($runIndex);
 
-            $runIndex += 1;
+            ++$runIndex;
             $nextRunNode = $runNodeList->item($runIndex);
 
             while ($currentRunNode) {
@@ -49,7 +50,7 @@ class Cleanup extends XMLHelper
                         $this->getPropertyNode($currentRunNode),
                         $this->getPropertyNode($nextRunNode)
                     );
-                    
+
                     if ($this->getValueNode($currentRunNode) === null || $this->getValueNode($nextRunNode) === null) {
                         $isEqual = false;
                     }
@@ -61,9 +62,9 @@ class Cleanup extends XMLHelper
                         if ($nextValueNode !== null && $currentValueNode !== null) { // fixme libreoffice docx quick fix
                             $appendTextNode = $this->document->createTextNode($nextValueNode->textContent);
                             $currentValueNode->appendChild($appendTextNode);
-                            
-                            if ($currentValueNode->hasAttribute('xml:space') === false &&
-                                $currentValueNode->textContent !== trim($currentValueNode->textContent)) {
+
+                            if ($currentValueNode->hasAttribute('xml:space') === false
+                                && $currentValueNode->textContent !== trim($currentValueNode->textContent)) {
                                 $currentValueNode->setAttribute('xml:space', 'preserve');
                             }
                         }
@@ -73,55 +74,117 @@ class Cleanup extends XMLHelper
                     }
 
                     // even if we remove element from document node list still contains it, so jump on next
-                    $runIndex += 1;
+                    ++$runIndex;
                     $nextRunNode = $runNodeList->item($runIndex);
-
                 } else {
                     $currentRunNode = $nextRunNode;
                 }
             }
-            $paragraphNode->parentNode->replaceChild($clonedParagraphNode, $paragraphNode);
+
+            $parentNode = $paragraphNode->parentNode;
+            if ($parentNode === null) {
+                throw new XmlException('Cant find container node');
+            }
+
+            $parentNode->replaceChild($clonedParagraphNode, $paragraphNode);
         }
 
         // merge appended text nodes
         $this->document->normalizeDocument();
     }
 
+    /**
+     * @return \DOMNodeList<\DOMNode>
+     *
+     * @throws XmlException
+     */
     private function getParagraphNodeList()
     {
-        return $this->xpath->query($this->paragraphQuery);
+        $paragraphNodeList = $this->xpath->query($this->paragraphQuery);
+        if ($paragraphNodeList === false) {
+            throw new XmlException('Malformed query');
+        }
+
+        return $paragraphNodeList;
     }
 
+    /**
+     * @return \DOMNodeList<\DOMNode>
+     *
+     * @throws XmlException
+     */
     private function getRunNodeList(\DOMNode $paragraphNode)
     {
-        return $this->xpath->query($this->runQuery, $paragraphNode);
+        $runNodeList = $this->xpath->query($this->runQuery, $paragraphNode);
+        if ($runNodeList === false) {
+            throw new XmlException('Malformed query');
+        }
+
+        return $runNodeList;
     }
 
-    private function getPropertyNode(\DOMNode $runNode)
+    /**
+     * @throws XmlException
+     */
+    private function getPropertyNode(\DOMNode $runNode): ?\DOMElement
     {
         $nodeList = $this->xpath->query($this->runPropertyQuery, $runNode);
-        return $nodeList->item(0);
+        if ($nodeList === false) {
+            throw new XmlException('Malformed query');
+        }
+
+        /** @var \DOMElement|null $node */
+        $node = $nodeList->item(0);
+
+        return $node;
     }
 
-    private function getValueNode(\DOMNode $runNode)
+    /**
+     * @throws XmlException
+     */
+    private function getValueNode(\DOMNode $runNode): ?\DOMElement
     {
         $nodeList = $this->xpath->query($this->textQuery, $runNode);
-        return $nodeList->item(0);
+        if ($nodeList === false) {
+            throw new XmlException('Malformed query');
+        }
+
+        /** @var \DOMElement|null $node */
+        $node = $nodeList->item(0);
+
+        return $node;
     }
 
-    public function hardcoreCleanup()
+    /**
+     * @throws XmlException
+     */
+    public function hardcoreCleanup(): void
     {
         // reset locale
         $nodeList = $this->xpath->query('//w:lang');
-        /** @var $langNode \DOMNode */
+        if ($nodeList === false) {
+            throw new XmlException('Malformed query');
+        }
+
+        /** @var \DOMNode $langNode */
         foreach ($nodeList as $langNode) {
+            if ($langNode->parentNode === null) {
+                continue;
+            }
             $langNode->parentNode->removeChild($langNode);
         }
 
         // cleanup empty rPr
-        $nodeList = $this->xpath->query('//' . $this->runPropertyQuery . '[not(node())]');
-        /** @var $langNode \DOMNode */
+        $nodeList = $this->xpath->query('//'.$this->runPropertyQuery.'[not(node())]');
+        if ($nodeList === false) {
+            throw new XmlException('Malformed query');
+        }
+
+        /* @var \DOMNode $langNode */
         foreach ($nodeList as $node) {
+            if ($node->parentNode === null) {
+                continue;
+            }
             $node->parentNode->removeChild($node);
         }
     }

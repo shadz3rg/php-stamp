@@ -3,6 +3,8 @@
 namespace PHPStamp;
 
 use PHPStamp\Document\DocumentInterface;
+use PHPStamp\Exception\TempException;
+use PHPStamp\Exception\XmlException;
 
 class Result
 {
@@ -16,15 +18,15 @@ class Result
     /**
      * Document to render.
      *
-     * @var DocumentInterface Document to render.
+     * @var DocumentInterface document to render
      */
     private $document;
 
     /**
      * Create a new render Result.
      *
-     * @param \DOMDocument $output XML result of processed XSL template.
-     * @param DocumentInterface $document Document to render.
+     * @param \DOMDocument      $output   XML result of processed XSL template
+     * @param DocumentInterface $document document to render
      */
     public function __construct(\DOMDocument $output, DocumentInterface $document)
     {
@@ -45,9 +47,12 @@ class Result
     /**
      * Simple HTTP download method.
      *
+     * @deprecated use your framework to serve files correctly
+     * @see https://symfony.com/doc/current/components/http_foundation.html#serving-files
+     *
      * @param null $fileName
      */
-    public function download($fileName = null)
+    public function download($fileName = null): void
     {
         if ($fileName === null) {
             $fileName = $this->document->getDocumentName();
@@ -56,29 +61,46 @@ class Result
         $tempFile = $this->buildFile();
         if ($tempFile !== false) {
             header('Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-            header('Content-Disposition: attachment;filename="' . $fileName . '"');
+            header('Content-Disposition: attachment;filename="'.$fileName.'"');
 
             // Send file - required ob_clean() & exit;
-            if (ob_get_contents()) ob_clean();
+            if (ob_get_contents()) {
+                ob_clean();
+            }
             readfile($tempFile);
             unlink($tempFile);
-            exit;
+            exit; /* @phpstan-ignore-line */
         }
     }
 
     /**
      * Merge XML result with original document into temp file.
      *
-     * @return false|string Path to built file or false on some error.
+     * @return false|string path to built file or false on some error
+     *
+     * @throws TempException
+     * @throws XmlException
      */
     public function buildFile()
     {
-        $tempArchive = tempnam(sys_get_temp_dir(), 'doc');
+        $tempDir = sys_get_temp_dir();
+        $tempArchive = tempnam($tempDir, 'doc');
+        if ($tempArchive === false) {
+            throw new TempException(sprintf('Cannot acquire temp file at %s', $tempDir));
+        }
+
         if (copy($this->document->getDocumentPath(), $tempArchive) === true) {
             $zip = new \ZipArchive();
             $zip->open($tempArchive);
-            $zip->addFromString($this->document->getContentPath(), $this->output->saveXML());
+
+            $content = $this->output->saveXML();
+            if ($content === false) {
+                throw new XmlException('Print XML error');
+            }
+
+            $zip->addFromString($this->document->getContentPath(), $content);
             $zip->close();
+
             return $tempArchive;
         }
 
@@ -88,8 +110,9 @@ class Result
     /**
      * Build file and save to filesystem.
      *
-     * @param string $destinationPath Destination dir with no trailing slash.
-     * @param string|null $fileName File name, use original document name if no value present.
+     * @param string      $destinationPath destination dir with no trailing slash
+     * @param string|null $fileName        file name, use original document name if no value present
+     *
      * @return bool
      */
     public function save($destinationPath, $fileName = null)
@@ -100,8 +123,9 @@ class Result
 
         $tempFile = $this->buildFile();
         if ($tempFile !== false) {
-            $result = copy($tempFile, $destinationPath . '/' . $fileName);
+            $result = copy($tempFile, $destinationPath.'/'.$fileName);
             unlink($tempFile);
+
             return $result;
         }
 
@@ -112,7 +136,7 @@ class Result
      * Build file and output to buffer.
      * Useful for framework integration, such as Symfony Response object.
      *
-     * @return string|false File content or false on error.
+     * @return string|false file content or false on error
      */
     public function output()
     {
@@ -120,9 +144,10 @@ class Result
         if ($tempFile !== false) {
             $output = file_get_contents($tempFile);
             unlink($tempFile);
+
             return $output;
         }
 
         return false;
     }
-} 
+}

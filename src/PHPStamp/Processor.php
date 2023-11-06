@@ -1,23 +1,24 @@
 <?php
+
 namespace PHPStamp;
 
+use PHPStamp\Exception\XmlException;
 
 class Processor
 {
     /**
-     * XSL Namespace
+     * XSL Namespace.
      */
-    const XSL_NS = 'http://www.w3.org/1999/XSL/Transform';
+    public const XSL_NS = 'http://www.w3.org/1999/XSL/Transform';
 
     /**
      * Root node for values XML document.
      */
-    const VALUE_NODE = 'values';
+    public const VALUE_NODE = 'values';
 
     /**
      * Wrap document content into XSL template.
      *
-     * @param \DOMDocument $document
      * @return void
      */
     public static function wrapIntoTemplate(\DOMDocument $document)
@@ -31,8 +32,14 @@ class Processor
         $stylesheet->appendChild($output);
 
         $template = $document->createElementNS(self::XSL_NS, 'xsl:template');
-        $template->setAttribute('match', '/' . self::VALUE_NODE);
-        $template->appendChild($document->documentElement);
+        $template->setAttribute('match', '/'.self::VALUE_NODE);
+
+        $root = $document->documentElement;
+        if ($root === null) {
+            throw new XmlException('Root node expected');
+        }
+
+        $template->appendChild($root);
         $stylesheet->appendChild($template);
 
         $document->appendChild($stylesheet);
@@ -41,22 +48,30 @@ class Processor
     /**
      * Split node into three parts (before [[tag]] after) and replace tag with XSL logic.
      *
-     * @param string $search Placeholder tag with brackets.
-     * @param string $path XPath to value in the encoded XML document.
-     * @param \DOMElement $node Node with placeholder.
-     * @return bool
+     * @param string      $search placeholder tag with brackets
+     * @param string      $path   XPath to value in the encoded XML document
+     * @param \DOMElement $node   node with placeholder
+     *
+     * @throws XmlException
      */
-    public static function insertTemplateLogic($search, $path, \DOMElement $node)
+    public static function insertTemplateLogic(string $search, string $path, \DOMElement $node): bool
     {
         $template = $node->ownerDocument;
+        if ($template === null) {
+            throw new XmlException('Detached node');
+        }
 
         $node->setAttribute('xml:space', 'preserve'); // fix whitespaces in mixed node
 
-        /** @var $textNode \DOMText */
+        /** @var \DOMText $textNode */
         foreach ($node->childNodes as $textNode) {
             $nodeValue = $textNode->nodeValue; // utf8_decode
+            if ($nodeValue === null) {
+                continue;
+            }
 
             // before [[tag]] after
+            /** @var array<string> $nodeValueParts */
             $nodeValueParts = explode($search, $nodeValue, 2); // fix similar tags in one node
 
             if (count($nodeValueParts) === 2) {
@@ -88,18 +103,31 @@ class Processor
      * Word XML can contain curly braces in attributes, which conflicts with XSL logic.
      * Escape them before template created.
      *
-     * @param \DOMDocument $document
+     * @throws XmlException
      */
-    public static function escapeXsl(\DOMDocument $document)
+    public static function escapeXsl(\DOMDocument $document): void
     {
         $xpath = new \DOMXPath($document);
+
         // escape attr for xsl
         $nodeList = $xpath->query('//*[contains(@uri, "{") and contains(@uri ,"}")]');
-        /** @var $node \DOMNode  */
+        if ($nodeList === false) {
+            throw new XmlException('Malformed query');
+        }
+
+        /** @var \DOMNode $node */
         foreach ($nodeList as $node) {
-            /** @var $attr \DOMAttr  */
+            if ($node->attributes === null) {
+                continue;
+            }
+
+            /** @var \DOMAttr $attr */
             foreach ($node->attributes as $attr) {
-                $attr->nodeValue = str_replace(array('{', '}'), array('{{', '}}'), $attr->nodeValue);
+                if ($attr->nodeValue === null) {
+                    continue;
+                }
+
+                $attr->nodeValue = str_replace(['{', '}'], ['{{', '}}'], $attr->nodeValue);
             }
         }
     }
@@ -107,19 +135,30 @@ class Processor
     /**
      * Word XML can contain curly braces in attributes, which conflicts with XSL logic.
      * Undo escape them after template conversion.
-     *
-     * @param \DOMDocument $document
      */
-    public static function undoEscapeXsl(\DOMDocument $document)
+    public static function undoEscapeXsl(\DOMDocument $document): void
     {
         $xpath = new \DOMXPath($document);
+
         // escape attr for xsl
         $nodeList = $xpath->query('//*[contains(@uri, "{{") and contains(@uri ,"}}")]');
-        /** @var $node \DOMNode  */
+        if ($nodeList === false) {
+            throw new XmlException('Malformed query');
+        }
+
+        /** @var \DOMNode $node */
         foreach ($nodeList as $node) {
-            /** @var $attr \DOMAttr  */
+            if ($node->attributes === null) {
+                continue;
+            }
+
+            /** @var \DOMAttr $attr */
             foreach ($node->attributes as $attr) {
-                $attr->nodeValue = str_replace(array('{{', '}}'), array('{', '}'), $attr->nodeValue);
+                if ($attr->nodeValue === null) {
+                    continue;
+                }
+
+                $attr->nodeValue = str_replace(['{{', '}}'], ['{', '}'], $attr->nodeValue);
             }
         }
     }

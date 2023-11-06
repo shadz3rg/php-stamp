@@ -1,25 +1,30 @@
 <?php
+
 namespace PHPStamp;
 
 use PHPStamp\Exception\ParsingException;
+use PHPStamp\Exception\XmlException;
 
 class XMLHelper
 {
     /**
      * Check two given nodes for equality.
-     * @param $node1 \DOMNode|null
-     * @param $node2 \DOMNode|null
-     * @return bool
-     * @link http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-Node3-isEqualNode
-     * @link https://github.com/WebKit/webkit/blob/master/Source/WebCore/dom/Node.cpp#L1081
+     *
+     * @param \DOMNode|null $node1
+     * @param \DOMNode|null $node2
+     *
+     * @throws XmlException
+     *
+     * @see https://github.com/WebKit/webkit/blob/master/Source/WebCore/dom/Node.cpp#L1081
+     * @see http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-Node3-isEqualNode
      */
-    public function deepEqual($node1, $node2)
+    public function deepEqual($node1, $node2): bool
     {
         if ($node1 === null && $node2 === null) {
             return true;
         }
 
-        if (($node1 === null && $node2 !== null) || ($node1 !== null && $node2 === null)) {
+        if ($node1 === null || $node2 === null) {
             return false;
         }
 
@@ -53,7 +58,6 @@ class XMLHelper
         $node2Child = $node2->firstChild;
 
         while ($node1Child) {
-
             if ($node2Child === null) { // if $node1 child count > $node2 child count
                 return false;
             }
@@ -61,7 +65,6 @@ class XMLHelper
             if ($this->deepEqual($node1Child, $node2Child) === false) {
                 return false;
             }
-
 
             $node1Child = $node1Child->nextSibling;
             $node2Child = $node2Child->nextSibling;
@@ -72,8 +75,18 @@ class XMLHelper
         }
 
         // 4 Compare document types
-        $node1DocumentType = $node1->ownerDocument->doctype;
-        $node2DocumentType = $node2->ownerDocument->doctype;
+        $node1Document = $node1->ownerDocument;
+        if ($node1Document === null) {
+            throw new XmlException('Detached node');
+        }
+
+        $node2Document = $node2->ownerDocument;
+        if ($node2Document === null) {
+            throw new XmlException('Detached node');
+        }
+
+        $node1DocumentType = $node1Document->doctype;
+        $node2DocumentType = $node2Document->doctype;
 
         if ($node1DocumentType !== null && $node2DocumentType !== null) {
             if ($node1DocumentType->publicId !== $node2DocumentType->publicId) {
@@ -92,11 +105,10 @@ class XMLHelper
 
     /**
      * Check two given nodes for equal attributes.
-     * @param \DOMNode $node1
-     * @param \DOMNode $node2
-     * @return bool
+     *
+     * @throws XmlException
      */
-    private function compareAttributes(\DOMNode $node1, \DOMNode $node2)
+    private function compareAttributes(\DOMNode $node1, \DOMNode $node2): bool
     {
         if ($node1->hasAttributes() === false && $node2->hasAttributes() === false) {
             return true;
@@ -106,62 +118,80 @@ class XMLHelper
             return false;
         }
 
+        if ($node1->attributes === null || $node2->attributes === null) {
+            return false;
+        }
+
         if ($node1->attributes->length !== $node2->attributes->length) {
             return false;
         }
 
-        /** @var $attribute \DOMNode */
+        /** @var \DOMAttr $attribute */
         foreach ($node1->attributes as $attribute) {
             // namespace problem, localName as fix
-            $compareAgainst = $node2->attributes->getNamedItem($attribute->localName);
+            $localName = $attribute->localName;
+            if ($localName === null) {
+                throw new XmlException('Attr local-name is null (somehow)');
+            }
 
+            $compareAgainst = $node2->attributes->getNamedItem($localName);
             if ($compareAgainst === null || $attribute->nodeValue !== $compareAgainst->nodeValue) {
                 return false;
             }
         }
+
+        return true;
     }
 
     /**
      * Fetch node list from document.
-     * @param \DOMDocument $document
-     * @param $xpathQuery
-     * @return \DOMNodeList
+     *
+     * @return \DOMNodeList<\DOMNode>
      */
-    public static function queryTemplate(\DOMDocument $document, $xpathQuery)
+    public static function queryTemplate(\DOMDocument $document, string $xpathQuery)
     {
         $xpath = new \DOMXPath($document);
-        return $xpath->query($xpathQuery);
+        $result = $xpath->query($xpathQuery);
+        if ($result === false) {
+            throw new ParsingException('Malformed query');
+        }
+
+        return $result;
     }
 
     /**
      * Formats DOMDocument for html output.
-     * @codeCoverageIgnore
-     * @param \DOMDocument $document
-     * @return string
+     *
+     * @throws ParsingException
      */
-    public static function prettyPrint(\DOMDocument $document)
+    public static function prettyPrint(\DOMDocument $document): string
     {
         $document->preserveWhiteSpace = false;
         $document->formatOutput = true;
 
         $xmlString = $document->saveXML();
+        if ($xmlString === false) {
+            throw new ParsingException('Print XML error');
+        }
 
         $document->preserveWhiteSpace = true;
         $document->formatOutput = false;
 
-        return '<pre>' . htmlentities($xmlString) . '</pre>';
+        return '<pre>'.htmlentities($xmlString).'</pre>';
     }
 
     /**
      * Find closest parent node.
-     * @param $nodeName
-     * @param \DOMNode $node
-     * @return \DOMNode
+     *
      * @throws Exception\ParsingException
      */
-    public static function parentUntil($nodeName, \DOMNode $node)
+    public static function parentUntil(string $nodeName, \DOMNode $node): ?\DOMNode
     {
         $parent = $node->parentNode;
+        if ($parent === null) {
+            throw new ParsingException('Row not found.');
+        }
+
         while ($parent->nodeName !== $nodeName) {
             $parent = $parent->parentNode;
             if ($parent === null) {
@@ -174,16 +204,15 @@ class XMLHelper
 
     /**
      * Add associative array values into XML object recursively.
-     * @param $mixed
-     * @param \DOMNode $domElement
-     * @param \DOMDocument $domDocument
+     *
+     * @phpstan-param mixed $mixed
+     *
      * @param string $itemName
      */
-    public static function xmlEncode($mixed, \DOMNode $domElement, \DOMDocument $domDocument, $itemName = 'item')
+    public static function xmlEncode($mixed, \DOMNode $domElement, \DOMDocument $domDocument, $itemName = 'item'): void
     {
         if (is_array($mixed)) {
             foreach ($mixed as $index => $mixedElement) {
-
                 $tagName = $index;
                 if (is_int($index)) {
                     $tagName = $itemName;
@@ -194,8 +223,8 @@ class XMLHelper
 
                 self::xmlEncode($mixedElement, $node, $domDocument, $itemName);
             }
-        } else {
-            $domElement->appendChild($domDocument->createTextNode($mixed));
+        } elseif (is_scalar($mixed)) {
+            $domElement->appendChild($domDocument->createTextNode((string) $mixed));
         }
     }
 }

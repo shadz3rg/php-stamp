@@ -7,107 +7,99 @@ class Tag
     /**
      * Tag data.
      *
-     * @var array
+     * @var array{position: int, length: int, textContent: string}
      */
-    private $summary;
+    private array $summary;
 
     /**
      * Path to value in placeholder.
      *
-     * @var array
+     * @var array<string>
      */
-    private $path;
+    private array $path;
 
     /**
      * Parsed functions.
      *
-     * @var array
+     * @var array<array{function: string, arguments: string[]}>
      */
-    private $functions;
+    private array $functions;
 
     /**
      * Creates a new Tag.
      *
-     * @param array $summary Tag data.
-     * @param array $path Path to value in placeholder.
-     * @param array $functions Parsed functions.
+     * @param array{position: int, length: int, textContent: string} $summary   tag data
+     * @param array<string>                                          $path      path to value in placeholder
+     * @param array<array{function: string, arguments: string[]}>    $functions parsed functions
      */
     public function __construct(array $summary, array $path, array $functions)
     {
         $this->summary = $summary;
         $this->path = $path;
         $this->functions = $functions;
-
     }
 
     /**
      * Placeholder position inside node content.
      * Left padding of string.
-     *
-     * @return int
      */
-    public function getPosition()
+    public function getPosition(): int
     {
         return $this->summary['position'];
     }
 
     /**
      * Length of tag with brackets.
-     *
-     * @return int
      */
-    public function getLength()
+    public function getLength(): int
     {
         return $this->summary['length'];
     }
 
     /**
      * XPath presentation of value path.
-     *
-     * @return string
      */
-    public function getXmlPath()
+    public function getXmlPath(): string
     {
         return implode('/', $this->path);
     }
 
     /**
      * Last part of the path.
-     *
-     * @return string
      */
-    public function getRelativePath()
+    public function getRelativePath(): ?string
     {
-        return end($this->path);
+        $output = end($this->path);
+        if ($output === false) {
+            return null;
+        }
+
+        return $output;
     }
 
     /**
      * Has function helper.
-     *
-     * @return bool
      */
-    public function hasFunctions()
+    public function hasFunctions(): bool
     {
-        return (count($this->functions) !== 0);
+        return count($this->functions) !== 0;
     }
 
     /**
      * Get parsed functions.
      *
-     * @return array
+     * @return array<array{function: string, arguments: string[]}>
      */
-    public function getFunctions()
+    public function getFunctions(): array
     {
         return $this->functions; // TODO improve
     }
 
     /**
      * Get placeholder content with brackets.
-     *
-     * @return string
      */
-    public function getTextContent()
+    public function getTextContent(): string
     {
         return $this->summary['textContent'];
     }
-} 
+}

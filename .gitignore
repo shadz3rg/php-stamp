@@ -1,7 +1,7 @@
 .idea/
 vendor/
 composer.lock
-composer.phar
-.htaccess
-index.php
-static/
+.php_cs.cache
+.php-cs-fixer.cache
+.phpunit.result.cache
+coverage/

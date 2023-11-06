@@ -2,4 +2,6 @@
 
 namespace PHPStamp\Exception;
 
-class ProcessorException extends PHPStampException {}
+class ProcessorException extends PHPStampException
+{
+}
