@@ -34,6 +34,7 @@
     "scripts": {
         "codequality": "phpstan analyse -c phpstan.neon --level=max && php-cs-fixer fix --config=.php-cs-fixer.dist.php -v --dry-run",
         "cq": "@codequality",
-        "cs": "php-cs-fixer fix --config=.php-cs-fixer.dist.php -v"
+        "cs": "php-cs-fixer fix --config=.php-cs-fixer.dist.php -v",
+        "test": "phpunit --testsuite=Unit --coverage-html=coverage"
     }
 }
