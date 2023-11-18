@@ -48,6 +48,37 @@ class TemplatorTest extends BaseCase
                 '  </w:body>'.
                 '</w:document>'.PHP_EOL,
             ],
+            'line break case' => [
+                '<?xml version="1.0" encoding="UTF-8"?>'.
+                '<w:document xmlns:w="https://schemas.openxmlformats.org/wordprocessingml/2006/main">'.
+                '  <w:body>'.
+                '    <w:p>'.
+                '      <w:r>'.
+                '        <w:t>Hello, [[username]]!</w:t>'.
+                '      </w:r>'.
+                '    </w:p>'.
+                '  </w:body>'.
+                '</w:document>',
+                [
+                    'username' => implode('  ', ['Line 1', 'Line 2', 'Line 3']),
+                ],
+                '<?xml version="1.0" encoding="UTF-8"?>'.PHP_EOL.
+                '<w:document xmlns:w="https://schemas.openxmlformats.org/wordprocessingml/2006/main">'.
+                '  <w:body>'.
+                '    <w:p>'.
+                '      <w:r>'.
+                '        <w:t xml:space="preserve">Hello, </w:t>'.
+                '        <w:t xml:space="preserve">Line 1</w:t>'.
+                '        <w:br/>'.
+                '        <w:t xml:space="preserve">Line 2</w:t>'.
+                '        <w:br/>'.
+                '        <w:t xml:space="preserve">Line 3</w:t>'.
+                '        <w:t xml:space="preserve">!</w:t>'.
+                '      </w:r>'.
+                '    </w:p>'.
+                '  </w:body>'.
+                '</w:document>'.PHP_EOL,
+            ],
         ];
     }
 

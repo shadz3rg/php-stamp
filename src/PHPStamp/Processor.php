@@ -20,6 +20,8 @@ class Processor
      * Wrap document content into XSL template.
      *
      * @return void
+     * @throws XmlException
+     * @throws \DOMException
      */
     public static function wrapIntoTemplate(\DOMDocument $document)
     {
@@ -34,15 +36,41 @@ class Processor
         $template = $document->createElementNS(self::XSL_NS, 'xsl:template');
         $template->setAttribute('match', '/'.self::VALUE_NODE);
 
-        $root = $document->documentElement;
-        if ($root === null) {
+        $documentRoot = $document->documentElement;
+        if ($documentRoot === null) {
             throw new XmlException('Root node expected');
         }
 
-        $template->appendChild($root);
+        $template->appendChild($documentRoot);
         $stylesheet->appendChild($template);
 
         $document->appendChild($stylesheet);
+
+        // Common templates
+        $xml = /** @lang text */
+            <<<EOT
+<xsl:template name="print" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:w="https://schemas.openxmlformats.org/wordprocessingml/2006/main">
+    <xsl:param name="text" select="."/>
+    <xsl:param name="delimiter" select="'  '"/>
+
+    <xsl:if test="string-length(\$text)">
+        <xsl:if test="not(\$text=.)">
+            <w:br/>
+        </xsl:if>
+        <w:t xml:space="preserve"><xsl:value-of select="substring-before(concat(\$text, \$delimiter), \$delimiter)"/></w:t>
+        <xsl:call-template name="print">
+            <xsl:with-param name="text" select="substring-after(\$text, \$delimiter)"/>
+        </xsl:call-template>
+    </xsl:if>
+</xsl:template>
+EOT;
+        $f = $document->createDocumentFragment();
+        $f->appendXML($xml);
+
+
+        $stylesheet->appendChild($f);
+
+        var_dump($document->saveXML());
     }
 
     /**
@@ -56,6 +84,7 @@ class Processor
      */
     public static function insertTemplateLogic(string $search, string $path, \DOMElement $node): bool
     {
+        /** @var \DOMDocument $template */
         $template = $node->ownerDocument;
         if ($template === null) {
             throw new XmlException('Detached node');
@@ -70,27 +99,32 @@ class Processor
                 continue;
             }
 
-            // before [[tag]] after
+            // before [[tag]] after -> ['before ', '[[tag]]', ' after']
+
             /** @var array<string> $nodeValueParts */
             $nodeValueParts = explode($search, $nodeValue, 2); // fix similar tags in one node
-
             if (count($nodeValueParts) === 2) {
-                $textNode->nodeValue = ''; // reset
+                $textNode->nodeValue = $nodeValueParts[0];
 
                 // text before
-                $before = $template->createTextNode($nodeValueParts[0]);
-                $node->insertBefore($before, $textNode);
+                //$before = $template->createTextNode($nodeValueParts[0]);
+                //$node->insertBefore($before, $textNode);
 
                 // add xsl logic
-                $placeholder = $template->createElementNS(self::XSL_NS, 'xsl:value-of');
-                $placeholder->setAttribute('select', $path);
-                $node->insertBefore($placeholder, $textNode);
+                $middle = $template->createElementNS(self::XSL_NS, 'xsl:call-template');
+                $middle->setAttribute('name', 'print');
+
+
 
                 // text after
-                $after = $template->createTextNode($nodeValueParts[1]);
-                $node->insertBefore($after, $textNode);
+                $after = $template->createElementNS('https://schemas.openxmlformats.org/wordprocessingml/2006/main', 'w:t', $nodeValueParts[1]);
+                $after->setAttribute('xml:space', 'preserve');
+                //$node->insertBefore($after, $textNode);
 
-                $node->removeChild($textNode);
+                // $node->removeChild($textNode);
+
+                $node->parentNode->insertBefore($after, $node->nextSibling);
+                $node->parentNode->insertBefore($middle, $after);
 
                 return true;
             }
