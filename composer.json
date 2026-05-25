@@ -11,7 +11,7 @@
         "ext-xsl": "*",
         "ext-zip": "*",
         "ext-dom": "*",
-        "shadz3rg/lexer": "^1.0"
+        "doctrine/lexer": "^1.0 || ^2.0"
     },
     "authors": [
         {
