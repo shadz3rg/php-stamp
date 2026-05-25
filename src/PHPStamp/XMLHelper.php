@@ -183,7 +183,7 @@ class XMLHelper
     /**
      * Find closest parent node.
      *
-     * @throws Exception\ParsingException
+     * @throws ParsingException
      */
     public static function parentUntil(string $nodeName, \DOMNode $node): ?\DOMNode
     {
@@ -205,9 +205,9 @@ class XMLHelper
     /**
      * Add associative array values into XML object recursively.
      *
-     * @phpstan-param mixed $mixed
-     *
      * @param string $itemName
+     *
+     * @phpstan-param mixed $mixed
      */
     public static function xmlEncode($mixed, \DOMNode $domElement, \DOMDocument $domDocument, $itemName = 'item'): void
     {
