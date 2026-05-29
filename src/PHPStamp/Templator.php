@@ -52,7 +52,7 @@ class Templator
             throw new Exception\InvalidArgumentException('Brackets are in wrong format.');
         }
 
-        $this->cachePath = $cachePath;
+        $this->cachePath = rtrim($cachePath, '/\\');
         $this->brackets = $brackets;
     }
 
@@ -226,7 +226,7 @@ class Templator
     {
         $overwrite = false;
 
-        $contentPath = $this->cachePath.$document->getDocumentName().'/'.$document->getContentPath();
+        $contentPath = $document->composeExtractPath($this->cachePath);
         if (file_exists($contentPath) === true) {
             $template = new \DOMDocument('1.0', 'UTF-8');
             $template->load($contentPath);

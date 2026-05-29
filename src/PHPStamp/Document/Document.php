@@ -75,12 +75,22 @@ abstract class Document implements DocumentInterface
         return $filePath;
     }
 
-    private function composeExtractDirectory(string $to): string
+    /**
+     * @param string $to
+     *
+     * @return string
+     */
+    private function composeExtractDirectory($to)
     {
         return rtrim($to, '/\\').DIRECTORY_SEPARATOR.$this->getDocumentName();
     }
 
-    private function composeExtractPath(string $to): string
+    /**
+     * @param string $to
+     *
+     * @return string
+     */
+    public function composeExtractPath($to)
     {
         return $this->composeExtractDirectory($to).DIRECTORY_SEPARATOR.$this->getContentPath();
     }

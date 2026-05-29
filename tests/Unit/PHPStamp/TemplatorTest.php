@@ -68,6 +68,12 @@ class TemplatorTest extends BaseCase
         $this->assertEquals($expected, $result->getContent()->saveXML());
     }
 
+    public function testCacheIgnoresTrailingSlash(): void
+    {
+        $this->assertCacheIgnoresTrailingSlash(true);
+        $this->assertCacheIgnoresTrailingSlash(false);
+    }
+
     /**
      * @dataProvider
      *
@@ -121,5 +127,34 @@ class TemplatorTest extends BaseCase
         $expected = $zip->getFromName(WordDocument::getContentPath());
 
         $this->assertEquals($expected, $result->getContent()->saveXML());
+    }
+
+    private function assertCacheIgnoresTrailingSlash(bool $useTrailingSlash): void
+    {
+        $cachePath = sys_get_temp_dir().DIRECTORY_SEPARATOR.'phpstamp-cache-'.uniqid('', true);
+        mkdir($cachePath);
+
+        $templatorCachePath = $cachePath;
+        if ($useTrailingSlash === true) {
+            $templatorCachePath .= DIRECTORY_SEPARATOR;
+        }
+
+        $templator = new Templator($templatorCachePath);
+        $templator->debug = true;
+
+        /** @var string $content */
+        $content = file_get_contents(__DIR__.'/../../resources/dummy.xml');
+        $documentName = 'cache-path-'.uniqid('', true).'.docx';
+        $document = $this->makeMockDocument($content, WordDocument::class, $documentName);
+
+        $templator->render($document, ['username' => 'Neo']);
+
+        $expectedContentFile = $cachePath
+            .DIRECTORY_SEPARATOR
+            .$documentName
+            .DIRECTORY_SEPARATOR
+            .str_replace('/', DIRECTORY_SEPARATOR, WordDocument::getContentPath());
+
+        $this->assertFileExists($expectedContentFile);
     }
 }

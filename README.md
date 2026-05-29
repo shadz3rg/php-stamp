@@ -44,7 +44,7 @@ Usage
     use PHPStamp\Templator;
     use PHPStamp\Document\WordDocument;
     
-    $cachePath = 'path/to/writable/directory/';
+    $cachePath = 'path/to/writable/directory';
     $templator = new Templator($cachePath);
     
     // Enable debug mode to re-generate template with every render call.
