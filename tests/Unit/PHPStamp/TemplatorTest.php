@@ -15,12 +15,6 @@ class TemplatorTest extends BaseCase
      */
     public function renderContentProvider(): array
     {
-        $studentsDoc = new \ZipArchive();
-        $studentsDoc->open(__DIR__.'/../../resources/students.docx');
-
-        $studentsResultDoc = new \ZipArchive();
-        $studentsResultDoc->open(__DIR__.'/../../resources/students_result.docx');
-
         return [
             // https://learn.microsoft.com/ru-ru/office/open-xml/structure-of-a-wordprocessingml-document
             'base case' => [
