@@ -1,5 +1,3 @@
-version: '3.7'
-
 x-php: &common-php-container
   image: xhrequest/symfony_common:version-1.10.0-pcov
   working_dir: /var/www/app
