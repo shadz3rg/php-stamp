@@ -82,7 +82,7 @@ abstract class Document implements DocumentInterface
      */
     private function composeExtractDirectory($to)
     {
-        return rtrim($to, '/\\').DIRECTORY_SEPARATOR.$this->getDocumentName();
+        return rtrim($to, '/\\').DIRECTORY_SEPARATOR.$this->generateCacheKey();
     }
 
     /**
@@ -93,6 +93,19 @@ abstract class Document implements DocumentInterface
     public function composeExtractPath($to)
     {
         return $this->composeExtractDirectory($to).DIRECTORY_SEPARATOR.$this->getContentPath();
+    }
+
+    /**
+     * Generate document cache key.
+     */
+    public function generateCacheKey()
+    {
+        $path = realpath($this->documentPath);
+        if ($path === false) {
+            $path = $this->documentPath;
+        }
+
+        return hash('sha256', $path);
     }
 
     /**

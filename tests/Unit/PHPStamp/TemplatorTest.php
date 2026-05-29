@@ -74,6 +74,31 @@ class TemplatorTest extends BaseCase
         $this->assertCacheIgnoresTrailingSlash(false);
     }
 
+    public function testCacheNameCollision(): void
+    {
+        $cachePath = sys_get_temp_dir().DIRECTORY_SEPARATOR.'phpstamp-cache-'.uniqid('', true);
+        mkdir($cachePath);
+
+        $templator = new Templator($cachePath);
+        $templator->debug = true;
+
+        /** @var string $content */
+        $content = file_get_contents(__DIR__.'/../../resources/dummy.xml');
+        $firstDocument = $this->makeMockDocumentAt($content, WordDocument::class, $this->makeDocumentPath('first', 'invoice.docx'));
+        $secondDocument = $this->makeMockDocumentAt($content, WordDocument::class, $this->makeDocumentPath('second', 'invoice.docx'));
+
+        $templator->render($firstDocument, ['username' => 'Neo']);
+        $templator->render($secondDocument, ['username' => 'Neo']);
+
+        $firstContentFile = $firstDocument->composeExtractPath($cachePath);
+        $secondContentFile = $secondDocument->composeExtractPath($cachePath);
+
+        $this->assertNotSame($firstDocument->generateCacheKey(), $secondDocument->generateCacheKey());
+        $this->assertNotSame($firstContentFile, $secondContentFile);
+        $this->assertFileExists($firstContentFile);
+        $this->assertFileExists($secondContentFile);
+    }
+
     /**
      * @dataProvider
      *
@@ -151,10 +176,18 @@ class TemplatorTest extends BaseCase
 
         $expectedContentFile = $cachePath
             .DIRECTORY_SEPARATOR
-            .$documentName
+            .$document->generateCacheKey()
             .DIRECTORY_SEPARATOR
             .str_replace('/', DIRECTORY_SEPARATOR, WordDocument::getContentPath());
 
         $this->assertFileExists($expectedContentFile);
+    }
+
+    private function makeDocumentPath(string $directoryName, string $filename): string
+    {
+        $dir = sys_get_temp_dir().DIRECTORY_SEPARATOR.'docx-'.$directoryName.'-'.uniqid('', true);
+        mkdir($dir);
+
+        return $dir.DIRECTORY_SEPARATOR.$filename;
     }
 }

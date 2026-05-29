@@ -39,6 +39,13 @@ interface DocumentInterface
     public function composeExtractPath($to);
 
     /**
+     * Generate document cache key.
+     *
+     * @return string
+     */
+    public function generateCacheKey();
+
+    /**
      * Get document file hash.
      *
      * @return string
