@@ -17,6 +17,9 @@
         <testsuite name="Integration">
             <directory>tests/Integration</directory>
         </testsuite>
+        <testsuite name="Performance">
+            <directory>tests/Performance</directory>
+        </testsuite>
     </testsuites>
     <php>
         <ini name="memory_limit" value="512M"/>
