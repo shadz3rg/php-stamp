@@ -68,6 +68,82 @@ class TemplatorTest extends BaseCase
         $this->assertEquals($expected, $result->getContent()->saveXML());
     }
 
+    /**
+     * @dataProvider unicodeContentProvider
+     *
+     * @param array<string,string> $values
+     */
+    public function testUnicodeContent(string $content, array $values, string $expected): void
+    {
+        $templator = new Templator(sys_get_temp_dir().DIRECTORY_SEPARATOR);
+        $templator->debug = true;
+
+        $document = $this->makeMockDocument($content, WordDocument::class, 'utf8-'.uniqid('', true).'.docx');
+        $result = $templator->render($document, $values);
+
+        $expected = str_replace('  ', '', $expected);
+        $this->assertEquals($expected, $result->getContent()->saveXML());
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    public function unicodeContentProvider(): array
+    {
+        return [
+            'utf8 before placeholder' => [
+                '<?xml version="1.0" encoding="UTF-8"?>'.
+                '<w:document xmlns:w="https://schemas.openxmlformats.org/wordprocessingml/2006/main">'.
+                '  <w:body>'.
+                '    <w:p>'.
+                '      <w:r>'.
+                '        <w:t>Привет, [[username]]!</w:t>'.
+                '      </w:r>'.
+                '    </w:p>'.
+                '  </w:body>'.
+                '</w:document>',
+                [
+                    'username' => 'Neo',
+                ],
+                '<?xml version="1.0" encoding="UTF-8"?>'.PHP_EOL.
+                '<w:document xmlns:w="https://schemas.openxmlformats.org/wordprocessingml/2006/main">'.
+                '  <w:body>'.
+                '    <w:p>'.
+                '      <w:r>'.
+                '        <w:t xml:space="preserve">Привет, Neo!</w:t>'.
+                '      </w:r>'.
+                '    </w:p>'.
+                '  </w:body>'.
+                '</w:document>'.PHP_EOL,
+            ],
+            'utf8 after placeholder' => [
+                '<?xml version="1.0" encoding="UTF-8"?>'.
+                '<w:document xmlns:w="https://schemas.openxmlformats.org/wordprocessingml/2006/main">'.
+                '  <w:body>'.
+                '    <w:p>'.
+                '      <w:r>'.
+                '        <w:t>[[username]], привет!</w:t>'.
+                '      </w:r>'.
+                '    </w:p>'.
+                '  </w:body>'.
+                '</w:document>',
+                [
+                    'username' => 'Neo',
+                ],
+                '<?xml version="1.0" encoding="UTF-8"?>'.PHP_EOL.
+                '<w:document xmlns:w="https://schemas.openxmlformats.org/wordprocessingml/2006/main">'.
+                '  <w:body>'.
+                '    <w:p>'.
+                '      <w:r>'.
+                '        <w:t xml:space="preserve">Neo, привет!</w:t>'.
+                '      </w:r>'.
+                '    </w:p>'.
+                '  </w:body>'.
+                '</w:document>'.PHP_EOL,
+            ],
+        ];
+    }
+
     public function testCacheIgnoresTrailingSlash(): void
     {
         $this->assertCacheIgnoresTrailingSlash(true);

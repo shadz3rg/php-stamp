@@ -176,8 +176,7 @@ class Templator
                 throw new XmlException('Some node value expected');
             }
 
-            $decodedValue = utf8_decode($nodeValue);
-            $lexer->setInput($decodedValue);
+            $lexer->setInput($nodeValue);
 
             while ($tag = $mapper->parse($lexer)) {
                 foreach ($tag->getFunctions() as $function) {
