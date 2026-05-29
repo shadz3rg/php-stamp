@@ -11,8 +11,9 @@ permissions:
 
 jobs:
   build:
-
-    runs-on: xhrequest/symfony_common:version-1.10.0-pcov
+    runs-on: ubuntu-latest
+    container:
+      image: xhrequest/symfony_common:version-1.10.0-pcov
 
     steps:
     - uses: actions/checkout@v3
