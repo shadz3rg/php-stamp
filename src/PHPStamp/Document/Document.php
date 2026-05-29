@@ -57,7 +57,7 @@ abstract class Document implements DocumentInterface
      */
     public function extract($to, $overwrite)
     {
-        $filePath = $to.$this->getDocumentName().'/'.$this->getContentPath();
+        $filePath = $this->composeExtractPath($to);
 
         if (!file_exists($filePath) || $overwrite === true) {
             $zip = new \ZipArchive();
@@ -67,12 +67,45 @@ abstract class Document implements DocumentInterface
                 throw new InvalidArgumentException('Can`t open archive "'.$this->documentPath.'", code "'.$code.'" returned.');
             }
 
-            if ($zip->extractTo($to.$this->documentName, $this->getContentPath()) === false) {
+            if ($zip->extractTo($this->composeExtractDirectory($to), $this->getContentPath()) === false) {
                 throw new InvalidArgumentException('Destination not reachable.');
             }
         }
 
         return $filePath;
+    }
+
+    /**
+     * @param string $to
+     *
+     * @return string
+     */
+    private function composeExtractDirectory($to)
+    {
+        return rtrim($to, '/\\').DIRECTORY_SEPARATOR.$this->generateCacheKey();
+    }
+
+    /**
+     * @param string $to
+     *
+     * @return string
+     */
+    public function composeExtractPath($to)
+    {
+        return $this->composeExtractDirectory($to).DIRECTORY_SEPARATOR.$this->getContentPath();
+    }
+
+    /**
+     * Generate document cache key.
+     */
+    public function generateCacheKey()
+    {
+        $path = realpath($this->documentPath);
+        if ($path === false) {
+            $path = $this->documentPath;
+        }
+
+        return hash('sha256', $path);
     }
 
     /**

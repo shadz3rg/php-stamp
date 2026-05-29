@@ -91,14 +91,28 @@ class Result
 
         if (copy($this->document->getDocumentPath(), $tempArchive) === true) {
             $zip = new \ZipArchive();
-            $zip->open($tempArchive);
+            $code = $zip->open($tempArchive);
+            if ($code !== true) {
+                unlink($tempArchive);
+
+                throw new TempException('Cannot open temp archive, code "'.$code.'" returned.');
+            }
 
             $content = $this->output->saveXML();
             if ($content === false) {
+                $zip->close();
+                unlink($tempArchive);
+
                 throw new XmlException('Print XML error');
             }
 
-            $zip->addFromString($this->document->getContentPath(), $content);
+            if ($zip->addFromString($this->document->getContentPath(), $content) !== true) {
+                $zip->close();
+                unlink($tempArchive);
+
+                throw new TempException('Cannot write document content to temp archive.');
+            }
+
             $zip->close();
 
             return $tempArchive;

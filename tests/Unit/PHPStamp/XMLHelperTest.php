@@ -2,6 +2,7 @@
 
 namespace PHPStamp\Tests\Unit\PHPStamp;
 
+use PHPStamp\Exception\EncodeException;
 use PHPStamp\Exception\ParsingException;
 use PHPStamp\Tests\BaseCase;
 use PHPStamp\XMLHelper;
@@ -252,5 +253,32 @@ EOT;
 
         $expected = str_replace('    ', '', $expected); // remove indentation
         $this->assertEquals($expected, $document->saveXML());
+    }
+
+    /**
+     * @dataProvider invalidElementNameProvider
+     */
+    public function testInvalidElementName(string $elementName): void
+    {
+        $document = new \DOMDocument('1.0', 'UTF-8');
+
+        $tokensNode = $document->createElement('root');
+        $document->appendChild($tokensNode);
+
+        $this->expectException(EncodeException::class);
+        $this->expectExceptionMessage('Invalid XML element name "'.$elementName.'"');
+
+        XMLHelper::xmlEncode([$elementName => 'Neo'], $tokensNode, $document);
+    }
+
+    /**
+     * @return array<string,array{elementName: string}>
+     */
+    public function invalidElementNameProvider(): array
+    {
+        return [
+            'with space' => ['elementName' => 'first name'],
+            'empty' => ['elementName' => ''],
+        ];
     }
 }

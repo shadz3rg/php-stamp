@@ -141,6 +141,6 @@ class Lexer extends AbstractLexer
         /** @var string $input */
         $input = $reflectionProperty->getValue($this);
 
-        return mb_substr($input, $position, $length);
+        return substr($input, $position, $length);
     }
 }

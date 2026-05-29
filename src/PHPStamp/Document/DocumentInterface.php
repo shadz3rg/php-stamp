@@ -30,6 +30,22 @@ interface DocumentInterface
     public function extract($to, $overwrite);
 
     /**
+     * Compose extracted content file path.
+     *
+     * @param string $to
+     *
+     * @return string
+     */
+    public function composeExtractPath($to);
+
+    /**
+     * Generate document cache key.
+     *
+     * @return string
+     */
+    public function generateCacheKey();
+
+    /**
      * Get document file hash.
      *
      * @return string

@@ -2,6 +2,7 @@
 
 namespace PHPStamp;
 
+use PHPStamp\Exception\EncodeException;
 use PHPStamp\Exception\ParsingException;
 use PHPStamp\Exception\XmlException;
 
@@ -218,13 +219,33 @@ class XMLHelper
                     $tagName = $itemName;
                 }
 
-                $node = $domDocument->createElement($tagName);
+                $node = self::createElement($domDocument, (string) $tagName);
                 $domElement->appendChild($node);
 
                 self::xmlEncode($mixedElement, $node, $domDocument, $itemName);
             }
         } elseif (is_scalar($mixed)) {
             $domElement->appendChild($domDocument->createTextNode((string) $mixed));
+        }
+    }
+
+    /**
+     * @throws EncodeException
+     */
+    private static function createElement(\DOMDocument $document, string $tagName): \DOMElement
+    {
+        // PHP 7.4 exposes invalid DOM names as warnings. Bridge those warnings
+        // into app-level exceptions until PHP 7.4 support can be removed.
+        set_error_handler(static function (int $severity, string $message) use ($tagName): bool {
+            throw new EncodeException('Invalid XML element name "'.$tagName.'": '.$message);
+        });
+
+        try {
+            return $document->createElement($tagName);
+        } catch (\DOMException $exception) {
+            throw new EncodeException('Invalid XML element name "'.$tagName.'".', 0, $exception);
+        } finally {
+            restore_error_handler();
         }
     }
 }

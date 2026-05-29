@@ -23,7 +23,7 @@ class WordDocument extends Document
      */
     public static function getContentPath()
     {
-        return 'word/document.xml';
+        return 'word'.DIRECTORY_SEPARATOR.'document.xml';
     }
 
     /**
