@@ -74,6 +74,13 @@ interface DocumentInterface
     public function cleanup(\DOMDocument $template);
 
     /**
+     * Post-process rendered content xml file.
+     *
+     * @return void
+     */
+    public function postProcess(\DOMDocument $content);
+
+    /**
      * Get path to content file inside document archive.
      *
      * @return string

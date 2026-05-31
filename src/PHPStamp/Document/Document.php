@@ -140,6 +140,14 @@ abstract class Document implements DocumentInterface
     /**
      * @inherit
      */
+    public function postProcess(\DOMDocument $content)
+    {
+        // do nothing
+    }
+
+    /**
+     * @inherit
+     */
     abstract public function cleanup(\DOMDocument $template);
 
     /**
