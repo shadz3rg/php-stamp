@@ -3,6 +3,7 @@
 namespace PHPStamp\Document;
 
 use PHPStamp\Document\WordDocument\Cleanup;
+use PHPStamp\Document\WordDocument\LineBreaks;
 use PHPStamp\Exception\InvalidArgumentException;
 use PHPStamp\Extension\Extension;
 use PHPStamp\Extension\ExtensionInterface;
@@ -77,6 +78,14 @@ class WordDocument extends Document
 
         $cleaner->hardcoreCleanup();
         $cleaner->cleanup();
+    }
+
+    /**
+     * Post-process Word Document content.
+     */
+    public function postProcess(\DOMDocument $content)
+    {
+        LineBreaks::replace($content);
     }
 
     /**

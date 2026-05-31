@@ -79,6 +79,7 @@ class Templator
         }
 
         Processor::undoEscapeXsl($content);
+        $document->postProcess($content);
 
         return new Result($content, $document);
     }

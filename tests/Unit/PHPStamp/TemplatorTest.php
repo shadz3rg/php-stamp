@@ -42,6 +42,35 @@ class TemplatorTest extends BaseCase
                 '  </w:body>'.
                 '</w:document>'.PHP_EOL,
             ],
+            'multiline value' => [
+                '<?xml version="1.0" encoding="UTF-8"?>'.
+                '<w:document xmlns:w="https://schemas.openxmlformats.org/wordprocessingml/2006/main">'.
+                '  <w:body>'.
+                '    <w:p>'.
+                '      <w:r>'.
+                '        <w:t>Message: [[message]]</w:t>'.
+                '      </w:r>'.
+                '    </w:p>'.
+                '  </w:body>'.
+                '</w:document>',
+                [
+                    'message' => 'Line 1'.PHP_EOL.'Line 2'.PHP_EOL.'Line 3',
+                ],
+                '<?xml version="1.0" encoding="UTF-8"?>'.PHP_EOL.
+                '<w:document xmlns:w="https://schemas.openxmlformats.org/wordprocessingml/2006/main">'.
+                '  <w:body>'.
+                '    <w:p>'.
+                '      <w:r>'.
+                '        <w:t xml:space="preserve">Message: Line 1</w:t>'.
+                '        <w:br/>'.
+                '        <w:t xml:space="preserve">Line 2</w:t>'.
+                '        <w:br/>'.
+                '        <w:t xml:space="preserve">Line 3</w:t>'.
+                '      </w:r>'.
+                '    </w:p>'.
+                '  </w:body>'.
+                '</w:document>'.PHP_EOL,
+            ],
         ];
     }
 
