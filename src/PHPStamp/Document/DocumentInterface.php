@@ -20,23 +20,25 @@ interface DocumentInterface
     /**
      * Extract content file from document.
      *
-     * @param string $to
-     * @param bool   $overwrite
+     * @param string      $to
+     * @param bool        $overwrite
+     * @param string|null $contentPath
      *
      * @return string
      *
      * @throws InvalidArgumentException
      */
-    public function extract($to, $overwrite);
+    public function extract($to, $overwrite, $contentPath = null);
 
     /**
      * Compose extracted content file path.
      *
-     * @param string $to
+     * @param string      $to
+     * @param string|null $contentPath
      *
      * @return string
      */
-    public function composeExtractPath($to);
+    public function composeExtractPath($to, $contentPath = null);
 
     /**
      * Generate document cache key.
@@ -86,6 +88,13 @@ interface DocumentInterface
      * @return string
      */
     public static function getContentPath();
+
+    /**
+     * Get paths to content files inside document archive.
+     *
+     * @return array<string>
+     */
+    public function getContentPaths();
 
     /**
      * Get xpath to parent node what can contain text node with tag.

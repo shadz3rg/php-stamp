@@ -55,9 +55,10 @@ abstract class Document implements DocumentInterface
      *
      * @throws InvalidArgumentException
      */
-    public function extract($to, $overwrite)
+    public function extract($to, $overwrite, $contentPath = null)
     {
-        $filePath = $this->composeExtractPath($to);
+        $contentPath = $contentPath ?? $this->getContentPath();
+        $filePath = $this->composeExtractPath($to, $contentPath);
 
         if (!file_exists($filePath) || $overwrite === true) {
             $zip = new \ZipArchive();
@@ -67,7 +68,7 @@ abstract class Document implements DocumentInterface
                 throw new InvalidArgumentException('Can`t open archive "'.$this->documentPath.'", code "'.$code.'" returned.');
             }
 
-            if ($zip->extractTo($this->composeExtractDirectory($to), $this->getContentPath()) === false) {
+            if ($zip->extractTo($this->composeExtractDirectory($to), $contentPath) === false) {
                 throw new InvalidArgumentException('Destination not reachable.');
             }
         }
@@ -90,9 +91,11 @@ abstract class Document implements DocumentInterface
      *
      * @return string
      */
-    public function composeExtractPath($to)
+    public function composeExtractPath($to, $contentPath = null)
     {
-        return $this->composeExtractDirectory($to).DIRECTORY_SEPARATOR.$this->getContentPath();
+        $contentPath = $contentPath ?? $this->getContentPath();
+
+        return $this->composeExtractDirectory($to).DIRECTORY_SEPARATOR.$contentPath;
     }
 
     /**
@@ -154,6 +157,14 @@ abstract class Document implements DocumentInterface
      * @inherit
      */
     abstract public static function getContentPath();
+
+    /**
+     * @inherit
+     */
+    public function getContentPaths()
+    {
+        return [$this->getContentPath()];
+    }
 
     /**
      * @inherit
