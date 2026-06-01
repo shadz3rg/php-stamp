@@ -24,7 +24,38 @@ class WordDocument extends Document
      */
     public static function getContentPath()
     {
-        return 'word'.DIRECTORY_SEPARATOR.'document.xml';
+        return 'word/document.xml';
+    }
+
+    /**
+     * Get renderable Word XML parts from document ZIP archive.
+     *
+     * @return array<string>
+     */
+    public function getContentPaths()
+    {
+        $paths = [self::getContentPath()];
+
+        $zip = new \ZipArchive();
+        $code = $zip->open($this->getDocumentPath());
+        if ($code !== true) {
+            throw new InvalidArgumentException('Can`t open archive "'.$this->getDocumentPath().'", code "'.$code.'" returned.');
+        }
+
+        for ($i = 0; $i < $zip->numFiles; ++$i) {
+            $name = $zip->getNameIndex($i);
+            if ($name === false) {
+                continue;
+            }
+
+            if (preg_match('#^word/(?:header\d+|footer\d+|footnotes|endnotes|comments)\.xml$#', $name) === 1) {
+                $paths[] = $name;
+            }
+        }
+
+        $zip->close();
+
+        return array_values(array_unique($paths));
     }
 
     /**

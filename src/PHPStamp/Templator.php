@@ -67,21 +67,28 @@ class Templator
      */
     public function render(DocumentInterface $document, array $values): Result
     {
-        // fill with values
-        $xslt = new \XSLTProcessor();
+        $valuesDocument = $this->createValuesDocument($values);
+        $contents = [];
 
-        $template = $this->getTemplate($document);
-        $xslt->importStylesheet($template);
+        foreach ($document->getContentPaths() as $contentPath) {
+            // fill with values
+            $xslt = new \XSLTProcessor();
 
-        $content = $xslt->transformToDoc($this->createValuesDocument($values));
-        if ($content === false) {
-            throw new XmlException('Cant transform XSL template');
+            $template = $this->getTemplate($document, $contentPath);
+            $xslt->importStylesheet($template);
+
+            $content = $xslt->transformToDoc($valuesDocument);
+            if ($content === false) {
+                throw new XmlException('Cant transform XSL template');
+            }
+
+            Processor::undoEscapeXsl($content);
+            $document->postProcess($content);
+
+            $contents[$contentPath] = $content;
         }
 
-        Processor::undoEscapeXsl($content);
-        $document->postProcess($content);
-
-        return new Result($content, $document);
+        return new Result($contents, $document);
     }
 
     /**
@@ -94,14 +101,14 @@ class Templator
      * @throws Exception\InvalidArgumentException
      * @throws XmlException
      */
-    private function getTemplate(DocumentInterface $document): \DOMDocument
+    private function getTemplate(DocumentInterface $document, string $contentPath): \DOMDocument
     {
         $overwrite = false;
         if ($this->trackDocument === true) {
-            $overwrite = $this->compareHash($document);
+            $overwrite = $this->compareHash($document, $contentPath);
         }
 
-        $contentFile = $document->extract($this->cachePath, $this->debug || $overwrite);
+        $contentFile = $document->extract($this->cachePath, $this->debug || $overwrite, $contentPath);
 
         $template = new \DOMDocument('1.0', 'UTF-8');
         $template->load($contentFile);
@@ -222,14 +229,14 @@ class Templator
      *
      * @throws XmlException
      */
-    private function compareHash(DocumentInterface $document): bool
+    private function compareHash(DocumentInterface $document, string $contentPath): bool
     {
         $overwrite = false;
 
-        $contentPath = $document->composeExtractPath($this->cachePath);
-        if (file_exists($contentPath) === true) {
+        $contentFile = $document->composeExtractPath($this->cachePath, $contentPath);
+        if (file_exists($contentFile) === true) {
             $template = new \DOMDocument('1.0', 'UTF-8');
-            $template->load($contentPath);
+            $template->load($contentFile);
 
             $query = new \DOMXPath($template);
             $commentList = $query->query('/xsl:stylesheet/comment()');
