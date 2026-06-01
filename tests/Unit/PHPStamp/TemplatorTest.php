@@ -91,6 +91,67 @@ class TemplatorTest extends BaseCase
         $this->assertEquals($expected, $result->getContent()->saveXML());
     }
 
+    public function testRenderContentParts(): void
+    {
+        $document = $this->makeMockDocumentWithParts(
+            [
+                WordDocument::getContentPath() => '<?xml version="1.0" encoding="UTF-8"?>'.
+                    '<w:document xmlns:w="https://schemas.openxmlformats.org/wordprocessingml/2006/main">'.
+                    '<w:body><w:p><w:r><w:t>Body: [[body]]</w:t></w:r></w:p></w:body>'.
+                    '</w:document>',
+                'word/header1.xml' => '<?xml version="1.0" encoding="UTF-8"?>'.
+                    '<w:hdr xmlns:w="https://schemas.openxmlformats.org/wordprocessingml/2006/main">'.
+                    '<w:p><w:r><w:t>Header: [[header]]</w:t></w:r></w:p>'.
+                    '</w:hdr>',
+                'word/footer1.xml' => '<?xml version="1.0" encoding="UTF-8"?>'.
+                    '<w:ftr xmlns:w="https://schemas.openxmlformats.org/wordprocessingml/2006/main">'.
+                    '<w:p><w:r><w:t>Footer: [[footer]]</w:t></w:r></w:p>'.
+                    '</w:ftr>',
+            ],
+            WordDocument::class,
+            'parts_render.docx'
+        );
+
+        $templator = new Templator(sys_get_temp_dir().DIRECTORY_SEPARATOR);
+        $templator->debug = true;
+
+        $result = $templator->render($document, [
+            'body' => 'Body value',
+            'header' => 'Header value',
+            'footer' => 'Footer value',
+        ]);
+
+        $contents = $result->getContents();
+        $this->assertArrayHasKey(WordDocument::getContentPath(), $contents);
+        $this->assertArrayHasKey('word/header1.xml', $contents);
+        $this->assertArrayHasKey('word/footer1.xml', $contents);
+
+        $bodyContent = $contents[WordDocument::getContentPath()]->saveXML();
+        $headerContent = $contents['word/header1.xml']->saveXML();
+        $footerContent = $contents['word/footer1.xml']->saveXML();
+        $this->assertNotFalse($bodyContent);
+        $this->assertNotFalse($headerContent);
+        $this->assertNotFalse($footerContent);
+        $this->assertStringContainsString('Body: Body value', $bodyContent);
+        $this->assertStringContainsString('Header: Header value', $headerContent);
+        $this->assertStringContainsString('Footer: Footer value', $footerContent);
+
+        $resultFile = $result->buildFile();
+        $this->assertNotFalse($resultFile);
+
+        $zip = new \ZipArchive();
+        $zip->open($resultFile);
+        $bodyFileContent = $zip->getFromName(WordDocument::getContentPath());
+        $headerFileContent = $zip->getFromName('word/header1.xml');
+        $footerFileContent = $zip->getFromName('word/footer1.xml');
+        $this->assertNotFalse($bodyFileContent);
+        $this->assertNotFalse($headerFileContent);
+        $this->assertNotFalse($footerFileContent);
+        $this->assertStringContainsString('Body: Body value', $bodyFileContent);
+        $this->assertStringContainsString('Header: Header value', $headerFileContent);
+        $this->assertStringContainsString('Footer: Footer value', $footerFileContent);
+    }
+
     /**
      * @dataProvider unicodeContentProvider
      *

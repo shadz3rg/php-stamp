@@ -9,11 +9,11 @@ use PHPStamp\Exception\XmlException;
 class Result
 {
     /**
-     * XML result of processed XSL template.
+     * XML results of processed XSL templates.
      *
-     * @var \DOMDocument
+     * @var array<string,\DOMDocument>
      */
-    private $output;
+    private array $outputs;
 
     /**
      * Document to render.
@@ -25,13 +25,18 @@ class Result
     /**
      * Create a new render Result.
      *
-     * @param \DOMDocument      $output   XML result of processed XSL template
-     * @param DocumentInterface $document document to render
+     * @param \DOMDocument|array<string,\DOMDocument> $output   XML result of processed XSL template
+     * @param DocumentInterface                       $document document to render
      */
-    public function __construct(\DOMDocument $output, DocumentInterface $document)
+    public function __construct($output, DocumentInterface $document)
     {
-        $this->output = $output;
         $this->document = $document;
+
+        if ($output instanceof \DOMDocument) {
+            $output = [$document->getContentPath() => $output];
+        }
+
+        $this->outputs = $output;
     }
 
     /**
@@ -41,7 +46,17 @@ class Result
      */
     public function getContent()
     {
-        return $this->output;
+        return $this->outputs[$this->document->getContentPath()];
+    }
+
+    /**
+     * Get all XML results of processed XSL templates by archive path.
+     *
+     * @return array<string,\DOMDocument>
+     */
+    public function getContents()
+    {
+        return $this->outputs;
     }
 
     /**
@@ -98,19 +113,21 @@ class Result
                 throw new TempException('Cannot open temp archive, code "'.$code.'" returned.');
             }
 
-            $content = $this->output->saveXML();
-            if ($content === false) {
-                $zip->close();
-                unlink($tempArchive);
+            foreach ($this->outputs as $contentPath => $output) {
+                $content = $output->saveXML();
+                if ($content === false) {
+                    $zip->close();
+                    unlink($tempArchive);
 
-                throw new XmlException('Print XML error');
-            }
+                    throw new XmlException('Print XML error');
+                }
 
-            if ($zip->addFromString($this->document->getContentPath(), $content) !== true) {
-                $zip->close();
-                unlink($tempArchive);
+                if ($zip->addFromString($contentPath, $content) !== true) {
+                    $zip->close();
+                    unlink($tempArchive);
 
-                throw new TempException('Cannot write document content to temp archive.');
+                    throw new TempException('Cannot write document content to temp archive.');
+                }
             }
 
             $zip->close();
